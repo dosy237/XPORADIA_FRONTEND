@@ -1,0 +1,1 @@
+export default function LoginPage() { return <div className='p-8'><h1 className='text-2xl font-bold text-epsilon-navy'>LoginPage</h1><p className='text-epsilon-text-secondary mt-2'>Feature à développer — Sprint correspondant</p></div>; }

@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  body {
+    @apply font-sans text-xporadia-text-primary bg-xporadia-bg antialiased;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 { @apply text-2xl font-bold text-xporadia-navy; }
+  h2 { @apply text-xl font-semibold text-xporadia-navy; }
+  h3 { @apply text-base font-semibold text-xporadia-navy; }
+}
+
+@layer components {
+  /* Boutons */
+  .btn-primary {
+    @apply bg-xporadia-orange text-white font-semibold px-4 py-2.5 rounded-xporadia
+           hover:bg-xporadia-orange-light active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-150 text-sm;
+  }
+  .btn-secondary {
+    @apply border border-xporadia-orange text-xporadia-orange font-semibold px-4 py-2.5 rounded-xporadia
+           hover:bg-xporadia-orange/10 active:scale-[0.98]
+           transition-all duration-150 text-sm;
+  }
+  .btn-navy {
+    @apply bg-xporadia-navy text-white font-semibold px-4 py-2.5 rounded-xporadia
+           hover:bg-xporadia-navy-light active:scale-[0.98]
+           transition-all duration-150 text-sm;
+  }
+  .btn-danger {
+    @apply bg-xporadia-red text-white font-semibold px-4 py-2.5 rounded-xporadia
+           hover:brightness-110 active:scale-[0.98]
+           transition-all duration-150 text-sm;
+  }
+
+  /* Cartes */
+  .card {
+    @apply bg-white rounded-lg shadow-card border border-xporadia-border p-4
+           hover:shadow-card-hover transition-shadow duration-200;
+  }
+  .card-flat {
+    @apply bg-white rounded-lg border border-xporadia-border p-4;
+  }
+
+  /* Badges de certification */
+  .badge-bronze {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+           bg-amber-100 text-amber-800;
+  }
+  .badge-argent {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+           bg-slate-100 text-slate-700;
+  }
+  .badge-or {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+           bg-yellow-100 text-yellow-800;
+  }
+  .badge-non-certifie {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+           bg-red-100 text-red-700;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full px-3 py-2.5 rounded-xporadia border border-xporadia-border
+           text-sm text-xporadia-text-primary bg-white
+           focus:outline-none focus:ring-2 focus:ring-xporadia-orange/40 focus:border-xporadia-orange
+           placeholder:text-xporadia-text-secondary
+           transition-colors duration-150;
+  }
+  .input-error {
+    @apply border-xporadia-red focus:ring-xporadia-red/40 focus:border-xporadia-red;
+  }
+
+  /* Snackbar */
+  .snackbar-success {
+    @apply fixed bottom-4 left-1/2 -translate-x-1/2 z-50
+           bg-xporadia-green text-white text-sm font-medium
+           px-4 py-3 rounded-lg shadow-lg
+           flex items-center gap-2;
+  }
+  .snackbar-error {
+    @apply fixed bottom-4 left-1/2 -translate-x-1/2 z-50
+           bg-xporadia-red text-white text-sm font-medium
+           px-4 py-3 rounded-lg shadow-lg
+           flex items-center gap-2;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+}
