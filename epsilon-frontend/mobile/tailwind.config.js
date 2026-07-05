@@ -25,6 +25,9 @@ module.exports = {
       borderRadius: {
         xporadia: "8px",
       },
+      boxShadow: {
+        card: "0 4px 16px 0 rgb(27 42 74 / 0.12)",
+      },
     },
   },
   plugins: [],

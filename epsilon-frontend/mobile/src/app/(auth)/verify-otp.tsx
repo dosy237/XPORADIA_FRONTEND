@@ -1,12 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
+import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
+import { dashboardPathForRole } from "@/utils/roleRouting";
 
 export default function VerifyOtpScreen() {
   const [code, setCode] = useState("");
@@ -19,7 +21,7 @@ export default function VerifyOtpScreen() {
     mutationFn: () => authApi.verifyOtp(code.trim()),
     onSuccess: (data) => {
       updateUser({ is_verified: true });
-      router.replace(`/(app)/${data.user.primary_role}/dashboard`);
+      router.replace(dashboardPathForRole(data.user.primary_role));
     },
     onError: () => setError("Code invalide ou expiré."),
   });
@@ -30,49 +32,46 @@ export default function VerifyOtpScreen() {
   });
 
   return (
-    <View className="flex-1 bg-xporadia-bg p-6 justify-center gap-6">
-      <View className="gap-2">
-        <Text className="text-xl font-bold text-xporadia-navy">Vérifiez votre compte</Text>
-        <Text className="text-xporadia-text-secondary">
-          Un code à 6 chiffres a été envoyé à {user?.email ?? "votre email"}.
-        </Text>
+    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-10">
+      <AuthHeader title="Vérifiez votre compte" subtitle={`Un code a été envoyé à ${user?.email ?? "votre email"}`} />
+
+      <View className="px-6 -mt-6 gap-4">
+        <View className="bg-white rounded-t-[28px] rounded-b-xporadia p-6 gap-4 shadow-card">
+          <Input
+            label="Code de vérification"
+            value={code}
+            onChangeText={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
+            keyboardType="number-pad"
+            placeholder="000000"
+            maxLength={6}
+          />
+          {error ? <Text className="text-xporadia-red text-sm">{error}</Text> : null}
+
+          <Button
+            label="Vérifier"
+            pill
+            onPress={() => {
+              setError(null);
+              verifyMutation.mutate();
+            }}
+            loading={verifyMutation.isPending}
+            disabled={code.length !== 6}
+          />
+
+          <View className="items-center gap-2">
+            {resent ? <Text className="text-xporadia-green text-sm">Nouveau code envoyé.</Text> : null}
+            <Text className="text-xporadia-orange font-semibold" onPress={() => resendMutation.mutate()}>
+              Renvoyer le code
+            </Text>
+            <Text
+              className="text-xporadia-text-secondary"
+              onPress={() => user && router.replace(dashboardPathForRole(user.primary_role))}
+            >
+              Vérifier plus tard
+            </Text>
+          </View>
+        </View>
       </View>
-
-      <Input
-        label="Code de vérification"
-        value={code}
-        onChangeText={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
-        keyboardType="number-pad"
-        placeholder="000000"
-        maxLength={6}
-      />
-      {error ? <Text className="text-xporadia-red text-sm">{error}</Text> : null}
-
-      <Button
-        label="Vérifier"
-        onPress={() => {
-          setError(null);
-          verifyMutation.mutate();
-        }}
-        loading={verifyMutation.isPending}
-        disabled={code.length !== 6}
-      />
-
-      <View className="items-center gap-2">
-        {resent ? <Text className="text-xporadia-green text-sm">Nouveau code envoyé.</Text> : null}
-        <Text
-          className="text-xporadia-orange font-semibold"
-          onPress={() => resendMutation.mutate()}
-        >
-          Renvoyer le code
-        </Text>
-        <Text
-          className="text-xporadia-text-secondary"
-          onPress={() => user && router.replace(`/(app)/${user.primary_role}/dashboard`)}
-        >
-          Vérifier plus tard
-        </Text>
-      </View>
-    </View>
+    </ScrollView>
   );
 }

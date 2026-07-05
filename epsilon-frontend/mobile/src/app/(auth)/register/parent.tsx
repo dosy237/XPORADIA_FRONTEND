@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
+import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -81,80 +82,85 @@ export default function RegisterParentScreen() {
       className="flex-1 bg-xporadia-bg"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerClassName="p-6 gap-4" keyboardShouldPersistTaps="handled">
-        <Text className="text-xporadia-text-secondary mb-2">
-          Créez votre compte parent pour trouver des enseignants certifiés pour vos enfants.
-        </Text>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10">
+        <AuthHeader title="Inscription parent" compact showBack />
 
-        <Input label="Prénom" value={firstName} onChangeText={setFirstName} />
-        <Input label="Nom" value={lastName} onChangeText={setLastName} />
-        <Input
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
-        <Input label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-        <Input
-          label="Mot de passe"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholder="8 caractères minimum"
-        />
-        <Input label="Localisation" value={location} onChangeText={setLocation} placeholder="Marcory" />
-
-        <View className="gap-3 mt-2">
-          <Text className="font-semibold text-xporadia-text-primary">
-            Vos enfants ({children.length}/5)
+        <View className="px-6 pt-6 gap-4">
+          <Text className="text-xporadia-text-secondary -mt-2 mb-1">
+            Créez votre compte parent pour trouver des enseignants certifiés pour vos enfants.
           </Text>
-          {children.map((child, index) => (
-            <Card key={index} className="gap-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="font-medium text-xporadia-text-primary">Enfant {index + 1}</Text>
-                {children.length > 1 ? (
-                  <Pressable onPress={() => removeChild(index)}>
-                    <Text className="text-xporadia-red text-sm">Retirer</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-              <Input
-                label="Prénom de l'enfant"
-                value={child.firstName}
-                onChangeText={(v) => updateChild(index, { firstName: v })}
-              />
-              <Input
-                label="Classe"
-                value={child.classLevel}
-                onChangeText={(v) => updateChild(index, { classLevel: v })}
-                placeholder="3eme, Terminale D, ..."
-              />
-              <Input
-                label="Matières cibles"
-                value={child.targetSubjects}
-                onChangeText={(v) => updateChild(index, { targetSubjects: v })}
-                placeholder="Maths, Anglais, ..."
-              />
-            </Card>
-          ))}
-          {children.length < 5 ? (
-            <Button label="Ajouter un enfant" variant="secondary" onPress={addChild} />
-          ) : null}
-        </View>
 
-        {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
-
-        <View className="mt-2">
-          <Button
-            label="Créer mon compte"
-            onPress={() => {
-              setFormError(null);
-              mutation.mutate();
-            }}
-            loading={mutation.isPending}
-            disabled={!canSubmit}
+          <Input label="Prénom" value={firstName} onChangeText={setFirstName} />
+          <Input label="Nom" value={lastName} onChangeText={setLastName} />
+          <Input
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
           />
+          <Input label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <Input
+            label="Mot de passe"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholder="8 caractères minimum"
+          />
+          <Input label="Localisation" value={location} onChangeText={setLocation} placeholder="Marcory" />
+
+          <View className="gap-3 mt-2">
+            <Text className="font-semibold text-xporadia-text-primary">
+              Vos enfants ({children.length}/5)
+            </Text>
+            {children.map((child, index) => (
+              <Card key={index} className="gap-3">
+                <View className="flex-row justify-between items-center">
+                  <Text className="font-medium text-xporadia-text-primary">Enfant {index + 1}</Text>
+                  {children.length > 1 ? (
+                    <Pressable onPress={() => removeChild(index)}>
+                      <Text className="text-xporadia-red text-sm">Retirer</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+                <Input
+                  label="Prénom de l'enfant"
+                  value={child.firstName}
+                  onChangeText={(v) => updateChild(index, { firstName: v })}
+                />
+                <Input
+                  label="Classe"
+                  value={child.classLevel}
+                  onChangeText={(v) => updateChild(index, { classLevel: v })}
+                  placeholder="3eme, Terminale D, ..."
+                />
+                <Input
+                  label="Matières cibles"
+                  value={child.targetSubjects}
+                  onChangeText={(v) => updateChild(index, { targetSubjects: v })}
+                  placeholder="Maths, Anglais, ..."
+                />
+              </Card>
+            ))}
+            {children.length < 5 ? (
+              <Button label="Ajouter un enfant" variant="secondary" pill onPress={addChild} />
+            ) : null}
+          </View>
+
+          {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
+
+          <View className="mt-2">
+            <Button
+              label="Créer mon compte"
+              pill
+              onPress={() => {
+                setFormError(null);
+                mutation.mutate();
+              }}
+              loading={mutation.isPending}
+              disabled={!canSubmit}
+            />
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
