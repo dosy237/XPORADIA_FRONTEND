@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
 import { EducationPattern } from "@/components/auth/EducationPattern";
+import { LogoMark } from "@/components/auth/LogoMark";
 import { Colors } from "@/constants/theme";
 
 interface AuthHeaderProps {
@@ -11,19 +12,19 @@ interface AuthHeaderProps {
   showBack?: boolean;
 }
 
-// TODO: une fois le logo détouré fourni (assets/images/logo.png), remplacer ce
-// badge texte par <Image source={require("@/assets/images/logo.png")} />.
-// Metro résout les require() statiquement : on ne peut pas le référencer avant
-// que le fichier existe réellement dans le repo.
+// LogoMark est une reconstitution vectorielle du logo (fichier source pas
+// encore reçu en pièce jointe exploitable). TODO : une fois le PNG détouré
+// disponible dans assets/images/logo.png, remplacer par
+// <Image source={require("@/assets/images/logo.png")} /> — Metro résout les
+// require() statiquement, donc ce swap ne peut se faire qu'une fois le fichier
+// réellement présent dans le repo.
 function LogoBadge({ size }: { size: number }) {
   return (
     <View
       style={{ width: size, height: size, borderRadius: size / 2 }}
       className="bg-white items-center justify-center shadow-lg"
     >
-      <Text style={{ fontSize: size * 0.42 }} className="font-bold text-xporadia-orange">
-        X
-      </Text>
+      <LogoMark size={size * 0.62} />
     </View>
   );
 }
