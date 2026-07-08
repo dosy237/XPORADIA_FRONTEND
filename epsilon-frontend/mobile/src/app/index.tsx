@@ -7,6 +7,6 @@ export default function Index() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const currentRole = useAuthStore((s) => s.currentRole);
 
-  if (!isAuthenticated) return <Redirect href="/(auth)/login" />;
+  if (!isAuthenticated) return <Redirect href="/(auth)/welcome" />;
   return <Redirect href={dashboardPathForRole(currentRole)} />;
 }
