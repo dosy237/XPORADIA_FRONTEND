@@ -17,7 +17,7 @@ export default function WelcomeScreen() {
         contentFit="cover"
       />
       {/* Voile bleu semi-transparent par-dessus la photo — laisse deviner l'image */}
-      <View className="absolute inset-0 bg-xporadia-navy/50" />
+      <View className="absolute inset-0 bg-xporadia-navy/75" />
 
       <View
         className="flex-1 px-8"
