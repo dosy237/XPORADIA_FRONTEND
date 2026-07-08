@@ -21,8 +21,8 @@ import { useAuthStore } from "@/store/authStore";
 
 function StatBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-1.5 items-center">
-      {icon}
+    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-2 items-center">
+      <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-card">{icon}</View>
       <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={1}>
         {value}
       </Text>
@@ -91,33 +91,46 @@ export default function TeacherProfileScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-12">
-        <View className="items-center pt-8 pb-4">
-          <Avatar firstName={user?.first_name} lastName={user?.last_name} />
+        <View className="items-center pt-10 pb-5 overflow-hidden">
+          <View
+            className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]"
+            pointerEvents="none"
+          />
+          <View
+            className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
+            pointerEvents="none"
+          />
+          <View>
+            <Avatar firstName={user?.first_name} lastName={user?.last_name} />
+            <View
+              className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white"
+            />
+          </View>
           <Text className="text-xl font-bold text-xporadia-navy mt-3">
             {user?.first_name} {user?.last_name}
           </Text>
           <View className="mt-2">
-            <Chip label="Enseignant" variant="navy" />
+            <Chip label="Enseignant" variant="navy-subtle" />
           </View>
         </View>
 
         <View className="px-6">
           {!editing ? (
-            <View className="gap-4">
-              <View className="bg-white rounded-3xl p-5 shadow-deep border border-xporadia-border gap-4">
+            <View className="gap-5">
+              <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-5">
                 <View className="flex-row gap-3">
                   <StatBox
-                    icon={<BriefcaseIcon color={Colors.orange} size={18} />}
+                    icon={<BriefcaseIcon color={Colors.navy} size={18} />}
                     label="Expérience"
                     value={`${profile.experience_years} ans`}
                   />
                   <StatBox
-                    icon={<CoinIcon color={Colors.orange} size={18} />}
+                    icon={<CoinIcon color={Colors.navy} size={18} />}
                     label="Tarif / heure"
                     value={profile.hourly_rate ? `${profile.hourly_rate} F` : "—"}
                   />
                   <StatBox
-                    icon={<PinIcon color={Colors.orange} size={18} />}
+                    icon={<PinIcon color={Colors.navy} size={18} />}
                     label="Localisation"
                     value={profile.location || "—"}
                   />
@@ -130,7 +143,7 @@ export default function TeacherProfileScreen() {
                     </Text>
                     <View className="flex-row flex-wrap gap-2">
                       {profile.subjects.map((subject) => (
-                        <Chip key={subject} label={subject} variant="orange" />
+                        <Chip key={subject} label={subject} variant="navy-subtle" />
                       ))}
                     </View>
                   </View>
@@ -146,22 +159,22 @@ export default function TeacherProfileScreen() {
                 <View className="flex-row gap-2">
                   <Chip
                     label="Cours particuliers"
-                    variant={profile.available_for_tutoring ? "orange" : "neutral"}
+                    variant={profile.available_for_tutoring ? "navy-subtle" : "neutral"}
                   />
                   <Chip
                     label="Marché de l'emploi"
-                    variant={profile.available_for_employment ? "orange" : "neutral"}
+                    variant={profile.available_for_employment ? "navy-subtle" : "neutral"}
                   />
                 </View>
               </View>
 
               <Pressable
                 onPress={() => setEditing(true)}
-                className="flex-row items-center justify-center gap-2 bg-xporadia-navy rounded-full py-4"
+                className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-4"
                 style={{
-                  shadowColor: "#0F172A",
+                  shadowColor: "#FB5406",
                   shadowOffset: { width: 0, height: 8 },
-                  shadowOpacity: 0.25,
+                  shadowOpacity: 0.28,
                   shadowRadius: 16,
                   elevation: 6,
                 }}
@@ -207,7 +220,7 @@ export default function TeacherProfileScreen() {
                 <Switch
                   value={availableForTutoring}
                   onValueChange={setAvailableForTutoring}
-                  trackColor={{ false: Colors.border, true: Colors.orange }}
+                  trackColor={{ false: Colors.border, true: Colors.navy }}
                   thumbColor={Colors.white}
                 />
               </View>
@@ -216,7 +229,7 @@ export default function TeacherProfileScreen() {
                 <Switch
                   value={availableForEmployment}
                   onValueChange={setAvailableForEmployment}
-                  trackColor={{ false: Colors.border, true: Colors.orange }}
+                  trackColor={{ false: Colors.border, true: Colors.navy }}
                   thumbColor={Colors.white}
                 />
               </View>
