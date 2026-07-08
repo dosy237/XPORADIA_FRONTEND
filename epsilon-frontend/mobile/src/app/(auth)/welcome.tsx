@@ -6,16 +6,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/Button";
 
-// TODO: dès que la photo de fond (fichier réel) est fournie, remplacer le
-// <LinearGradient> ci-dessous par :
-//   <ImageBackground source={require("@/assets/images/brand/cover.jpg")} style={StyleSheet.absoluteFill} resizeMode="cover">
-// et ajouter un voile bleu semi-transparent par-dessus pour la lisibilité.
+// TODO: dès que la photo de fond (fichier réel, ex. cover.jpg) est fournie
+// dans assets/images/brand/, remplacer la <LinearGradient> ci-dessous par :
+//   <Image source={require("@/assets/images/brand/cover.jpg")} style={StyleSheet.absoluteFill} contentFit="cover" />
+// Le voile bleu semi-transparent reste identique par-dessus — il doit laisser
+// deviner la photo, pas la masquer complètement (d'où l'opacité à 50%, pas 100%).
 export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
 
   return (
     <View className="flex-1 bg-xporadia-navy">
+      {/* Fond (photo à venir) */}
       <LinearGradient colors={["#0F172A", "#1E293B", "#0F172A"]} style={StyleSheet.absoluteFill} />
+      {/* Voile bleu semi-transparent par-dessus la photo */}
+      <View className="absolute inset-0 bg-xporadia-navy/50" />
 
       <View
         className="flex-1 px-8"
