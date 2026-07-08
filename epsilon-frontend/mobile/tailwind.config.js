@@ -33,6 +33,10 @@ module.exports = {
       },
       boxShadow: {
         card: "0 4px 16px 0 rgb(27 42 74 / 0.12)",
+        // Ombre plus prononcée pour les écrans "feature" (profil, futurs
+        // modules) — profondeur marquée plutôt que discrète.
+        deep: "0 16px 40px 0 rgb(15 23 42 / 0.28)",
+        "deep-orange": "0 10px 28px 0 rgb(251 84 6 / 0.35)",
       },
     },
   },

@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Text, View } from "react-native";
 
 import { Card } from "@/components/ui/Card";
@@ -6,9 +7,10 @@ import { useAuthStore } from "@/store/authStore";
 interface DashboardPlaceholderProps {
   title: string;
   upcomingFeatures: string[];
+  children?: ReactNode;
 }
 
-export function DashboardPlaceholder({ title, upcomingFeatures }: DashboardPlaceholderProps) {
+export function DashboardPlaceholder({ title, upcomingFeatures, children }: DashboardPlaceholderProps) {
   const user = useAuthStore((s) => s.user);
 
   return (
@@ -28,6 +30,8 @@ export function DashboardPlaceholder({ title, upcomingFeatures }: DashboardPlace
           </Text>
         </Card>
       )}
+
+      {children}
 
       <Card className="gap-2">
         <Text className="font-semibold text-xporadia-text-primary">À venir sur ce tableau de bord</Text>
