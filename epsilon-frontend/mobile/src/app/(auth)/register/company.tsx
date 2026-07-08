@@ -9,34 +9,29 @@ import { Input } from "@/components/ui/Input";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 
-export default function RegisterDirectorScreen() {
+export default function RegisterCompanyScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [schoolName, setSchoolName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [sector, setSector] = useState("");
   const [address, setAddress] = useState("");
-  const [levelsTaught, setLevelsTaught] = useState("");
-  const [studentCount, setStudentCount] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const login = useAuthStore((s) => s.login);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      await authApi.registerDirector({
+      await authApi.registerCompany({
         email: email.trim().toLowerCase(),
         password,
         first_name: firstName,
         last_name: lastName,
         phone,
-        school_name: schoolName,
+        company_name: companyName,
+        sector,
         address,
-        levels_taught: levelsTaught
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
-        student_count: studentCount ? Number(studentCount) : undefined,
       });
       return authApi.login(email.trim().toLowerCase(), password);
     },
@@ -51,7 +46,7 @@ export default function RegisterDirectorScreen() {
     },
   });
 
-  const canSubmit = firstName && lastName && email && password.length >= 8 && schoolName && address;
+  const canSubmit = firstName && lastName && email && password.length >= 8 && companyName && address;
 
   return (
     <KeyboardAvoidingView
@@ -59,11 +54,11 @@ export default function RegisterDirectorScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10">
-        <AuthHeader title="Inscription établissement" compact showBack />
+        <AuthHeader title="Inscription entreprise" compact showBack />
 
         <View className="px-6 pt-6 gap-4">
           <Text className="text-xporadia-text-secondary -mt-2 mb-1">
-            Créez un compte établissement pour accéder au vivier d&apos;enseignants certifiés.
+            Créez un compte entreprise pour publier des offres de stage et suivre vos stagiaires.
           </Text>
 
           <Input label="Prénom" value={firstName} onChangeText={setFirstName} />
@@ -83,20 +78,14 @@ export default function RegisterDirectorScreen() {
             secureTextEntry
             placeholder="8 caractères minimum"
           />
-          <Input label="Nom de l'établissement" value={schoolName} onChangeText={setSchoolName} />
+          <Input label="Raison sociale" value={companyName} onChangeText={setCompanyName} />
+          <Input
+            label="Secteur d'activité"
+            value={sector}
+            onChangeText={setSector}
+            placeholder="BTP, Informatique, ..."
+          />
           <Input label="Adresse" value={address} onChangeText={setAddress} />
-          <Input
-            label="Niveaux enseignés"
-            value={levelsTaught}
-            onChangeText={setLevelsTaught}
-            placeholder="Collège, Lycée, ..."
-          />
-          <Input
-            label="Effectif d'élèves"
-            value={studentCount}
-            onChangeText={setStudentCount}
-            keyboardType="numeric"
-          />
 
           {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
 

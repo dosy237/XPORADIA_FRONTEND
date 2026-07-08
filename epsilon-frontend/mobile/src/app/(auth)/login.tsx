@@ -32,52 +32,48 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-xporadia-bg"
+      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10">
-        <AuthHeader title="Bienvenue chez Xporadia" subtitle="La certification des enseignants du privé" />
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10 flex-grow">
+        <AuthHeader title="Connexion" subtitle="Accédez à votre espace Xporadia" />
 
-        <View className="px-6 -mt-6 gap-4">
-          <View className="bg-white rounded-t-[28px] rounded-b-xporadia p-6 gap-4 shadow-card">
-            <Text className="text-xl font-bold text-xporadia-navy">Connexion</Text>
+        <View className="px-6 gap-4 mt-4">
+          <Input
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder="vous@exemple.ci"
+          />
+          <Input
+            label="Mot de passe"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            placeholder="••••••••"
+          />
+          {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
 
-            <Input
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder="vous@exemple.ci"
-            />
-            <Input
-              label="Mot de passe"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholder="••••••••"
-            />
-            {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
+          <Button
+            label="Se connecter"
+            pill
+            onPress={() => {
+              setFormError(null);
+              mutation.mutate();
+            }}
+            loading={mutation.isPending}
+          />
 
-            <Button
-              label="Se connecter"
-              pill
-              onPress={() => {
-                setFormError(null);
-                mutation.mutate();
-              }}
-              loading={mutation.isPending}
-            />
+          <Divider label="ou" />
 
-            <Divider label="ou" />
-
-            <View className="flex-row gap-3">
-              <SocialButton label="Google" onPress={() => notifySocialSoon("Google")} />
-              <SocialButton label="Apple" onPress={() => notifySocialSoon("Apple")} />
-            </View>
+          <View className="flex-row gap-3">
+            <SocialButton label="Google" onPress={() => notifySocialSoon("Google")} />
+            <SocialButton label="Apple" onPress={() => notifySocialSoon("Apple")} />
           </View>
 
-          <View className="items-center gap-1 flex-row justify-center">
+          <View className="items-center gap-1 flex-row justify-center mt-2">
             <Text className="text-xporadia-text-secondary">Pas encore de compte ?</Text>
             <Link href="/(auth)/register" asChild>
               <Text className="text-xporadia-orange font-semibold"> Créer un compte</Text>

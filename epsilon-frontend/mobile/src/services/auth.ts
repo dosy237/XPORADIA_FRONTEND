@@ -35,6 +35,17 @@ export interface DirectorRegisterPayload {
   student_count?: number;
 }
 
+export interface CompanyRegisterPayload {
+  email: string;
+  phone?: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  company_name: string;
+  sector?: string;
+  address: string;
+}
+
 export interface ChildPayload {
   first_name: string;
   class_level: string;
@@ -59,6 +70,9 @@ export const registerDirector = (payload: DirectorRegisterPayload) =>
 
 export const registerParent = (payload: ParentRegisterPayload) =>
   api.post<RegisterResponse>("/auth/register/parent/", payload).then((r) => r.data);
+
+export const registerCompany = (payload: CompanyRegisterPayload) =>
+  api.post<RegisterResponse>("/auth/register/company/", payload).then((r) => r.data);
 
 export const login = (email: string, password: string) =>
   api.post<LoginResponse>("/auth/token/", { email, password }).then((r) => r.data);

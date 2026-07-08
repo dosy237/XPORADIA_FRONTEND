@@ -53,7 +53,7 @@ export default function RegisterTeacherScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-xporadia-bg"
+      className="flex-1 bg-white"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10">

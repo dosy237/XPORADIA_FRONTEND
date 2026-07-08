@@ -23,22 +23,26 @@ const ROLES = [
     description: "Trouvez des cours particuliers certifiés pour vos enfants.",
     href: "/(auth)/register/parent" as const,
   },
+  {
+    key: "company",
+    title: "Je représente une entreprise",
+    description: "Publiez des offres de stage et évaluez vos stagiaires.",
+    href: "/(auth)/register/company" as const,
+  },
 ];
 
 export default function RoleSelectionScreen() {
   return (
-    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-10">
+    <ScrollView className="flex-1 bg-white" contentContainerClassName="pb-10">
       <AuthHeader title="Rejoindre Xporadia" subtitle="Quel est votre profil ?" showBack />
 
-      <View className="px-6 -mt-6 gap-3">
-        <View className="bg-white rounded-t-[28px] rounded-b-xporadia p-6 gap-4 shadow-card">
-          {ROLES.map((role) => (
-            <Card key={role.key} onPress={() => router.push(role.href)} className="gap-2">
-              <Text className="text-lg font-semibold text-xporadia-text-primary">{role.title}</Text>
-              <Text className="text-sm text-xporadia-text-secondary">{role.description}</Text>
-            </Card>
-          ))}
-        </View>
+      <View className="px-6 gap-3 mt-4">
+        {ROLES.map((role) => (
+          <Card key={role.key} onPress={() => router.push(role.href)} className="gap-2">
+            <Text className="text-lg font-semibold text-xporadia-text-primary">{role.title}</Text>
+            <Text className="text-sm text-xporadia-text-secondary">{role.description}</Text>
+          </Card>
+        ))}
 
         <View className="items-center mt-2">
           <Text className="text-xporadia-text-secondary" onPress={() => router.back()}>
