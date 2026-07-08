@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
-import { router } from "expo-router";
-import { StyleSheet, View } from "react-native";
+import { Link, router } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/Button";
@@ -31,7 +31,15 @@ export default function WelcomeScreen() {
           />
         </View>
 
-        <Button label="Commencer" pill onPress={() => router.replace("/(auth)/login")} />
+        <View className="gap-4">
+          <Button label="Se connecter" pill onPress={() => router.replace("/(auth)/login")} />
+          <View className="flex-row justify-center items-center gap-1">
+            <Text className="text-white/80">Pas de compte ?</Text>
+            <Link href="/(auth)/register" asChild>
+              <Text className="text-white font-semibold">S'inscrire</Text>
+            </Link>
+          </View>
+        </View>
       </View>
     </View>
   );

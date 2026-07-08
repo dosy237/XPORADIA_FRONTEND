@@ -21,6 +21,10 @@ module.exports = {
           "text-secondary": "#5A6A8A",
           "navy-light": "#1E293B",
           "orange-light": "#FF7A33",
+          // Orange de marque en texte sur fond clair : #FB5406 ne tient qu'à
+          // ~3.3:1 (limite WCAG AA). #C2410C tient 5.2:1 — utilisé pour les
+          // liens/texte, le orange plein reste réservé aux fonds/boutons.
+          "orange-text": "#C2410C",
           border: "#E2E8F0",
         },
       },

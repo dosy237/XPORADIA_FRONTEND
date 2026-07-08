@@ -32,51 +32,53 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-xporadia-bg"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10 flex-grow">
         <AuthHeader title="Connexion" subtitle="Accédez à votre espace Xporadia" />
 
-        <View className="px-6 gap-4 mt-4">
-          <Input
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            placeholder="vous@exemple.ci"
-          />
-          <Input
-            label="Mot de passe"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholder="••••••••"
-          />
-          {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
+        <View className="px-6 pt-4">
+          <View className="bg-white rounded-2xl p-6 gap-4 shadow-card border border-xporadia-border">
+            <Input
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="vous@exemple.ci"
+            />
+            <Input
+              label="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="••••••••"
+            />
+            {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
 
-          <Button
-            label="Se connecter"
-            pill
-            onPress={() => {
-              setFormError(null);
-              mutation.mutate();
-            }}
-            loading={mutation.isPending}
-          />
+            <Button
+              label="Se connecter"
+              pill
+              onPress={() => {
+                setFormError(null);
+                mutation.mutate();
+              }}
+              loading={mutation.isPending}
+            />
 
-          <Divider label="ou" />
+            <Divider label="ou" />
 
-          <View className="flex-row gap-3">
-            <SocialButton label="Google" onPress={() => notifySocialSoon("Google")} />
-            <SocialButton label="Apple" onPress={() => notifySocialSoon("Apple")} />
+            <View className="flex-row gap-3">
+              <SocialButton label="Google" onPress={() => notifySocialSoon("Google")} />
+              <SocialButton label="Apple" onPress={() => notifySocialSoon("Apple")} />
+            </View>
           </View>
 
-          <View className="items-center gap-1 flex-row justify-center mt-2">
+          <View className="items-center gap-1 flex-row justify-center mt-4">
             <Text className="text-xporadia-text-secondary">Pas encore de compte ?</Text>
             <Link href="/(auth)/register" asChild>
-              <Text className="text-xporadia-orange font-semibold"> Créer un compte</Text>
+              <Text className="text-xporadia-orange-text font-semibold"> Créer un compte</Text>
             </Link>
           </View>
         </View>

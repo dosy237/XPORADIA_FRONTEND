@@ -58,7 +58,7 @@ export function Select<T extends string>({
                 <Text
                   className={
                     item.value === value
-                      ? "text-xporadia-orange font-semibold text-base"
+                      ? "text-xporadia-orange-text font-semibold text-base"
                       : "text-xporadia-text-primary text-base"
                   }
                 >

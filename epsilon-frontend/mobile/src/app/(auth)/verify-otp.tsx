@@ -32,42 +32,44 @@ export default function VerifyOtpScreen() {
   });
 
   return (
-    <ScrollView className="flex-1 bg-white" contentContainerClassName="pb-10">
+    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-10">
       <AuthHeader title="Vérifiez votre compte" subtitle={`Un code a été envoyé à ${user?.email ?? "votre email"}`} />
 
-      <View className="px-6 gap-4 mt-4">
-        <Input
-          label="Code de vérification"
-          value={code}
-          onChangeText={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
-          keyboardType="number-pad"
-          placeholder="000000"
-          maxLength={6}
-        />
-        {error ? <Text className="text-xporadia-red text-sm">{error}</Text> : null}
+      <View className="px-6 pt-4">
+        <View className="bg-white rounded-2xl p-6 gap-4 shadow-card border border-xporadia-border">
+          <Input
+            label="Code de vérification"
+            value={code}
+            onChangeText={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
+            keyboardType="number-pad"
+            placeholder="000000"
+            maxLength={6}
+          />
+          {error ? <Text className="text-xporadia-red text-sm">{error}</Text> : null}
 
-        <Button
-          label="Vérifier"
-          pill
-          onPress={() => {
-            setError(null);
-            verifyMutation.mutate();
-          }}
-          loading={verifyMutation.isPending}
-          disabled={code.length !== 6}
-        />
+          <Button
+            label="Vérifier"
+            pill
+            onPress={() => {
+              setError(null);
+              verifyMutation.mutate();
+            }}
+            loading={verifyMutation.isPending}
+            disabled={code.length !== 6}
+          />
 
-        <View className="items-center gap-2">
-          {resent ? <Text className="text-xporadia-green text-sm">Nouveau code envoyé.</Text> : null}
-          <Text className="text-xporadia-orange font-semibold" onPress={() => resendMutation.mutate()}>
-            Renvoyer le code
-          </Text>
-          <Text
-            className="text-xporadia-text-secondary"
-            onPress={() => user && router.replace(dashboardPathForRole(user.primary_role))}
-          >
-            Vérifier plus tard
-          </Text>
+          <View className="items-center gap-2">
+            {resent ? <Text className="text-xporadia-green text-sm">Nouveau code envoyé.</Text> : null}
+            <Text className="text-xporadia-orange-text font-semibold" onPress={() => resendMutation.mutate()}>
+              Renvoyer le code
+            </Text>
+            <Text
+              className="text-xporadia-text-secondary"
+              onPress={() => user && router.replace(dashboardPathForRole(user.primary_role))}
+            >
+              Vérifier plus tard
+            </Text>
+          </View>
         </View>
       </View>
     </ScrollView>

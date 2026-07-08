@@ -10,6 +10,7 @@ interface AuthHeaderProps {
   subtitle?: string;
   compact?: boolean;
   showBack?: boolean;
+  onBack?: () => void;
 }
 
 // Logo réel (fichier fourni, fond supprimé — voir assets/images/brand).
@@ -26,13 +27,13 @@ function Wordmark({ height }: { height: number }) {
   );
 }
 
-export function AuthHeader({ title, subtitle, compact, showBack }: AuthHeaderProps) {
+export function AuthHeader({ title, subtitle, compact, showBack, onBack }: AuthHeaderProps) {
   const insets = useSafeAreaInsets();
 
   return (
     <View className="px-6" style={{ paddingTop: insets.top + 16 }}>
       {showBack ? (
-        <Pressable onPress={() => router.back()} hitSlop={12} className="mb-4 self-start">
+        <Pressable onPress={onBack ?? (() => router.back())} hitSlop={12} className="mb-4 self-start">
           <Text style={{ color: Colors.navy, fontSize: 22 }}>←</Text>
         </Pressable>
       ) : null}
