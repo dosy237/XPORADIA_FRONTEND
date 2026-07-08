@@ -5,20 +5,22 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Design System Xporadia — mêmes tokens que le web (epsilon-frontend/web/tailwind.config.js)
+        // Design System Xporadia — couleurs exactes extraites du fichier logo
+        // fourni (Xporadia_logo_original_vectorise.svg : #0F172A / #FB5406),
+        // corrigées par rapport à l'estimation initiale du web (#1B2A4A / #E8510A).
         xporadia: {
-          navy: "#1B2A4A",
-          orange: "#E8510A",
-          bg: "#F5F6F7",
+          navy: "#0F172A",
+          orange: "#FB5406",
+          bg: "#F8F8F8",
           white: "#FFFFFF",
           green: "#00C07F",
           red: "#E53935",
           gold: "#F5A623",
           purple: "#7B2FFF",
-          "text-primary": "#1A1A2E",
+          "text-primary": "#0F172A",
           "text-secondary": "#5A6A8A",
-          "navy-light": "#2D3F63",
-          "orange-light": "#FF6B35",
+          "navy-light": "#1E293B",
+          "orange-light": "#FF7A33",
           border: "#E2E8F0",
         },
       },

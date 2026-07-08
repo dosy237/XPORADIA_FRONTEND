@@ -1,19 +1,19 @@
 import "@/global.css";
 
-// Design System Xporadia — mêmes tokens que le web (voir tailwind.config.js)
+// Design System Xporadia — couleurs exactes extraites du logo fourni (voir tailwind.config.js)
 export const Colors = {
-  navy: "#1B2A4A",
-  orange: "#E8510A",
-  bg: "#F5F6F7",
+  navy: "#0F172A",
+  orange: "#FB5406",
+  bg: "#F8F8F8",
   white: "#FFFFFF",
   green: "#00C07F",
   red: "#E53935",
   gold: "#F5A623",
   purple: "#7B2FFF",
-  textPrimary: "#1A1A2E",
+  textPrimary: "#0F172A",
   textSecondary: "#5A6A8A",
-  navyLight: "#2D3F63",
-  orangeLight: "#FF6B35",
+  navyLight: "#1E293B",
+  orangeLight: "#FF7A33",
   border: "#E2E8F0",
 } as const;
 

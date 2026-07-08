@@ -1,8 +1,8 @@
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
 import { EducationPattern } from "@/components/auth/EducationPattern";
-import { LogoMark } from "@/components/auth/LogoMark";
 import { Colors } from "@/constants/theme";
 
 interface AuthHeaderProps {
@@ -12,20 +12,17 @@ interface AuthHeaderProps {
   showBack?: boolean;
 }
 
-// LogoMark est une reconstitution vectorielle du logo (fichier source pas
-// encore reçu en pièce jointe exploitable). TODO : une fois le PNG détouré
-// disponible dans assets/images/logo.png, remplacer par
-// <Image source={require("@/assets/images/logo.png")} /> — Metro résout les
-// require() statiquement, donc ce swap ne peut se faire qu'une fois le fichier
-// réellement présent dans le repo.
-function LogoBadge({ size }: { size: number }) {
+// Logo réel (fichier fourni, fond supprimé — voir assets/images/brand).
+// Variante blanche : lisible sur le fond navy du header.
+const LOGO_ASPECT_RATIO = 1200 / 506;
+
+function Wordmark({ height }: { height: number }) {
   return (
-    <View
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-      className="bg-white items-center justify-center shadow-lg"
-    >
-      <LogoMark size={size * 0.62} />
-    </View>
+    <Image
+      source={require("@/assets/images/brand/logo-white.png")}
+      style={{ width: height * LOGO_ASPECT_RATIO, height }}
+      contentFit="contain"
+    />
   );
 }
 
@@ -54,7 +51,7 @@ export function AuthHeader({ title, subtitle, compact, showBack }: AuthHeaderPro
       ) : null}
 
       <View className="items-center gap-3 px-6">
-        {!compact && <LogoBadge size={64} />}
+        {!compact && <Wordmark height={40} />}
         <Text className={`text-white font-bold text-center ${compact ? "text-lg" : "text-xl"}`}>
           {title}
         </Text>
