@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { ScrollView, Text, View } from "react-native";
+import { router } from "expo-router";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Chip } from "@/components/ui/Chip";
 import { BuildingIcon, UsersIcon } from "@/components/ui/Icon";
@@ -38,7 +39,13 @@ export default function MyClassesScreen() {
         Classes dont vous êtes l&apos;enseignant titulaire.
       </Text>
       {classes.map((schoolClass) => (
-        <View key={schoolClass.id} className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+        <Pressable
+          key={schoolClass.id}
+          onPress={() => router.push(`/(app)/teacher/my-classes/${schoolClass.id}`)}
+          accessibilityRole="button"
+          accessibilityLabel={`Gérer la classe ${schoolClass.name}`}
+          className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"
+        >
           <View className="flex-row items-center justify-between">
             <Text className="text-base font-semibold text-xporadia-text-primary">
               {schoolClass.name}
@@ -56,7 +63,7 @@ export default function MyClassesScreen() {
               </Text>
             </View>
           ) : null}
-        </View>
+        </Pressable>
       ))}
     </ScrollView>
   );

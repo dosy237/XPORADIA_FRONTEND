@@ -46,6 +46,13 @@ export default function TeacherDashboard() {
           Classes dont vous êtes l&apos;enseignant titulaire.
         </Text>
       </Card>
+
+      <Card onPress={() => router.push("/(app)/teacher/my-subjects")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Mes matières</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Matières où vous êtes l&apos;enseignant dédié.
+        </Text>
+      </Card>
     </DashboardPlaceholder>
   );
 }

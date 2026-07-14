@@ -60,3 +60,27 @@ export const createClass = (payload: {
 
 export const fetchMyHomeroomClasses = () =>
   api.get<SchoolClass[]>("/academics/my-classes/").then((r) => r.data);
+
+export interface Subject {
+  id: number;
+  school_class: SchoolClass;
+  name: string;
+  teacher: HomeroomTeacher | null;
+  created_at: string;
+}
+
+export const fetchSubjects = (classId: number) =>
+  api.get<Subject[]>(`/academics/classes/${classId}/subjects/`).then((r) => r.data);
+
+export const createSubject = (classId: number, payload: { name: string; teacher_email?: string }) =>
+  api.post<Subject>(`/academics/classes/${classId}/subjects/`, payload).then((r) => r.data);
+
+export const updateSubjectTeacher = (subjectId: number, teacherEmail: string | null) =>
+  api
+    .patch<Subject>(`/academics/subjects/${subjectId}/`, { teacher_email: teacherEmail })
+    .then((r) => r.data);
+
+export const deleteSubject = (subjectId: number) => api.delete(`/academics/subjects/${subjectId}/`);
+
+export const fetchMyDedicatedSubjects = () =>
+  api.get<Subject[]>("/academics/my-subjects/").then((r) => r.data);
