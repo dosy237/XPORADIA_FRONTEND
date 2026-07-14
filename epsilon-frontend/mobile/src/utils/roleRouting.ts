@@ -2,12 +2,13 @@ import type { Href } from "expo-router";
 
 import type { UserRole } from "@/types/user";
 
-// Seuls enseignant / directeur / parent ont un dashboard pour l'instant
-// (EP-01 Sprint 1). Entreprise, formateur et admin arriveront avec EP-03/EP-06.
+// Enseignant / directeur / parent / entreprise ont un dashboard (EP-01).
+// Formateur et admin arriveront avec EP-06.
 const DASHBOARD_ROUTES = {
   teacher: "/(app)/teacher/dashboard",
   director: "/(app)/director/dashboard",
   parent: "/(app)/parent/dashboard",
+  company: "/(app)/company/dashboard",
 } as const satisfies Partial<Record<UserRole, Href>>;
 
 export function dashboardPathForRole(role: UserRole | null | undefined): Href {
