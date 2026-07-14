@@ -1,6 +1,7 @@
-import { Redirect, Stack } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Redirect, router, Stack } from "expo-router";
+import { Pressable, Text, View } from "react-native";
 
+import { GearIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useAuthStore } from "@/store/authStore";
 
@@ -17,9 +18,24 @@ export default function AppLayout() {
         headerTintColor: Colors.white,
         headerTitleStyle: { fontWeight: "600" },
         headerRight: () => (
-          <Pressable onPress={logout} hitSlop={8}>
-            <Text style={{ color: Colors.white }}>Déconnexion</Text>
-          </Pressable>
+          <View className="flex-row items-center gap-4">
+            <Pressable
+              onPress={() => router.push("/(app)/settings")}
+              accessibilityRole="button"
+              accessibilityLabel="Paramètres du compte"
+              hitSlop={8}
+            >
+              <GearIcon color={Colors.white} size={20} />
+            </Pressable>
+            <Pressable
+              onPress={logout}
+              accessibilityRole="button"
+              accessibilityLabel="Se déconnecter"
+              hitSlop={8}
+            >
+              <Text style={{ color: Colors.white }}>Déconnexion</Text>
+            </Pressable>
+          </View>
         ),
       }}
     >
@@ -32,6 +48,7 @@ export default function AppLayout() {
       <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />
       <Stack.Screen name="company/dashboard" options={{ title: "Espace entreprise" }} />
       <Stack.Screen name="company/profile" options={{ title: "Mon entreprise" }} />
+      <Stack.Screen name="settings" options={{ title: "Paramètres" }} />
     </Stack>
   );
 }

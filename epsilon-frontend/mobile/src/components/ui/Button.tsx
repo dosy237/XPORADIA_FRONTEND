@@ -9,6 +9,7 @@ interface ButtonProps {
   loading?: boolean;
   disabled?: boolean;
   pill?: boolean;
+  accessibilityLabel?: string;
 }
 
 const VARIANT_CLASSES: Record<Variant, string> = {
@@ -25,12 +26,24 @@ const VARIANT_TEXT_CLASSES: Record<Variant, string> = {
   danger: "text-white",
 };
 
-export function Button({ label, onPress, variant = "primary", loading, disabled, pill }: ButtonProps) {
+export function Button({
+  label,
+  onPress,
+  variant = "primary",
+  loading,
+  disabled,
+  pill,
+  accessibilityLabel,
+}: ButtonProps) {
   const isDisabled = disabled || loading;
   return (
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+      hitSlop={4}
       className={`${pill ? "rounded-full" : "rounded-xporadia"} items-center justify-center py-3.5 px-4 ${
         VARIANT_CLASSES[variant]
       } ${isDisabled ? "opacity-50" : ""}`}

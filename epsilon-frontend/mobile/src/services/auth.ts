@@ -84,3 +84,32 @@ export const verifyOtp = (code: string) =>
 
 export const resendOtp = () =>
   api.post<{ detail: string }>("/auth/otp/resend/").then((r) => r.data);
+
+export interface UpdateMePayload {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  profile_visible?: boolean;
+  notify_email?: boolean;
+  notify_sms?: boolean;
+  notify_push?: boolean;
+  two_fa_enabled?: boolean;
+}
+
+export const updateMe = (payload: UpdateMePayload) =>
+  api.patch<User>("/auth/me/", payload).then((r) => r.data);
+
+export const changePassword = (oldPassword: string, newPassword: string) =>
+  api
+    .post<{ detail: string }>("/auth/me/change-password/", {
+      old_password: oldPassword,
+      new_password: newPassword,
+    })
+    .then((r) => r.data);
+
+export const exportMyData = () => api.get("/auth/me/export/").then((r) => r.data);
+
+export const requestAccountDeletion = (password: string) =>
+  api
+    .post<{ detail: string }>("/auth/me/request-deletion/", { password })
+    .then((r) => r.data);
