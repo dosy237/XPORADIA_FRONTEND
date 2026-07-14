@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { Text } from "react-native";
 
 import { DashboardPlaceholder } from "@/components/DashboardPlaceholder";
+import { AccreditationBanner } from "@/components/teacher/AccreditationBanner";
 import { Card } from "@/components/ui/Card";
 
 export default function TeacherDashboard() {
@@ -14,6 +15,8 @@ export default function TeacherDashboard() {
         "Cours particuliers et agenda (EP-05)",
       ]}
     >
+      <AccreditationBanner />
+
       <Card onPress={() => router.push("/(app)/teacher/certification")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">Ma certification</Text>
         <Text className="text-sm text-xporadia-text-secondary">

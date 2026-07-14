@@ -220,6 +220,7 @@ export default function TeacherProfileScreen() {
                 <Switch
                   value={availableForTutoring}
                   onValueChange={setAvailableForTutoring}
+                  disabled={!profile.is_documents_validated}
                   trackColor={{ false: Colors.border, true: Colors.navy }}
                   thumbColor={Colors.white}
                 />
@@ -229,10 +230,21 @@ export default function TeacherProfileScreen() {
                 <Switch
                   value={availableForEmployment}
                   onValueChange={setAvailableForEmployment}
+                  disabled={!profile.is_documents_validated}
                   trackColor={{ false: Colors.border, true: Colors.navy }}
                   thumbColor={Colors.white}
                 />
               </View>
+              {!profile.is_documents_validated && (
+                <Text className="text-xs text-xporadia-text-secondary -mt-2">
+                  Ces disponibilités s&apos;activeront une fois votre compte accrédité par Xporadia.
+                </Text>
+              )}
+              {mutation.isError && (
+                <Text className="text-xs text-xporadia-red">
+                  La mise à jour a échoué. Vérifiez que votre compte est accrédité.
+                </Text>
+              )}
 
               <View className="flex-row gap-3 mt-2">
                 <View className="flex-1">

@@ -8,9 +8,13 @@ export interface TeacherProfile {
   bio: string;
   available_for_tutoring: boolean;
   available_for_employment: boolean;
+  is_documents_validated: boolean;
+  preregistration_code_submitted: boolean;
 }
 
-export type TeacherProfileUpdate = Partial<TeacherProfile>;
+export type TeacherProfileUpdate = Partial<
+  Omit<TeacherProfile, "is_documents_validated" | "preregistration_code_submitted">
+>;
 
 export const fetchTeacherProfile = () =>
   api.get<TeacherProfile>("/auth/teacher-profile/").then((r) => r.data);

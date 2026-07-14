@@ -113,3 +113,8 @@ export const requestAccountDeletion = (password: string) =>
   api
     .post<{ detail: string }>("/auth/me/request-deletion/", { password })
     .then((r) => r.data);
+
+export const submitPreRegistrationCode = (code: string) =>
+  api
+    .post<{ detail: string }>("/auth/me/submit-preregistration-code/", { code })
+    .then((r) => r.data);
