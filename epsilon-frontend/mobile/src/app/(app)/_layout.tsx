@@ -28,6 +28,7 @@ export default function AppLayout() {
       <Stack.Screen name="director/dashboard" options={{ title: "Espace établissement" }} />
       <Stack.Screen name="director/profile" options={{ title: "Mon établissement" }} />
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />
+      <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />
     </Stack>
   );
 }
