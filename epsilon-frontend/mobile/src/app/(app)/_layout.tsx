@@ -75,8 +75,12 @@ export default function AppLayout() {
       <Stack.Screen name="teacher/module/[moduleId]" options={{ title: "Module de formation" }} />
       <Stack.Screen name="teacher/directory" options={{ title: "Annuaire des enseignants" }} />
       <Stack.Screen name="teacher/directory/[userId]" options={{ title: "Profil enseignant" }} />
+      <Stack.Screen name="teacher/my-classes" options={{ title: "Mes classes" }} />
       <Stack.Screen name="director/dashboard" options={{ title: "Espace établissement" }} />
       <Stack.Screen name="director/profile" options={{ title: "Mon établissement" }} />
+      <Stack.Screen name="director/academics/index" options={{ title: "Structure académique" }} />
+      <Stack.Screen name="director/academics/[departmentId]" options={{ title: "Département" }} />
+      <Stack.Screen name="director/academics/track/[trackId]" options={{ title: "Filière" }} />
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />
       <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />
       <Stack.Screen name="company/dashboard" options={{ title: "Espace entreprise" }} />

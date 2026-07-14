@@ -39,6 +39,13 @@ export default function TeacherDashboard() {
           Parcourez les profils de vos collègues et découvrez leurs formations.
         </Text>
       </Card>
+
+      <Card onPress={() => router.push("/(app)/teacher/my-classes")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Mes classes</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Classes dont vous êtes l&apos;enseignant titulaire.
+        </Text>
+      </Card>
     </DashboardPlaceholder>
   );
 }

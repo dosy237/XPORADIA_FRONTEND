@@ -20,6 +20,15 @@ export default function DirectorDashboard() {
           Nom, adresse, niveaux enseignés, effectif — visible par Xporadia et les partenaires.
         </Text>
       </Card>
+
+      <Card onPress={() => router.push("/(app)/director/academics")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">
+          Structure académique
+        </Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Départements, filières, classes et enseignants titulaires.
+        </Text>
+      </Card>
     </DashboardPlaceholder>
   );
 }
