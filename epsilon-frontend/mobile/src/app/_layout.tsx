@@ -5,6 +5,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
+import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { useAuthStore } from "@/store/authStore";
 
 SplashScreen.preventAutoHideAsync();
@@ -12,6 +13,11 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
 });
+
+function PushRegistration() {
+  usePushRegistration();
+  return null;
+}
 
 export default function RootLayout() {
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
@@ -24,6 +30,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PushRegistration />
       <Stack screenOptions={{ headerShown: false }} />
     </QueryClientProvider>
   );

@@ -33,3 +33,11 @@ export const fetchNotifications = () =>
 
 export const markNotificationRead = (id: string) =>
   api.post<AppNotification>(`/notifications/${id}/read/`).then((r) => r.data);
+
+export type DevicePlatform = "ios" | "android" | "web";
+
+export const registerDeviceToken = (token: string, platform: DevicePlatform) =>
+  api.post("/notifications/devices/register/", { token, platform }).then((r) => r.data);
+
+export const unregisterDeviceToken = (token: string) =>
+  api.post("/notifications/devices/unregister/", { token }).then((r) => r.data);
