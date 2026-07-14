@@ -66,6 +66,8 @@ export interface Subject {
   school_class: SchoolClass;
   name: string;
   teacher: HomeroomTeacher | null;
+  pending_invitation_email: string | null;
+  pending_invitation_token: string | null;
   created_at: string;
 }
 
@@ -84,3 +86,19 @@ export const deleteSubject = (subjectId: number) => api.delete(`/academics/subje
 
 export const fetchMyDedicatedSubjects = () =>
   api.get<Subject[]>("/academics/my-subjects/").then((r) => r.data);
+
+export interface TeacherInvitationPreview {
+  token: string;
+  email: string;
+  subject_name: string;
+  school_class_name: string;
+  school_name: string;
+  invited_by_name: string;
+  created_at: string;
+}
+
+export const fetchInvitationPreview = (token: string) =>
+  api.get<TeacherInvitationPreview>(`/academics/invitations/${token}/`).then((r) => r.data);
+
+export const acceptInvitation = (token: string) =>
+  api.post<Subject>(`/academics/invitations/${token}/accept/`).then((r) => r.data);

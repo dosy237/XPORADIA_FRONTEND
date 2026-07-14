@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Share, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -9,6 +10,13 @@ import { PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import * as academicsApi from "@/services/academics";
 import type { Subject } from "@/services/academics";
+
+function shareInvitation(token: string, email: string) {
+  const link = Linking.createURL(`/invite/${token}`);
+  Share.share({
+    message: `Vous êtes invité(e) à rejoindre Xporadia en tant qu'enseignant(e) dédié(e). Ouvrez ce lien (${email}) : ${link}`,
+  });
+}
 
 function SubjectCard({
   subject,
@@ -42,6 +50,21 @@ function SubjectCard({
           label={`Dédié(e) : ${subject.teacher.first_name} ${subject.teacher.last_name}`}
           variant="navy-subtle"
         />
+      ) : subject.pending_invitation_email ? (
+        <View className="gap-2">
+          <Chip label={`Invitation envoyée : ${subject.pending_invitation_email}`} variant="orange" />
+          <View className="flex-row items-center gap-2">
+            <Button
+              label="Partager le lien"
+              variant="secondary"
+              pill
+              onPress={() =>
+                subject.pending_invitation_token &&
+                shareInvitation(subject.pending_invitation_token, subject.pending_invitation_email!)
+              }
+            />
+          </View>
+        </View>
       ) : (
         <View className="flex-row items-center gap-2">
           <View className="flex-1">
@@ -138,7 +161,9 @@ export default function ClassSubjectsScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <Text className="text-xs text-xporadia-text-secondary leading-5">
-        Matières de cette classe. Ajoutez un enseignant dédié par matière — il sera notifié.
+        Matières de cette classe. Ajoutez un enseignant dédié par matière : s&apos;il a déjà un compte
+        Xporadia, il est notifié immédiatement ; sinon il reçoit une invitation par email pour créer
+        son compte.
       </Text>
 
       {isLoading ? (

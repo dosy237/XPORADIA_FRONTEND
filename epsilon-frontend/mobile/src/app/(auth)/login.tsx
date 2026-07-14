@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
 
@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { Input } from "@/components/ui/Input";
 import { SocialButton } from "@/components/ui/SocialButton";
+import * as academicsApi from "@/services/academics";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 
 export default function LoginScreen() {
+  const { inviteToken } = useLocalSearchParams<{ inviteToken?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -19,8 +21,22 @@ export default function LoginScreen() {
 
   const mutation = useMutation({
     mutationFn: () => authApi.login(email.trim().toLowerCase(), password),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       login({ user: data.user, access: data.access, refresh: data.refresh });
+
+      if (inviteToken) {
+        try {
+          const subject = await academicsApi.acceptInvitation(inviteToken);
+          router.replace({
+            pathname: "/(app)/teacher/subject/[subjectId]",
+            params: { subjectId: String(subject.id), editable: "1" },
+          });
+          return;
+        } catch {
+          router.replace({ pathname: "/invite/[token]", params: { token: inviteToken } });
+          return;
+        }
+      }
       router.replace("/(tabs)/me");
     },
     onError: () => setFormError("Email ou mot de passe incorrect."),

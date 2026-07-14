@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 import { AuthHeader } from "@/components/auth/AuthHeader";
@@ -47,16 +47,24 @@ const emptyChild = (): ChildForm => ({ firstName: "", classLevel: "" });
 const TOTAL_STEPS = 3;
 
 export default function RegisterScreen() {
+  const { inviteToken, prefillEmail } = useLocalSearchParams<{
+    inviteToken?: string;
+    prefillEmail?: string;
+  }>();
   const login = useAuthStore((s) => s.login);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(inviteToken ? 2 : 1);
 
-  const [status, setStatus] = useState<RegisterableRole | null>(null);
+  const [status, setStatus] = useState<RegisterableRole | null>(inviteToken ? "teacher" : null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefillEmail ?? "");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (prefillEmail) setEmail(prefillEmail);
+  }, [prefillEmail]);
 
   const [subjects, setSubjects] = useState("");
   const [experienceYears, setExperienceYears] = useState("");
@@ -118,7 +126,10 @@ export default function RegisterScreen() {
     },
     onSuccess: (data) => {
       login({ user: data.user, access: data.access, refresh: data.refresh });
-      router.replace("/(auth)/verify-otp");
+      router.replace({
+        pathname: "/(auth)/verify-otp",
+        params: { inviteToken: inviteToken ?? "" },
+      });
     },
     onError: (err: any) => {
       const detail =
