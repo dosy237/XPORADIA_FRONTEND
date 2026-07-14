@@ -56,5 +56,8 @@ export const fetchMyCertificationStatus = () =>
 export const fetchTrainingModules = (params?: { category?: string; target_level?: string }) =>
   api.get<TrainingModule[]>("/certification/modules/", { params }).then((r) => r.data);
 
+export const fetchTrainingModule = (id: string) =>
+  api.get<TrainingModule>(`/certification/modules/${id}/`).then((r) => r.data);
+
 export const fetchTrainingSessions = (params?: { module?: string; city?: string }) =>
   api.get<TrainingSession[]>("/certification/sessions/", { params }).then((r) => r.data);

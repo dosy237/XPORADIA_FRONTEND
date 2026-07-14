@@ -1,93 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
-import { ScrollView, Text, View } from "react-native";
+import { router } from "expo-router";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
+import { LevelBadge, LevelPath } from "@/components/certification/LevelBadge";
 import { Chip } from "@/components/ui/Chip";
 import { ClockIcon, MedalIcon } from "@/components/ui/Icon";
+import { CATEGORY_LABELS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
 import * as certificationApi from "@/services/certification";
-import type { CertificationLevel } from "@/services/certification";
-
-const LEVEL_ORDER: CertificationLevel[] = ["bronze", "silver", "gold"];
-
-const LEVEL_LABELS: Record<CertificationLevel, string> = {
-  bronze: "Bronze",
-  silver: "Argent",
-  gold: "Or",
-};
-
-const LEVEL_COLORS: Record<CertificationLevel, string> = {
-  bronze: Colors.bronze,
-  silver: Colors.silver,
-  gold: Colors.gold,
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  pedagogy: "Pédagogie générale",
-  didactics: "Didactique disciplinaire",
-  management: "Gestion de classe",
-  ethics: "Éthique professionnelle",
-  leadership: "Leadership pédagogique",
-};
-
-function LevelBadge({ level, size = 40 }: { level: CertificationLevel; size?: number }) {
-  return (
-    <View
-      className="items-center justify-center rounded-full border-2 border-white"
-      style={{ width: size, height: size, backgroundColor: LEVEL_COLORS[level] }}
-    >
-      <MedalIcon color="#FFFFFF" size={size * 0.5} />
-    </View>
-  );
-}
-
-function LevelPath({ current }: { current: CertificationLevel | null }) {
-  const currentIndex = current ? LEVEL_ORDER.indexOf(current) : -1;
-
-  return (
-    <View className="flex-row items-center justify-between px-2">
-      {LEVEL_ORDER.map((level, index) => {
-        const achieved = index <= currentIndex;
-        return (
-          <View key={level} className="items-center gap-2 flex-1">
-            <View className="flex-row items-center w-full">
-              {index > 0 && (
-                <View
-                  className={`h-0.5 flex-1 ${achieved ? "bg-xporadia-navy" : "bg-xporadia-border"}`}
-                />
-              )}
-              <View
-                className="h-8 w-8 rounded-full items-center justify-center"
-                style={{
-                  backgroundColor: achieved ? LEVEL_COLORS[level] : Colors.border,
-                }}
-              >
-                <MedalIcon color={achieved ? "#FFFFFF" : Colors.textSecondary} size={16} />
-              </View>
-              {index < LEVEL_ORDER.length - 1 && (
-                <View
-                  className={`h-0.5 flex-1 ${
-                    index < currentIndex ? "bg-xporadia-navy" : "bg-xporadia-border"
-                  }`}
-                />
-              )}
-            </View>
-            <Text
-              className={`text-xs font-semibold ${
-                achieved ? "text-xporadia-navy" : "text-xporadia-text-secondary"
-              }`}
-            >
-              {LEVEL_LABELS[level]}
-            </Text>
-          </View>
-        );
-      })}
-    </View>
-  );
-}
 
 function ModuleCard({ module }: { module: certificationApi.TrainingModule }) {
   return (
-    <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+    <Pressable
+      onPress={() => router.push(`/(app)/teacher/module/${module.id}`)}
+      accessibilityRole="button"
+      accessibilityLabel={`Voir le module ${module.title}`}
+      className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"
+    >
       <View className="flex-row items-start justify-between gap-2">
         <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
           {module.title}
@@ -109,7 +38,7 @@ function ModuleCard({ module }: { module: certificationApi.TrainingModule }) {
           {module.price.toLocaleString("fr-FR")} FCFA
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

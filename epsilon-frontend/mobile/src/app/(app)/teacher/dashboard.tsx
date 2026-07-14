@@ -27,6 +27,15 @@ export default function TeacherDashboard() {
           Matières, tarifs, disponibilités — visible par les directeurs et les parents.
         </Text>
       </Card>
+
+      <Card onPress={() => router.push("/(app)/teacher/directory")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">
+          Annuaire des enseignants
+        </Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Parcourez les profils de vos collègues et découvrez leurs formations.
+        </Text>
+      </Card>
     </DashboardPlaceholder>
   );
 }
