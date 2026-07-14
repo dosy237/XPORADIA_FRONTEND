@@ -10,7 +10,6 @@ export default function DirectorDashboard() {
       title="Gérez vos recrutements et vos stages."
       upcomingFeatures={[
         "Recherche d'enseignants certifiés (EP-03)",
-        "Offres d'emploi et candidatures reçues (EP-03)",
         "Suivi des stages de l'établissement (EP-04)",
       ]}
     >
@@ -36,6 +35,13 @@ export default function DirectorDashboard() {
         </Text>
         <Text className="text-sm text-xporadia-text-secondary">
           Cours, fiches, exercices et annales accessibles à tout le personnel.
+        </Text>
+      </Card>
+
+      <Card onPress={() => router.push("/(app)/director/job-listings")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Offres d&apos;emploi</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Publiez des offres, ciblez des profils "open to work" et gérez les candidatures.
         </Text>
       </Card>
     </DashboardPlaceholder>

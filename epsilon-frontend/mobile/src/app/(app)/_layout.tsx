@@ -28,11 +28,17 @@ export default function AppLayout() {
       <Stack.Screen name="teacher/my-classes/[classId]" options={{ title: "Matières de la classe" }} />
       <Stack.Screen name="teacher/my-subjects" options={{ title: "Mes matières" }} />
       <Stack.Screen name="teacher/subject/[subjectId]" options={{ title: "Cours & exercices" }} />
+      <Stack.Screen name="teacher/job-offers/index" options={{ title: "Offres d'emploi" }} />
+      <Stack.Screen name="teacher/job-offers/[listingId]" options={{ title: "Offre d'emploi" }} />
+      <Stack.Screen name="teacher/my-applications" options={{ title: "Mes candidatures" }} />
+      <Stack.Screen name="teacher/job-seeking" options={{ title: "Demande d'emploi" }} />
       <Stack.Screen name="director/dashboard" options={{ title: "Espace établissement" }} />
       <Stack.Screen name="director/profile" options={{ title: "Mon établissement" }} />
       <Stack.Screen name="director/academics/index" options={{ title: "Structure académique" }} />
       <Stack.Screen name="director/academics/[departmentId]" options={{ title: "Département" }} />
       <Stack.Screen name="director/academics/track/[trackId]" options={{ title: "Filière" }} />
+      <Stack.Screen name="director/job-listings/index" options={{ title: "Offres d'emploi" }} />
+      <Stack.Screen name="director/job-listings/[listingId]" options={{ title: "Candidatures" }} />
       <Stack.Screen name="library" options={{ title: "Bibliothèque numérique" }} />
       <Stack.Screen name="class-roster/[classId]" options={{ title: "Effectifs" }} />
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />
