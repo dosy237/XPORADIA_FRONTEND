@@ -27,6 +27,7 @@ export default function AppLayout() {
       <Stack.Screen name="teacher/my-classes/index" options={{ title: "Mes classes" }} />
       <Stack.Screen name="teacher/my-classes/[classId]" options={{ title: "Matières de la classe" }} />
       <Stack.Screen name="teacher/my-subjects" options={{ title: "Mes matières" }} />
+      <Stack.Screen name="teacher/subject/[subjectId]" options={{ title: "Cours & exercices" }} />
       <Stack.Screen name="director/dashboard" options={{ title: "Espace établissement" }} />
       <Stack.Screen name="director/profile" options={{ title: "Mon établissement" }} />
       <Stack.Screen name="director/academics/index" options={{ title: "Structure académique" }} />

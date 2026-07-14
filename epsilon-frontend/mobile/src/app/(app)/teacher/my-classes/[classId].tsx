@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
@@ -62,6 +62,19 @@ function SubjectCard({
           />
         </View>
       )}
+
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(app)/teacher/subject/[subjectId]",
+            params: { subjectId: String(subject.id), editable: "0" },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel={`Voir les cours et exercices de ${subject.name}`}
+      >
+        <Text className="text-xs font-semibold text-xporadia-orange">Voir les cours et exercices →</Text>
+      </Pressable>
     </View>
   );
 }

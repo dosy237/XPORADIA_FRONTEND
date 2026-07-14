@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { ScrollView, Text, View } from "react-native";
+import { router } from "expo-router";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Chip } from "@/components/ui/Chip";
 import { BookIcon } from "@/components/ui/Icon";
@@ -37,7 +38,18 @@ export default function MySubjectsScreen() {
         Matières où vous êtes l&apos;enseignant dédié.
       </Text>
       {subjects.map((subject) => (
-        <View key={subject.id} className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+        <Pressable
+          key={subject.id}
+          onPress={() =>
+            router.push({
+              pathname: "/(app)/teacher/subject/[subjectId]",
+              params: { subjectId: String(subject.id), editable: "1" },
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={`Gérer les cours et exercices de ${subject.name}`}
+          className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"
+        >
           <View className="flex-row items-center justify-between">
             <Text className="text-base font-semibold text-xporadia-text-primary">{subject.name}</Text>
             <Chip label={subject.school_class.school_year} variant="navy-subtle" />
@@ -46,7 +58,7 @@ export default function MySubjectsScreen() {
             {subject.school_class.name} · {subject.school_class.track.name} ·{" "}
             {subject.school_class.track.department.name}
           </Text>
-        </View>
+        </Pressable>
       ))}
     </ScrollView>
   );
