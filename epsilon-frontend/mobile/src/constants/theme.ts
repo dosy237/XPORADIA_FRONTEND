@@ -9,6 +9,8 @@ export const Colors = {
   green: "#00C07F",
   red: "#E53935",
   gold: "#F5A623",
+  bronze: "#B45309",
+  silver: "#94A3B8",
   purple: "#7B2FFF",
   textPrimary: "#0F172A",
   textSecondary: "#5A6A8A",

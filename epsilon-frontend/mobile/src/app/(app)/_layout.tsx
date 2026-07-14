@@ -25,6 +25,7 @@ export default function AppLayout() {
     >
       <Stack.Screen name="teacher/dashboard" options={{ title: "Espace enseignant" }} />
       <Stack.Screen name="teacher/profile" options={{ title: "Mon profil" }} />
+      <Stack.Screen name="teacher/certification" options={{ title: "Ma certification" }} />
       <Stack.Screen name="director/dashboard" options={{ title: "Espace établissement" }} />
       <Stack.Screen name="director/profile" options={{ title: "Mon établissement" }} />
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />

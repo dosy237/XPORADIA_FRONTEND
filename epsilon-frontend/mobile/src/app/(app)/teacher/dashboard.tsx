@@ -14,6 +14,13 @@ export default function TeacherDashboard() {
         "Cours particuliers et agenda (EP-05)",
       ]}
     >
+      <Card onPress={() => router.push("/(app)/teacher/certification")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Ma certification</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Statut de niveau, catalogue des modules et sessions de formation.
+        </Text>
+      </Card>
+
       <Card onPress={() => router.push("/(app)/teacher/profile")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">Mon profil</Text>
         <Text className="text-sm text-xporadia-text-secondary">

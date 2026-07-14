@@ -16,6 +16,8 @@ module.exports = {
           green: "#00C07F",
           red: "#E53935",
           gold: "#F5A623",
+          bronze: "#B45309",
+          silver: "#94A3B8",
           purple: "#7B2FFF",
           "text-primary": "#0F172A",
           "text-secondary": "#5A6A8A",
