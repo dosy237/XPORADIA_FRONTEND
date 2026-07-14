@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
@@ -11,6 +11,7 @@ import { BriefcaseIcon, MedalIcon, PinIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
+import * as commentsApi from "@/services/teacherComments";
 import * as directoryApi from "@/services/teacherDirectory";
 import { useAuthStore } from "@/store/authStore";
 
@@ -31,11 +32,30 @@ export default function FeedTeacherDetailScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [comment, setComment] = useState("");
   const [anonymous, setAnonymous] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: teacher, isLoading } = useQuery({
     queryKey: ["teacher-directory-detail", userId],
     queryFn: () => directoryApi.fetchTeacherDirectoryDetail(Number(userId)),
     enabled: !!userId,
+  });
+
+  const { data: comments } = useQuery({
+    queryKey: ["teacher-comments", userId],
+    queryFn: () => commentsApi.fetchTeacherComments(Number(userId)),
+    enabled: !!userId,
+  });
+
+  const postComment = useMutation({
+    mutationFn: () => commentsApi.postTeacherComment(Number(userId), comment, anonymous),
+    onSuccess: () => {
+      setComment("");
+      setAnonymous(false);
+      queryClient.invalidateQueries({ queryKey: ["teacher-comments", userId] });
+    },
+    onError: () => {
+      Alert.alert("Erreur", "Votre commentaire n'a pas pu être publié. Réessayez.");
+    },
   });
 
   if (isLoading || !teacher) {
@@ -149,8 +169,24 @@ export default function FeedTeacherDetailScreen() {
 
         <View className="bg-white rounded-3xl p-5 border border-xporadia-border gap-3">
           <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
-            Laisser un commentaire
+            Commentaires{comments && comments.length > 0 ? ` (${comments.length})` : ""}
           </Text>
+
+          {comments && comments.length > 0 ? (
+            <View className="gap-3">
+              {comments.map((item) => (
+                <View key={item.id} className="border-b border-xporadia-border pb-3 gap-1">
+                  <Text className="text-sm font-semibold text-xporadia-text-primary">
+                    {item.author_name}
+                  </Text>
+                  <Text className="text-sm text-xporadia-text-secondary leading-5">{item.body}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text className="text-xs text-xporadia-text-secondary">Aucun commentaire pour l&apos;instant.</Text>
+          )}
+
           {isAuthenticated ? (
             <>
               <Input
@@ -175,10 +211,8 @@ export default function FeedTeacherDetailScreen() {
               <Button
                 label="Publier"
                 pill
-                disabled={!comment}
-                onPress={() =>
-                  Alert.alert("Bientôt disponible", "Les commentaires arrivent prochainement.")
-                }
+                disabled={!comment || postComment.isPending}
+                onPress={() => postComment.mutate()}
               />
             </>
           ) : (

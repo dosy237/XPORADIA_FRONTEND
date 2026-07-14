@@ -18,6 +18,7 @@ export default function FeedStackLayout() {
     >
       <Stack.Screen name="index" options={{ title: "Fil d'actualité" }} />
       <Stack.Screen name="[userId]" options={{ title: "Profil enseignant" }} />
+      <Stack.Screen name="establishment/[userId]" options={{ title: "Établissement" }} />
     </Stack>
   );
 }
