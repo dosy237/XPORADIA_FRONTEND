@@ -103,7 +103,11 @@ function SubjectCard({
 }
 
 export default function ClassSubjectsScreen() {
-  const { classId } = useLocalSearchParams<{ classId: string }>();
+  const { classId, className, schoolYear } = useLocalSearchParams<{
+    classId: string;
+    className?: string;
+    schoolYear?: string;
+  }>();
   const queryClient = useQueryClient();
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
@@ -160,6 +164,21 @@ export default function ClassSubjectsScreen() {
 
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(app)/class-roster/[classId]",
+            params: { classId: String(classId), className: className ?? "", schoolYear: schoolYear ?? "" },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel="Gérer les effectifs de la classe"
+        className="bg-white rounded-2xl p-4 border border-xporadia-border flex-row items-center justify-between"
+      >
+        <Text className="text-sm font-semibold text-xporadia-text-primary">Effectifs de la classe</Text>
+        <Text className="text-xs font-semibold text-xporadia-orange">Gérer →</Text>
+      </Pressable>
+
       <Text className="text-xs text-xporadia-text-secondary leading-5">
         Matières de cette classe. Ajoutez un enseignant dédié par matière : s&apos;il a déjà un compte
         Xporadia, il est notifié immédiatement ; sinon il reçoit une invitation par email pour créer

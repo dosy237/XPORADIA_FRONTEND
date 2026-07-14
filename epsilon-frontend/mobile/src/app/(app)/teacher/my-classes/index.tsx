@@ -41,7 +41,16 @@ export default function MyClassesScreen() {
       {classes.map((schoolClass) => (
         <Pressable
           key={schoolClass.id}
-          onPress={() => router.push(`/(app)/teacher/my-classes/${schoolClass.id}`)}
+          onPress={() =>
+            router.push({
+              pathname: "/(app)/teacher/my-classes/[classId]",
+              params: {
+                classId: String(schoolClass.id),
+                className: schoolClass.name,
+                schoolYear: schoolClass.school_year,
+              },
+            })
+          }
           accessibilityRole="button"
           accessibilityLabel={`Gérer la classe ${schoolClass.name}`}
           className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"

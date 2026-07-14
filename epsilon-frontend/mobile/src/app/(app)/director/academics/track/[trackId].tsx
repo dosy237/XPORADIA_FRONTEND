@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -13,7 +13,21 @@ import type { SchoolClass } from "@/services/academics";
 
 function ClassCard({ schoolClass }: { schoolClass: SchoolClass }) {
   return (
-    <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+    <Pressable
+      onPress={() =>
+        router.push({
+          pathname: "/(app)/class-roster/[classId]",
+          params: {
+            classId: String(schoolClass.id),
+            className: schoolClass.name,
+            schoolYear: schoolClass.school_year,
+          },
+        })
+      }
+      accessibilityRole="button"
+      accessibilityLabel={`Gérer les effectifs de ${schoolClass.name}`}
+      className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"
+    >
       <View className="flex-row items-center justify-between">
         <Text className="text-base font-semibold text-xporadia-text-primary">
           {schoolClass.name}
@@ -33,7 +47,8 @@ function ClassCard({ schoolClass }: { schoolClass: SchoolClass }) {
           Effectif maximum : {schoolClass.capacity}
         </Text>
       ) : null}
-    </View>
+      <Text className="text-xs font-semibold text-xporadia-orange">Gérer les effectifs →</Text>
+    </Pressable>
   );
 }
 

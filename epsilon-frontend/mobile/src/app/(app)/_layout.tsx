@@ -34,6 +34,7 @@ export default function AppLayout() {
       <Stack.Screen name="director/academics/[departmentId]" options={{ title: "Département" }} />
       <Stack.Screen name="director/academics/track/[trackId]" options={{ title: "Filière" }} />
       <Stack.Screen name="library" options={{ title: "Bibliothèque numérique" }} />
+      <Stack.Screen name="class-roster/[classId]" options={{ title: "Effectifs" }} />
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />
       <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />
       <Stack.Screen name="company/dashboard" options={{ title: "Espace entreprise" }} />

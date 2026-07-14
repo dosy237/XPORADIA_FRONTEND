@@ -61,6 +61,11 @@ export const createClass = (payload: {
 export const fetchMyHomeroomClasses = () =>
   api.get<SchoolClass[]>("/academics/my-classes/").then((r) => r.data);
 
+// Réservé au directeur — utilisé pour choisir la classe cible lors d'un
+// passage/redoublement, où seul le directeur a autorité (voir backend).
+export const fetchAllMyClasses = () =>
+  api.get<SchoolClass[]>("/academics/classes/").then((r) => r.data);
+
 export interface Subject {
   id: number;
   school_class: SchoolClass;
@@ -102,3 +107,42 @@ export const fetchInvitationPreview = (token: string) =>
 
 export const acceptInvitation = (token: string) =>
   api.post<Subject>(`/academics/invitations/${token}/accept/`).then((r) => r.data);
+
+export interface ChildBasic {
+  id: number;
+  first_name: string;
+  class_level: string;
+}
+
+export const lookupChildrenByParentEmail = (parentEmail: string) =>
+  api
+    .get<ChildBasic[]>("/academics/children-lookup/", { params: { parent_email: parentEmail } })
+    .then((r) => r.data);
+
+export type EnrollmentStatus = "active" | "promoted" | "repeating" | "withdrawn";
+
+export interface Enrollment {
+  id: number;
+  child: ChildBasic;
+  school_class: SchoolClass;
+  status: EnrollmentStatus;
+  enrolled_at: string;
+  ended_at: string | null;
+}
+
+export const fetchClassRoster = (classId: number) =>
+  api.get<Enrollment[]>(`/academics/classes/${classId}/roster/`).then((r) => r.data);
+
+export const enrollChild = (classId: number, childId: number) =>
+  api.post<Enrollment>(`/academics/classes/${classId}/roster/`, { child_id: childId }).then((r) => r.data);
+
+export const transitionEnrollment = (
+  enrollmentId: number,
+  payload: { status: "promoted" | "repeating" | "withdrawn"; target_class_id?: number }
+) =>
+  api
+    .post<{ closed: Enrollment; new_enrollment: Enrollment | null }>(
+      `/academics/roster/${enrollmentId}/transition/`,
+      payload
+    )
+    .then((r) => r.data);
