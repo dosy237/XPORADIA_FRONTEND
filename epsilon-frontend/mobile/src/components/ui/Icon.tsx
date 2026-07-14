@@ -278,3 +278,34 @@ export function BookIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
     </Svg>
   );
 }
+
+interface HeartIconProps extends IconProps {
+  filled?: boolean;
+}
+
+export function HeartIcon({ size = 16, color = "#5A6A8A", filled = false }: HeartIconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? color : "none"}>
+      <Path
+        d="M12 20.5s-7.5-4.6-10-9.2C.6 8.2 2 5 5.3 4.3c2-.4 3.9.5 5 2.1a5.2 5.2 0 0 1 1.7-2c2.6-2 6.4-1 7.7 1.9 1.4 3.1-.2 6.3-2.7 9-2.1 2.2-4 3.5-5 4.2Z"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function DownloadIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 3v12m0 0-4-4m4 4 4-4M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}

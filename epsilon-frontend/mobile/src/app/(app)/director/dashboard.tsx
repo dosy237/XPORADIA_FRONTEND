@@ -29,6 +29,15 @@ export default function DirectorDashboard() {
           Départements, filières, classes et enseignants titulaires.
         </Text>
       </Card>
+
+      <Card onPress={() => router.push("/(app)/library")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">
+          Bibliothèque numérique
+        </Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Cours, fiches, exercices et annales accessibles à tout le personnel.
+        </Text>
+      </Card>
     </DashboardPlaceholder>
   );
 }

@@ -53,6 +53,15 @@ export default function TeacherDashboard() {
           Matières où vous êtes l&apos;enseignant dédié.
         </Text>
       </Card>
+
+      <Card onPress={() => router.push("/(app)/library")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">
+          Bibliothèque numérique
+        </Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Cours, fiches, exercices et annales de votre établissement.
+        </Text>
+      </Card>
     </DashboardPlaceholder>
   );
 }
