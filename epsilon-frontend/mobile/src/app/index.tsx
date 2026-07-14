@@ -1,12 +1,8 @@
 import { Redirect } from "expo-router";
 
-import { useAuthStore } from "@/store/authStore";
-import { dashboardPathForRole } from "@/utils/roleRouting";
-
+// L'application s'ouvre toujours sur la coquille à onglets (Fil d'actualité
+// / Certifications / Espace personnel), connecté ou non — le contenu de
+// chaque onglet s'adapte ensuite à l'état d'authentification.
 export default function Index() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const currentRole = useAuthStore((s) => s.currentRole);
-
-  if (!isAuthenticated) return <Redirect href="/(auth)/welcome" />;
-  return <Redirect href={dashboardPathForRole(currentRole)} />;
+  return <Redirect href="/(tabs)/feed" />;
 }

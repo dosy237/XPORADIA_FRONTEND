@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
-import { dashboardPathForRole } from "@/utils/roleRouting";
 
 export default function VerifyOtpScreen() {
   const [code, setCode] = useState("");
@@ -19,9 +18,9 @@ export default function VerifyOtpScreen() {
 
   const verifyMutation = useMutation({
     mutationFn: () => authApi.verifyOtp(code.trim()),
-    onSuccess: (data) => {
+    onSuccess: () => {
       updateUser({ is_verified: true });
-      router.replace(dashboardPathForRole(data.user.primary_role));
+      router.replace("/(tabs)/me");
     },
     onError: () => setError("Code invalide ou expiré."),
   });
@@ -65,7 +64,7 @@ export default function VerifyOtpScreen() {
             </Text>
             <Text
               className="text-xporadia-text-secondary"
-              onPress={() => user && router.replace(dashboardPathForRole(user.primary_role))}
+              onPress={() => user && router.replace("/(tabs)/me")}
             >
               Vérifier plus tard
             </Text>

@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/Input";
 import { SocialButton } from "@/components/ui/SocialButton";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
-import { dashboardPathForRole } from "@/utils/roleRouting";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -22,7 +21,7 @@ export default function LoginScreen() {
     mutationFn: () => authApi.login(email.trim().toLowerCase(), password),
     onSuccess: (data) => {
       login({ user: data.user, access: data.access, refresh: data.refresh });
-      router.replace(dashboardPathForRole(data.user.primary_role));
+      router.replace("/(tabs)/me");
     },
     onError: () => setFormError("Email ou mot de passe incorrect."),
   });
