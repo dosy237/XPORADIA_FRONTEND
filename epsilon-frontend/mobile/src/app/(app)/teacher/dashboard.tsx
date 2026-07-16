@@ -83,6 +83,13 @@ export default function TeacherDashboard() {
           Privilège des enseignants Or — publiez une demande à tout moment.
         </Text>
       </Card>
+
+      <Card onPress={() => router.push("/(app)/teacher/tutoring-sessions")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Cours particuliers</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Réservations reçues des parents, paiement Mobile Money séquestré.
+        </Text>
+      </Card>
     </DashboardPlaceholder>
   );
 }

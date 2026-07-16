@@ -37,6 +37,7 @@ export default function AppLayout() {
       <Stack.Screen name="teacher/job-offers/[listingId]" options={{ title: "Offre d'emploi" }} />
       <Stack.Screen name="teacher/my-applications" options={{ title: "Mes candidatures" }} />
       <Stack.Screen name="teacher/job-seeking" options={{ title: "Demande d'emploi" }} />
+      <Stack.Screen name="teacher/tutoring-sessions" options={{ title: "Cours particuliers" }} />
       <Stack.Screen name="director/dashboard" options={{ title: "Espace établissement" }} />
       <Stack.Screen name="director/profile" options={{ title: "Mon établissement" }} />
       <Stack.Screen name="director/academics/index" options={{ title: "Structure académique" }} />
@@ -55,6 +56,9 @@ export default function AppLayout() {
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />
       <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />
       <Stack.Screen name="parent/child-space/[childId]" options={{ title: "Espace élève" }} />
+      <Stack.Screen name="parent/find-tutor/index" options={{ title: "Trouver un enseignant" }} />
+      <Stack.Screen name="parent/find-tutor/[teacherId]" options={{ title: "Réserver une séance" }} />
+      <Stack.Screen name="parent/my-tutoring-sessions" options={{ title: "Mes cours particuliers" }} />
       <Stack.Screen name="company/dashboard" options={{ title: "Espace entreprise" }} />
       <Stack.Screen name="company/profile" options={{ title: "Mon entreprise" }} />
       <Stack.Screen name="company/internship-offers/index" options={{ title: "Offres de stage" }} />

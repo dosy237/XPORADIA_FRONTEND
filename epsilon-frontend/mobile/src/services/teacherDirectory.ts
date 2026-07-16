@@ -12,6 +12,9 @@ export interface TeacherDirectoryCard {
   available_for_tutoring: boolean;
   available_for_employment: boolean;
   current_level: CertificationLevel | null;
+  // Uniquement révélé quand l'appelant est un parent — voir
+  // TeacherTutoringCardSerializer côté backend.
+  hourly_rate?: string;
 }
 
 export interface TeacherDirectoryDetail extends TeacherDirectoryCard {
@@ -26,7 +29,10 @@ export interface Paginated<T> {
   results: T[];
 }
 
-export const fetchTeacherDirectory = (params?: { subject?: string }) =>
+export const fetchTeacherDirectory = (params?: {
+  subject?: string;
+  available_for_tutoring?: "true";
+}) =>
   api
     .get<Paginated<TeacherDirectoryCard>>("/auth/teachers/", { params })
     .then((r) => r.data.results);
