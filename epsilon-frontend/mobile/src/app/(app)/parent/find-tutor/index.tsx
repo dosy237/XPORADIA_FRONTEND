@@ -43,13 +43,15 @@ function TutorCard({ teacher }: { teacher: TeacherDirectoryCard }) {
 
 export default function FindTutorScreen() {
   const [subject, setSubject] = useState("");
+  const [location, setLocation] = useState("");
 
   const { data: teachers, isLoading } = useQuery({
-    queryKey: ["find-tutor", subject],
+    queryKey: ["find-tutor", subject, location],
     queryFn: () =>
       directoryApi.fetchTeacherDirectory({
         available_for_tutoring: "true",
         ...(subject ? { subject } : {}),
+        ...(location ? { location } : {}),
       }),
   });
 
@@ -63,6 +65,12 @@ export default function FindTutorScreen() {
         value={subject}
         onChangeText={setSubject}
         accessibilityLabel="Rechercher un enseignant par matière"
+      />
+      <Input
+        placeholder="Rechercher par commune (ex. Cocody)"
+        value={location}
+        onChangeText={setLocation}
+        accessibilityLabel="Rechercher un enseignant par localisation"
       />
 
       {isLoading ? (

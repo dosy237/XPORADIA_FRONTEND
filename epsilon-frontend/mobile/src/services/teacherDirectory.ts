@@ -32,6 +32,7 @@ export interface Paginated<T> {
 export const fetchTeacherDirectory = (params?: {
   subject?: string;
   available_for_tutoring?: "true";
+  location?: string;
 }) =>
   api
     .get<Paginated<TeacherDirectoryCard>>("/auth/teachers/", { params })

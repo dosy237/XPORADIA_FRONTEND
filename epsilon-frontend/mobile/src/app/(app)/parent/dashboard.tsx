@@ -8,7 +8,7 @@ export default function ParentDashboard() {
   return (
     <DashboardPlaceholder
       title="Trouvez des cours particuliers certifiés pour vos enfants."
-      upcomingFeatures={["Recherche géolocalisée d'enseignants (EP-05)"]}
+      upcomingFeatures={["Recherche par distance GPS autour de vous (EP-05)"]}
     >
       <Card onPress={() => router.push("/(app)/parent/profile")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">Mes enfants</Text>
