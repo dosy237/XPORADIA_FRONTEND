@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -40,6 +40,15 @@ function ExerciseCard({
       <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
         {exercise.instructions}
       </Text>
+
+      {exercise.status !== "draft" && (
+        <Button
+          label="Voir les copies"
+          variant="secondary"
+          pill
+          onPress={() => router.push(`/(app)/teacher/exercise-submissions/${exercise.id}`)}
+        />
+      )}
 
       {editable && (
         <View className="flex-row items-center gap-2 mt-1">

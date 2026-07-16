@@ -47,3 +47,54 @@ export const updateExercise = (exerciseId: string, payload: Partial<{ status: Ex
 
 export const deleteExercise = (exerciseId: string) =>
   api.delete(`/virtual-classes/exercises/${exerciseId}/`);
+
+export type SubmissionStatus = "submitted" | "graded";
+
+export interface Submission {
+  id: number;
+  exercise: string;
+  exercise_title: string;
+  child: { id: number; first_name: string };
+  content: string;
+  attachments: string[];
+  status: SubmissionStatus;
+  grade: string | null;
+  feedback: string;
+  submitted_at: string;
+  graded_at: string | null;
+}
+
+export interface ChildExercise {
+  id: string;
+  title: string;
+  instructions: string;
+  attachments: string[];
+  deadline: string | null;
+  published_at: string | null;
+  my_submission: Submission | null;
+}
+
+export interface ChildSubject {
+  id: number;
+  name: string;
+  school_class_name: string;
+  exercises: ChildExercise[];
+}
+
+export const fetchChildSubjects = (childId: number) =>
+  api.get<ChildSubject[]>(`/virtual-classes/children/${childId}/subjects/`).then((r) => r.data);
+
+export const fetchExerciseSubmissions = (exerciseId: string) =>
+  api.get<Submission[]>(`/virtual-classes/exercises/${exerciseId}/submissions/`).then((r) => r.data);
+
+export const submitExercise = (exerciseId: string, payload: { child_id: number; content: string }) =>
+  api.post<Submission>(`/virtual-classes/exercises/${exerciseId}/submissions/`, payload).then((r) => r.data);
+
+export const fetchSubmission = (id: number) =>
+  api.get<Submission>(`/virtual-classes/submissions/${id}/`).then((r) => r.data);
+
+export const gradeSubmission = (id: number, payload: { grade: number; feedback: string }) =>
+  api.patch<Submission>(`/virtual-classes/submissions/${id}/`, payload).then((r) => r.data);
+
+export const fetchMySubmissions = () =>
+  api.get<Submission[]>("/virtual-classes/my-submissions/").then((r) => r.data);

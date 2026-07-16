@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -94,6 +95,14 @@ function ChildCard({ child, onDelete, deleting }: {
           ))}
         </View>
       )}
+      <View className="pl-[50px]">
+        <Button
+          label="Espace élève"
+          variant="secondary"
+          pill
+          onPress={() => router.push(`/(app)/parent/child-space/${child.id}`)}
+        />
+      </View>
     </Card>
   );
 }

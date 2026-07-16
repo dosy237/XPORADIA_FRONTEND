@@ -29,6 +29,10 @@ export default function AppLayout() {
       <Stack.Screen name="teacher/my-classes/[classId]" options={{ title: "Matières de la classe" }} />
       <Stack.Screen name="teacher/my-subjects" options={{ title: "Mes matières" }} />
       <Stack.Screen name="teacher/subject/[subjectId]" options={{ title: "Cours & exercices" }} />
+      <Stack.Screen
+        name="teacher/exercise-submissions/[exerciseId]"
+        options={{ title: "Copies des élèves" }}
+      />
       <Stack.Screen name="teacher/job-offers/index" options={{ title: "Offres d'emploi" }} />
       <Stack.Screen name="teacher/job-offers/[listingId]" options={{ title: "Offre d'emploi" }} />
       <Stack.Screen name="teacher/my-applications" options={{ title: "Mes candidatures" }} />
@@ -50,6 +54,7 @@ export default function AppLayout() {
       <Stack.Screen name="class-roster/[classId]" options={{ title: "Effectifs" }} />
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />
       <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />
+      <Stack.Screen name="parent/child-space/[childId]" options={{ title: "Espace élève" }} />
       <Stack.Screen name="company/dashboard" options={{ title: "Espace entreprise" }} />
       <Stack.Screen name="company/profile" options={{ title: "Mon entreprise" }} />
       <Stack.Screen name="company/internship-offers/index" options={{ title: "Offres de stage" }} />
