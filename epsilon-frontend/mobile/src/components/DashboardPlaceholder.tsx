@@ -6,11 +6,11 @@ import { useAuthStore } from "@/store/authStore";
 
 interface DashboardPlaceholderProps {
   title: string;
-  upcomingFeatures: string[];
+  upcomingFeatures?: string[];
   children?: ReactNode;
 }
 
-export function DashboardPlaceholder({ title, upcomingFeatures, children }: DashboardPlaceholderProps) {
+export function DashboardPlaceholder({ title, upcomingFeatures = [], children }: DashboardPlaceholderProps) {
   const user = useAuthStore((s) => s.user);
 
   return (
@@ -33,14 +33,16 @@ export function DashboardPlaceholder({ title, upcomingFeatures, children }: Dash
 
       {children}
 
-      <Card className="gap-2">
-        <Text className="font-semibold text-xporadia-text-primary">À venir sur ce tableau de bord</Text>
-        {upcomingFeatures.map((feature) => (
-          <Text key={feature} className="text-xporadia-text-secondary">
-            • {feature}
-          </Text>
-        ))}
-      </Card>
+      {upcomingFeatures.length > 0 && (
+        <Card className="gap-2">
+          <Text className="font-semibold text-xporadia-text-primary">À venir sur ce tableau de bord</Text>
+          {upcomingFeatures.map((feature) => (
+            <Text key={feature} className="text-xporadia-text-secondary">
+              • {feature}
+            </Text>
+          ))}
+        </Card>
+      )}
     </View>
   );
 }

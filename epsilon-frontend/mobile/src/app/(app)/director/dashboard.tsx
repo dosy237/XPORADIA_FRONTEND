@@ -6,10 +6,16 @@ import { Card } from "@/components/ui/Card";
 
 export default function DirectorDashboard() {
   return (
-    <DashboardPlaceholder
-      title="Gérez vos recrutements et vos stages."
-      upcomingFeatures={["Recherche d'enseignants certifiés (EP-03)"]}
-    >
+    <DashboardPlaceholder title="Gérez vos recrutements et vos stages.">
+      <Card onPress={() => router.push("/(app)/director/teacher-search")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">
+          Recherche d&apos;enseignants certifiés
+        </Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Parcourez les profils avant de cibler un enseignant dans une offre d&apos;emploi.
+        </Text>
+      </Card>
+
       <Card onPress={() => router.push("/(app)/director/profile")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">Mon établissement</Text>
         <Text className="text-sm text-xporadia-text-secondary">

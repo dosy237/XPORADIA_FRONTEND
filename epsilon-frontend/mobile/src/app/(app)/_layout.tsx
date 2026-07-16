@@ -45,6 +45,8 @@ export default function AppLayout() {
       <Stack.Screen name="director/academics/track/[trackId]" options={{ title: "Filière" }} />
       <Stack.Screen name="director/job-listings/index" options={{ title: "Offres d'emploi" }} />
       <Stack.Screen name="director/job-listings/[listingId]" options={{ title: "Candidatures" }} />
+      <Stack.Screen name="director/teacher-search/index" options={{ title: "Recherche d'enseignants" }} />
+      <Stack.Screen name="director/teacher-search/[userId]" options={{ title: "Profil enseignant" }} />
       <Stack.Screen name="director/internship-offers/index" options={{ title: "Offres de stage" }} />
       <Stack.Screen name="director/internship-offers/[offerId]" options={{ title: "Offre de stage" }} />
       <Stack.Screen
@@ -61,6 +63,8 @@ export default function AppLayout() {
       <Stack.Screen name="parent/my-tutoring-sessions" options={{ title: "Mes cours particuliers" }} />
       <Stack.Screen name="company/dashboard" options={{ title: "Espace entreprise" }} />
       <Stack.Screen name="company/profile" options={{ title: "Mon entreprise" }} />
+      <Stack.Screen name="company/teacher-search/index" options={{ title: "Recherche d'enseignants" }} />
+      <Stack.Screen name="company/teacher-search/[userId]" options={{ title: "Profil enseignant" }} />
       <Stack.Screen name="company/internship-offers/index" options={{ title: "Offres de stage" }} />
       <Stack.Screen name="company/internship-offers/[offerId]" options={{ title: "Candidatures" }} />
       <Stack.Screen name="internship-convention/index" options={{ title: "Conventions de stage" }} />

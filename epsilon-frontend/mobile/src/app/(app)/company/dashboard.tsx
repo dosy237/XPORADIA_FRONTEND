@@ -6,12 +6,16 @@ import { Card } from "@/components/ui/Card";
 
 export default function CompanyDashboard() {
   return (
-    <DashboardPlaceholder
-      title="Publiez des offres de stage et évaluez vos stagiaires."
-      upcomingFeatures={[
-        "Recherche d'enseignants certifiés pour vos formations (EP-03)",
-      ]}
-    >
+    <DashboardPlaceholder title="Publiez des offres de stage et évaluez vos stagiaires.">
+      <Card onPress={() => router.push("/(app)/company/teacher-search")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">
+          Recherche d&apos;enseignants certifiés
+        </Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Parcourez les profils avant de cibler un enseignant dans une offre d&apos;emploi.
+        </Text>
+      </Card>
+
       <Card onPress={() => router.push("/(app)/company/profile")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">Mon entreprise</Text>
         <Text className="text-sm text-xporadia-text-secondary">
