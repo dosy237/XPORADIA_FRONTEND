@@ -13,6 +13,27 @@ export interface TrainingModule {
   duration_hours: number;
   price: number;
   target_level: CertificationLevel;
+  has_online_exam: boolean;
+}
+
+export type ExamQuestionType = "mcq" | "open" | "tf";
+
+export interface ExamQuestion {
+  id: string;
+  question_type: ExamQuestionType;
+  text: string;
+  options: string[];
+  points: number;
+}
+
+export interface ExamAttemptResult {
+  id: string;
+  module: TrainingModule;
+  score_total: string;
+  status: string;
+  submitted_at: string;
+  leveled_up: boolean;
+  new_level: CertificationLevel | null;
 }
 
 export interface TrainingSession {
@@ -61,3 +82,11 @@ export const fetchTrainingModule = (id: string) =>
 
 export const fetchTrainingSessions = (params?: { module?: string; city?: string }) =>
   api.get<TrainingSession[]>("/certification/sessions/", { params }).then((r) => r.data);
+
+export const fetchOnlineExamQuestions = (moduleId: string) =>
+  api.get<ExamQuestion[]>(`/certification/modules/${moduleId}/online-exam/`).then((r) => r.data);
+
+export const submitOnlineExam = (moduleId: string, answers: Record<string, string>) =>
+  api
+    .post<ExamAttemptResult>(`/certification/modules/${moduleId}/online-exam/submit/`, { answers })
+    .then((r) => r.data);

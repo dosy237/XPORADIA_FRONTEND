@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Alert, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
@@ -89,6 +89,15 @@ export default function ModuleDetailScreen() {
             </View>
           ))}
         </View>
+      )}
+
+      {module.has_online_exam && (
+        <Button
+          label="Passer l'examen en ligne"
+          variant="navy"
+          pill
+          onPress={() => router.push(`/(app)/teacher/online-exam/${module.id}`)}
+        />
       )}
 
       <Button
