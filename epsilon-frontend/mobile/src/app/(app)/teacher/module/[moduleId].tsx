@@ -1,13 +1,104 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { ClockIcon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/Input";
 import { CATEGORY_LABELS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
 import * as certificationApi from "@/services/certification";
+import type { MobileOperator, TrainingSession } from "@/services/certification";
+
+const OPERATOR_LABELS: Record<MobileOperator, string> = {
+  orange: "Orange Money",
+  wave: "Wave",
+  mtn: "MTN MoMo",
+};
+
+function SessionCard({
+  session,
+  isEnrolled,
+}: {
+  session: TrainingSession;
+  isEnrolled: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const [enrolling, setEnrolling] = useState(false);
+  const [operator, setOperator] = useState<MobileOperator | null>(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  const enrollMutation = useMutation({
+    mutationFn: () => certificationApi.enrollInSession(session.id, { operator: operator!, phone_number: phoneNumber }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["training-sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["my-session-enrollments"] });
+      setEnrolling(false);
+    },
+  });
+
+  return (
+    <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+      <View className="flex-row items-center justify-between">
+        <Text className="text-sm font-semibold text-xporadia-text-primary">
+          {session.city} · {new Date(session.date).toLocaleDateString("fr-FR")}
+        </Text>
+        {isEnrolled && <Chip label="Inscrit(e)" variant="navy" />}
+      </View>
+      <Text className="text-xs text-xporadia-text-secondary">
+        {session.location} · {session.places_left} places restantes
+      </Text>
+
+      {!isEnrolled && !session.is_full && (
+        enrolling ? (
+          <View className="gap-2 mt-1">
+            <View className="flex-row flex-wrap gap-2">
+              {(["orange", "wave", "mtn"] as MobileOperator[]).map((op) => (
+                <Pressable
+                  key={op}
+                  onPress={() => setOperator(op)}
+                  className={`rounded-full border px-3 py-1.5 ${
+                    operator === op ? "bg-xporadia-navy border-xporadia-navy" : "bg-white border-xporadia-border"
+                  }`}
+                >
+                  <Text className={`text-xs ${operator === op ? "text-white font-semibold" : "text-xporadia-text-primary"}`}>
+                    {OPERATOR_LABELS[op]}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <Input
+              placeholder="Numéro de téléphone"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              keyboardType="phone-pad"
+            />
+            {enrollMutation.isError && (
+              <Text className="text-xs text-xporadia-red">
+                Une erreur est survenue. Vérifiez les informations saisies.
+              </Text>
+            )}
+            <Button
+              label={`Payer ${session.module.price.toLocaleString("fr-FR")} FCFA et s'inscrire`}
+              pill
+              disabled={!operator || !phoneNumber}
+              loading={enrollMutation.isPending}
+              onPress={() => enrollMutation.mutate()}
+            />
+          </View>
+        ) : (
+          <Button label="S'inscrire à cette session" variant="secondary" pill onPress={() => setEnrolling(true)} />
+        )
+      )}
+
+      {!isEnrolled && session.is_full && (
+        <Text className="text-xs text-xporadia-text-secondary">Session complète.</Text>
+      )}
+    </View>
+  );
+}
 
 export default function ModuleDetailScreen() {
   const { moduleId, from } = useLocalSearchParams<{ moduleId: string; from?: string }>();
@@ -22,6 +113,13 @@ export default function ModuleDetailScreen() {
     queryFn: () => certificationApi.fetchTrainingSessions({ module: moduleId }),
     enabled: !!moduleId,
   });
+
+  const { data: myEnrollments } = useQuery({
+    queryKey: ["my-session-enrollments"],
+    queryFn: certificationApi.fetchMySessionEnrollments,
+  });
+
+  const enrolledSessionIds = new Set((myEnrollments ?? []).map((e) => e.session.id));
 
   if (isLoading || !module) {
     return (
@@ -75,22 +173,6 @@ export default function ModuleDetailScreen() {
         </View>
       </View>
 
-      {sessions && sessions.length > 0 && (
-        <View className="gap-3">
-          <Text className="text-base font-bold text-xporadia-navy">Prochaines sessions</Text>
-          {sessions.map((session) => (
-            <View key={session.id} className="bg-white rounded-2xl p-4 border border-xporadia-border gap-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">
-                {session.city} · {new Date(session.date).toLocaleDateString("fr-FR")}
-              </Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                {session.location} · {session.places_left} places restantes
-              </Text>
-            </View>
-          ))}
-        </View>
-      )}
-
       {module.has_online_exam && (
         <Button
           label="Passer l'examen en ligne"
@@ -100,13 +182,18 @@ export default function ModuleDetailScreen() {
         />
       )}
 
-      <Button
-        label="S'inscrire à ce module"
-        pill
-        onPress={() =>
-          Alert.alert("Bientôt disponible", "L'inscription et le paiement en ligne arrivent prochainement.")
-        }
-      />
+      {sessions && sessions.length > 0 ? (
+        <View className="gap-3">
+          <Text className="text-base font-bold text-xporadia-navy">Sessions en présentiel</Text>
+          {sessions.map((session) => (
+            <SessionCard key={session.id} session={session} isEnrolled={enrolledSessionIds.has(session.id)} />
+          ))}
+        </View>
+      ) : (
+        <Text className="text-xs text-xporadia-text-secondary text-center py-4">
+          Aucune session en présentiel programmée pour l&apos;instant pour ce module.
+        </Text>
+      )}
     </ScrollView>
   );
 }

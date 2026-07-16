@@ -92,6 +92,18 @@ export default function TeacherCertificationScreen() {
           )}
         </View>
 
+        <Pressable
+          onPress={() => router.push("/(app)/teacher/my-session-enrollments")}
+          accessibilityRole="button"
+          accessibilityLabel="Voir mes inscriptions aux sessions de formation"
+          className="bg-white rounded-2xl p-4 border border-xporadia-border flex-row items-center justify-between"
+        >
+          <Text className="text-sm font-semibold text-xporadia-text-primary">
+            Mes inscriptions aux sessions
+          </Text>
+          <Text className="text-xs text-xporadia-navy">Voir →</Text>
+        </Pressable>
+
         {status.certifications.length > 0 && (
           <View className="gap-3">
             <Text className="text-base font-bold text-xporadia-navy">Mes certifications</Text>

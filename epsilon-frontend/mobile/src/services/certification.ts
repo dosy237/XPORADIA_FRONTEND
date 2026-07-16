@@ -90,3 +90,33 @@ export const submitOnlineExam = (moduleId: string, answers: Record<string, strin
   api
     .post<ExamAttemptResult>(`/certification/modules/${moduleId}/online-exam/submit/`, { answers })
     .then((r) => r.data);
+
+export type MobileOperator = "orange" | "wave" | "mtn";
+
+export interface TrainingPayment {
+  id: string;
+  amount: number;
+  status: string;
+  operator: MobileOperator;
+  tx_ref: string;
+}
+
+export interface SessionEnrollment {
+  id: number;
+  session: TrainingSession;
+  payment_status: "pending" | "paid" | "refunded";
+  attendance_score: number | null;
+  payment: TrainingPayment | null;
+  enrolled_at: string;
+}
+
+export const fetchMySessionEnrollments = () =>
+  api.get<SessionEnrollment[]>("/certification/my-enrollments/").then((r) => r.data);
+
+export const enrollInSession = (
+  sessionId: string,
+  payload: { operator: MobileOperator; phone_number: string }
+) =>
+  api
+    .post<SessionEnrollment>(`/certification/sessions/${sessionId}/enroll/`, payload)
+    .then((r) => r.data);
