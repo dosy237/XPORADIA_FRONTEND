@@ -6,6 +6,12 @@
 **Slogan :** L'innovation au service de l'éducation
 **Couleurs principales :** Navy `#1B2A4A` · Orange `#E8510A` · Fond `#F5F6F7`
 
+> ⚠️ **Ce dossier `README.md` documente `web/`**, le tout premier scaffold
+> React/Vite (une seule initialisation, jamais poursuivie). **L'application
+> réellement développée et à jour est `mobile/`** (Expo/React Native) —
+> toutes les fonctionnalités de la plateforme y sont implémentées. Voir
+> **[`mobile/README.md`](./mobile/README.md)** pour la lancer.
+
 ---
 
 ## Table des matières

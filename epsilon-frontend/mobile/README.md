@@ -1,56 +1,126 @@
-# Welcome to your Expo app 👋
+# ε Xporadia — Mobile (Expo / React Native)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> Application mobile Xporadia — accessible aux enseignants, directeurs
+> d'établissement, parents et entreprises.
+> **Expo · React Native · Expo Router · NativeWind (Tailwind) · React Query · Zustand**
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Démarrage rapide
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Ce projet a besoin du **backend Django déjà lancé et rempli de données de
+démo** — voir le README du dépôt `epsilon-backend` (section "Démarrage
+rapide"), en résumé :
 
 ```bash
-npm run reset-project
+# Dans epsilon-backend/
+python manage.py migrate
+python manage.py seed_demo_data
+python manage.py runserver        # http://localhost:8000
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Puis, ici, dans `epsilon-frontend/mobile/` :
 
-### Other setup steps
+```bash
+# 1. Installer les dépendances
+npm install
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+# 2. Variables d'environnement (facultatif si le backend tourne sur localhost:8000)
+cp .env.example .env
+# .env contient uniquement l'URL de l'API — voir la section dédiée ci-dessous
 
-## Learn more
+# 3. Lancer l'app en mode web (le plus simple pour tester rapidement)
+npx expo start --web
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+L'app s'ouvre sur http://localhost:19006. Connectez-vous avec l'un des
+comptes de démo créés par `seed_demo_data` côté backend (mot de passe commun
+`Xporadia2026!`) — la liste complète des comptes et de ce qu'ils contiennent
+est dans `SEED_DATA.md` à la racine du dépôt backend.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Autres cibles (Android / iOS)
 
-## Join the community
+```bash
+npx expo start           # menu interactif (web, Android, iOS, Expo Go)
+npx expo start --android # émulateur Android
+npx expo start --ios     # simulateur iOS
+```
 
-Join our community of developers creating universal apps.
+> Sur émulateur Android, `localhost` depuis la machine hôte ne pointe pas
+> vers le même hôte que depuis l'émulateur — voir `.env.example` pour l'URL
+> à utiliser (`10.0.2.2`) et adaptez `EXPO_PUBLIC_API_URL` en conséquence.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+## Variables d'environnement
+
+Un seul fichier, `.env`, avec une seule variable :
+
+```bash
+# Simulateur iOS      -> http://localhost:8000/api/v1
+# Émulateur Android   -> http://10.0.2.2:8000/api/v1
+# Appareil physique    -> http://<IP-locale-de-votre-machine>:8000/api/v1
+EXPO_PUBLIC_API_URL=http://localhost:8000/api/v1
+```
+
+Si vous testez uniquement en mode web (`npx expo start --web`) sur la même
+machine que le backend, la valeur par défaut (`localhost:8000`) fonctionne
+sans rien changer — `.env` est alors facultatif.
+
+---
+
+## Structure du projet
+
+```
+mobile/
+├── src/
+│   ├── app/                    # Écrans — routing par fichiers (Expo Router)
+│   │   ├── (auth)/             # Connexion, inscription, vérification OTP
+│   │   └── (app)/              # Application authentifiée, un dossier par rôle
+│   │       ├── teacher/        # Espace enseignant
+│   │       ├── director/       # Espace directeur / établissement
+│   │       ├── parent/         # Espace parent
+│   │       └── company/        # Espace entreprise
+│   ├── components/              # Composants UI réutilisables
+│   ├── services/                # Appels API (un fichier par domaine métier)
+│   ├── store/                    # État global (Zustand — auth notamment)
+│   └── constants/                # Constantes partagées (thème, libellés...)
+├── app.json                     # Configuration Expo
+├── package.json
+└── .env.example
+```
+
+Chaque écran d'un rôle vit dans `(app)/<rôle>/...` et est enregistré dans
+`(app)/_layout.tsx` (`<Stack.Screen name="..." />`). Les appels réseau
+passent systématiquement par un fichier de `src/services/`, jamais
+directement dans un écran.
+
+---
+
+## Comptes de démo
+
+Voir **`SEED_DATA.md`** dans le dépôt backend pour la liste complète. En
+bref, un compte par profil type :
+
+| Rôle | Email | Mot de passe |
+|---|---|---|
+| Enseignant (certifié Or) | `aminata.teacher@xporadia.ci` | `Xporadia2026!` |
+| Directeur d'établissement | `kouassi.director@xporadia.ci` | `Xporadia2026!` |
+| Parent | `fatou.parent@xporadia.ci` | `Xporadia2026!` |
+| Entreprise | `contact.entreprise@xporadia.ci` | `Xporadia2026!` |
+
+---
+
+## Notes techniques
+
+- **Expo v57** — en cas de doute sur une API, se référer à la documentation
+  versionnée exacte : https://docs.expo.dev/versions/v57.0.0/
+- Le cache de routes typées d'Expo Router doit parfois être régénéré après
+  l'ajout d'un nouvel écran : ouvrez une fois l'URL correspondante dans le
+  navigateur (mode web) pour que `tsc` la reconnaisse.
+- `npx tsc --noEmit` doit passer sans erreur avant de committer.
+
+## Aller plus loin avec Expo
+
+- [Documentation Expo](https://docs.expo.dev/)
+- [Expo Router](https://docs.expo.dev/router/introduction)
