@@ -9,8 +9,6 @@ export default function CompanyDashboard() {
     <DashboardPlaceholder
       title="Publiez des offres de stage et évaluez vos stagiaires."
       upcomingFeatures={[
-        "Offres de stage et candidatures reçues (EP-04)",
-        "Évaluation des stagiaires accueillis (EP-04)",
         "Recherche d'enseignants certifiés pour vos formations (EP-03)",
       ]}
     >
@@ -18,6 +16,20 @@ export default function CompanyDashboard() {
         <Text className="text-base font-semibold text-xporadia-text-primary">Mon entreprise</Text>
         <Text className="text-sm text-xporadia-text-secondary">
           Raison sociale, secteur, adresse — visible par Xporadia et les candidats.
+        </Text>
+      </Card>
+
+      <Card onPress={() => router.push("/(app)/company/internship-offers")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Offres de stage</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Publiez des offres et gérez les candidatures reçues des établissements.
+        </Text>
+      </Card>
+
+      <Card onPress={() => router.push("/(app)/internship-convention")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Conventions de stage</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Signature, journal de stage et évaluation des stagiaires accueillis.
         </Text>
       </Card>
     </DashboardPlaceholder>

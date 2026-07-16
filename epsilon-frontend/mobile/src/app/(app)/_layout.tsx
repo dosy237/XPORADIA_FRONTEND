@@ -39,12 +39,22 @@ export default function AppLayout() {
       <Stack.Screen name="director/academics/track/[trackId]" options={{ title: "Filière" }} />
       <Stack.Screen name="director/job-listings/index" options={{ title: "Offres d'emploi" }} />
       <Stack.Screen name="director/job-listings/[listingId]" options={{ title: "Candidatures" }} />
+      <Stack.Screen name="director/internship-offers/index" options={{ title: "Offres de stage" }} />
+      <Stack.Screen name="director/internship-offers/[offerId]" options={{ title: "Offre de stage" }} />
+      <Stack.Screen
+        name="director/my-internship-applications"
+        options={{ title: "Mes candidatures de stage" }}
+      />
       <Stack.Screen name="library" options={{ title: "Bibliothèque numérique" }} />
       <Stack.Screen name="class-roster/[classId]" options={{ title: "Effectifs" }} />
       <Stack.Screen name="parent/dashboard" options={{ title: "Espace parent" }} />
       <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />
       <Stack.Screen name="company/dashboard" options={{ title: "Espace entreprise" }} />
       <Stack.Screen name="company/profile" options={{ title: "Mon entreprise" }} />
+      <Stack.Screen name="company/internship-offers/index" options={{ title: "Offres de stage" }} />
+      <Stack.Screen name="company/internship-offers/[offerId]" options={{ title: "Candidatures" }} />
+      <Stack.Screen name="internship-convention/index" options={{ title: "Conventions de stage" }} />
+      <Stack.Screen name="internship-convention/[conventionId]" options={{ title: "Convention de stage" }} />
       <Stack.Screen name="settings" options={{ title: "Paramètres" }} />
       <Stack.Screen name="notifications" options={{ title: "Notifications" }} />
     </Stack>
