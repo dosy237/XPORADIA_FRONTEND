@@ -1,0 +1,1 @@
+export default function HomePage() { return <div className='p-8'><h1 className='text-2xl font-bold text-epsilon-navy'>HomePage</h1><p className='text-epsilon-text-secondary mt-2'>Feature à développer — Sprint correspondant</p></div>; }
