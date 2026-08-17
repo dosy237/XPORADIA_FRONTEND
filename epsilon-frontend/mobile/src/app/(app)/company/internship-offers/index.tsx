@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as ImagePicker from "expo-image-picker";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -7,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { PlusIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { Colors } from "@/constants/theme";
 import * as internshipsApi from "@/services/internships";
 import type { InternshipLevel, InternshipOffer } from "@/services/internships";
 
@@ -26,6 +29,9 @@ function OfferCard({
 }) {
   return (
     <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+      {offer.cover_image ? (
+        <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 120, borderRadius: 12 }} contentFit="cover" />
+      ) : null}
       <Pressable
         onPress={() =>
           router.push({
@@ -69,6 +75,15 @@ export default function CompanyInternshipOffersScreen() {
   const [periodStart, setPeriodStart] = useState("");
   const [periodEnd, setPeriodEnd] = useState("");
   const [level, setLevel] = useState<InternshipLevel>("terminale");
+  const [coverImage, setCoverImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+
+  const pickCoverImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+    if (!result.canceled) setCoverImage(result.assets[0]);
+  };
 
   const queryKey = ["my-internship-offers"];
   const { data: offers, isLoading } = useQuery({
@@ -77,8 +92,8 @@ export default function CompanyInternshipOffersScreen() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      internshipsApi.createInternshipOffer({
+    mutationFn: async () => {
+      const offer = await internshipsApi.createInternshipOffer({
         title,
         domain,
         missions,
@@ -87,7 +102,16 @@ export default function CompanyInternshipOffersScreen() {
         period_start: periodStart,
         period_end: periodEnd,
         city,
-      }),
+      });
+      if (coverImage) {
+        return internshipsApi.uploadInternshipOfferCoverImage(offer.id, {
+          uri: coverImage.uri,
+          name: coverImage.fileName ?? "cover.jpg",
+          mimeType: coverImage.mimeType,
+        });
+      }
+      return offer;
+    },
     onSuccess: (offer) => {
       queryClient.setQueryData<InternshipOffer[] | undefined>(queryKey, (prev) =>
         prev ? [offer, ...prev] : [offer]
@@ -98,6 +122,7 @@ export default function CompanyInternshipOffersScreen() {
       setCity("");
       setPeriodStart("");
       setPeriodEnd("");
+      setCoverImage(null);
       setAdding(false);
     },
   });
@@ -141,6 +166,17 @@ export default function CompanyInternshipOffersScreen() {
             style={{ height: 80, textAlignVertical: "top" }}
           />
           <Input label="Ville" value={city} onChangeText={setCity} placeholder="Abidjan" />
+
+          <Pressable onPress={pickCoverImage} accessibilityRole="button" accessibilityLabel="Choisir une image de couverture">
+            {coverImage ? (
+              <Image source={{ uri: coverImage.uri }} style={{ width: "100%", height: 120, borderRadius: 12 }} contentFit="cover" />
+            ) : (
+              <View className="flex-row items-center justify-center gap-2 border border-xporadia-border rounded-xl py-3.5">
+                <PlusIcon size={14} color={Colors.navy} />
+                <Text className="text-xs font-semibold text-xporadia-navy">Image de couverture (optionnel)</Text>
+              </View>
+            )}
+          </Pressable>
           <Input
             label="Durée (semaines)"
             value={durationWeeks}

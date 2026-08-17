@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -24,6 +25,9 @@ function ModuleCard({ module }: { module: TrainingModule }) {
       accessibilityLabel={`Voir le module ${module.title}`}
       className="gap-2"
     >
+      {module.cover_image ? (
+        <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 140, borderRadius: 12 }} contentFit="cover" />
+      ) : null}
       <View className="flex-row items-start justify-between gap-2">
         <Text className="text-base font-semibold text-xporadia-text-primary flex-1">{module.title}</Text>
         <Chip label={LEVEL_LABELS[module.target_level]} variant="navy-subtle" />
@@ -54,6 +58,9 @@ function InternshipOfferCard({ offer }: { offer: InternshipOffer }) {
       accessibilityLabel={`Voir l'offre de stage ${offer.title}`}
       className="gap-2"
     >
+      {offer.cover_image ? (
+        <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 140, borderRadius: 12 }} contentFit="cover" />
+      ) : null}
       <View className="flex-row items-start justify-between gap-2">
         <Text className="text-base font-semibold text-xporadia-text-primary flex-1">{offer.title}</Text>
         {offer.is_premium && <Chip label="Premium" variant="orange" />}

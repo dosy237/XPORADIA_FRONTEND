@@ -168,6 +168,8 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
         </View>
       ) : null}
 
+      <ImageCarousel images={post.images} />
+
       {editing ? (
         <View className="gap-2">
           <Input value={draft} onChangeText={setDraft} multiline numberOfLines={3} />
@@ -189,7 +191,12 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
           </View>
         </View>
       ) : (
-        <Text className="text-sm text-xporadia-text-primary leading-6">{post.body}</Text>
+        <>
+          {post.title ? (
+            <Text className="text-base font-bold text-xporadia-text-primary">{post.title}</Text>
+          ) : null}
+          <Text className="text-sm text-xporadia-text-primary leading-6">{post.body}</Text>
+        </>
       )}
 
       {post.hashtags.length > 0 ? (
@@ -201,8 +208,6 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
           ))}
         </View>
       ) : null}
-
-      <ImageCarousel images={post.images} />
 
       <View className="flex-row items-center gap-5 pt-1">
         <Pressable

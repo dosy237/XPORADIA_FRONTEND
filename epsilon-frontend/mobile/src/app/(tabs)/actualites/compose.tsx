@@ -8,16 +8,19 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput,
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as feedApi from "@/services/feed";
 import { useAuthStore } from "@/store/authStore";
 
 const MAX_LENGTH = 2000;
+const MAX_TITLE_LENGTH = 150;
 const MAX_IMAGES = 6;
 
 export default function ComposeScreen() {
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
 
@@ -26,6 +29,8 @@ export default function ComposeScreen() {
       feedApi.createPost(
         body.trim(),
         images.map((img) => ({ uri: img.uri, name: img.fileName ?? "photo.jpg", mimeType: img.mimeType })),
+        "public",
+        title.trim() || undefined,
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -56,6 +61,13 @@ export default function ComposeScreen() {
   return (
     <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerClassName="p-6 gap-4 pb-8" keyboardShouldPersistTaps="handled">
+        <Input
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Titre (optionnel)"
+          maxLength={MAX_TITLE_LENGTH}
+        />
+
         <View className="flex-row items-start gap-3">
           <Avatar firstName={user.first_name} lastName={user.last_name} size={44} />
           <TextInput

@@ -13,6 +13,7 @@ export interface TrainingModule {
   duration_hours: number;
   price: number;
   target_level: CertificationLevel;
+  cover_image: string | null;
   has_online_exam: boolean;
 }
 
@@ -27,6 +28,7 @@ export interface AdminTrainingModule {
   price: number;
   points: number;
   target_level: CertificationLevel;
+  cover_image: string | null;
   is_active: boolean;
   created_at: string;
 }
@@ -41,6 +43,23 @@ export const createAdminModule = (payload: Partial<AdminTrainingModulePayload>) 
 
 export const updateAdminModule = (moduleId: string, payload: Partial<AdminTrainingModulePayload>) =>
   api.patch<AdminTrainingModule>(`/certification/admin/modules/${moduleId}/`, payload).then((r) => r.data);
+
+export const uploadAdminModuleCoverImage = (
+  moduleId: string,
+  asset: { uri: string; name: string; mimeType?: string | null },
+) => {
+  const formData = new FormData();
+  formData.append("cover_image", {
+    uri: asset.uri,
+    name: asset.name,
+    type: asset.mimeType ?? "image/jpeg",
+  } as unknown as Blob);
+  return api
+    .patch<AdminTrainingModule>(`/certification/admin/modules/${moduleId}/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
+};
 
 export const revokeCertification = (certificationId: string) =>
   api

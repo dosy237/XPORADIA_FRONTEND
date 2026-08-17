@@ -15,6 +15,7 @@ export interface PostAuthor {
 export interface Post {
   id: number;
   author: PostAuthor;
+  title: string;
   body: string;
   hashtags: string[];
   images: { id: number; image: string; order: number }[];
@@ -46,8 +47,10 @@ export const createPost = (
   body: string,
   images: { uri: string; name: string; mimeType?: string | null }[] = [],
   visibility: "public" | "members" = "public",
+  title?: string,
 ) => {
   const formData = new FormData();
+  if (title) formData.append("title", title);
   formData.append("body", body);
   formData.append("visibility", visibility);
   images.forEach((img) => {

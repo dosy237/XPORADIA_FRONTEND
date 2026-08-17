@@ -34,6 +34,7 @@ export interface InternshipOffer {
   places: number;
   city: string;
   skills_wanted: string[];
+  cover_image: string | null;
   is_premium: boolean;
   is_active: boolean;
   application_count: number;
@@ -60,6 +61,23 @@ export const createInternshipOffer = (payload: {
 
 export const updateInternshipOffer = (offerId: string, payload: { is_active: boolean }) =>
   api.patch<InternshipOffer>(`/internships/offers/${offerId}/`, payload).then((r) => r.data);
+
+export const uploadInternshipOfferCoverImage = (
+  offerId: string,
+  asset: { uri: string; name: string; mimeType?: string | null },
+) => {
+  const formData = new FormData();
+  formData.append("cover_image", {
+    uri: asset.uri,
+    name: asset.name,
+    type: asset.mimeType ?? "image/jpeg",
+  } as unknown as Blob);
+  return api
+    .patch<InternshipOffer>(`/internships/offers/${offerId}/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
+};
 
 export interface InternshipApplication {
   id: string;

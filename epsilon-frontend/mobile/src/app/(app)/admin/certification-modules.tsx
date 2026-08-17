@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as ImagePicker from "expo-image-picker";
+import { Image } from "expo-image";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -22,6 +24,9 @@ function ModuleRow({ module }: { module: AdminTrainingModule }) {
 
   return (
     <View className="bg-white rounded-2xl p-4 shadow-soft gap-2">
+      {module.cover_image ? (
+        <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 120, borderRadius: 12 }} contentFit="cover" />
+      ) : null}
       <View className="flex-row items-center justify-between">
         <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
           {module.title}
@@ -53,14 +58,32 @@ export default function AdminCertificationModulesScreen() {
   const [durationHours, setDurationHours] = useState("");
   const [price, setPrice] = useState("");
   const [points, setPoints] = useState("");
+  const [coverImage, setCoverImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+
+  const pickCoverImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+    });
+    if (!result.canceled) setCoverImage(result.assets[0]);
+  };
 
   const createMutation = useMutation({
-    mutationFn: () =>
-      certificationApi.createAdminModule({
+    mutationFn: async () => {
+      const created = await certificationApi.createAdminModule({
         title, description, category, target_level: targetLevel,
         duration_hours: Number(durationHours), price: Number(price), points: Number(points),
         is_active: true, objectives: [], prerequisites: "",
-      }),
+      });
+      if (coverImage) {
+        await certificationApi.uploadAdminModuleCoverImage(created.id, {
+          uri: coverImage.uri,
+          name: coverImage.fileName ?? "cover.jpg",
+          mimeType: coverImage.mimeType,
+        });
+      }
+      return created;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-modules"] });
       setTitle("");
@@ -68,6 +91,7 @@ export default function AdminCertificationModulesScreen() {
       setDurationHours("");
       setPrice("");
       setPoints("");
+      setCoverImage(null);
       setCreating(false);
     },
   });
@@ -85,6 +109,17 @@ export default function AdminCertificationModulesScreen() {
         <View className="bg-white rounded-2xl p-4 shadow-soft gap-3">
           <Input label="Titre" value={title} onChangeText={setTitle} />
           <Input label="Description" value={description} onChangeText={setDescription} multiline numberOfLines={3} />
+
+          <Pressable onPress={pickCoverImage} accessibilityRole="button" accessibilityLabel="Choisir une image de couverture">
+            {coverImage ? (
+              <Image source={{ uri: coverImage.uri }} style={{ width: "100%", height: 120, borderRadius: 12 }} contentFit="cover" />
+            ) : (
+              <View className="flex-row items-center justify-center gap-2 border border-xporadia-border rounded-xl py-3.5">
+                <PlusIcon size={14} color={Colors.navy} />
+                <Text className="text-xs font-semibold text-xporadia-navy">Image de couverture (optionnel)</Text>
+              </View>
+            )}
+          </Pressable>
 
           <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Catégorie</Text>
           <View className="flex-row flex-wrap gap-2">

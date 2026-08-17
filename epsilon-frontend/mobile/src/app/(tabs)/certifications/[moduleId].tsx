@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -81,6 +82,10 @@ export default function PublicModuleDetailScreen() {
             Vous avez découvert ce module via le profil de {from}.
           </Text>
         </View>
+      ) : null}
+
+      {module.cover_image ? (
+        <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 180, borderRadius: 16 }} contentFit="cover" />
       ) : null}
 
       <View className="bg-white rounded-3xl p-6 shadow-soft gap-4">

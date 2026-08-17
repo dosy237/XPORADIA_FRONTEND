@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 
@@ -45,6 +46,10 @@ export default function InternshipOfferDetailScreen() {
 
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-5 pb-12">
+      {offer.cover_image ? (
+        <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 180, borderRadius: 16 }} contentFit="cover" />
+      ) : null}
+
       <View className="gap-2">
         <View className="flex-row items-start justify-between gap-3">
           <Text className="text-xl font-bold text-xporadia-navy flex-1">{offer.title}</Text>
