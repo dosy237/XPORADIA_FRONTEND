@@ -8,7 +8,7 @@ import * as notificationsApi from "@/services/notifications";
 import { useAuthStore } from "@/store/authStore";
 
 // Icônes notifications/réglages/déconnexion communes aux écrans
-// authentifiés — que ce soit la Stack (app) ou l'onglet Espace personnel.
+// authentifiés, que ce soit la Stack (app) ou l'onglet Espace personnel.
 export function HeaderActions() {
   const logout = useAuthStore((s) => s.logout);
   const { data: notifications } = useQuery({
