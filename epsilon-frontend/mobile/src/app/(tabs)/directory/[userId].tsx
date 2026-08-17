@@ -5,6 +5,8 @@ import { Alert, Pressable, ScrollView, Switch, Text, View } from "react-native";
 
 import { LevelBadge, LevelPath } from "@/components/certification/LevelBadge";
 import { AdminModerationBar } from "@/components/admin/AdminModerationBar";
+import { AuthorPostsList } from "@/components/feed/AuthorPostsList";
+import { FollowButton, ProfileSocialStats } from "@/components/feed/ProfileSocialBar";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -21,8 +23,10 @@ import { useAuthStore } from "@/store/authStore";
 export default function FeedTeacherDetailScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const currentUser = useAuthStore((s) => s.user);
   const [comment, setComment] = useState("");
   const [anonymous, setAnonymous] = useState(false);
+  const [followersCount, setFollowersCount] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   const { data: teacher, isLoading } = useQuery({
@@ -75,6 +79,22 @@ export default function FeedTeacherDetailScreen() {
         <View className="mt-2">
           <Chip label="Enseignant" variant="navy-subtle" />
         </View>
+        <View className="mt-4">
+          <ProfileSocialStats
+            postsCount={teacher.posts_count}
+            followersCount={followersCount ?? teacher.followers_count}
+            followingCount={teacher.following_count}
+          />
+        </View>
+        {isAuthenticated && currentUser?.id !== teacher.id ? (
+          <View className="mt-4">
+            <FollowButton
+              userId={teacher.id}
+              initialIsFollowing={teacher.is_following}
+              onChange={(_isFollowing, count) => setFollowersCount(count)}
+            />
+          </View>
+        ) : null}
       </View>
 
       <View className="px-6 gap-5">
@@ -191,6 +211,13 @@ export default function FeedTeacherDetailScreen() {
             ))}
           </View>
         )}
+
+        <View className="gap-3">
+          <Text className="text-base font-bold text-xporadia-navy">
+            Publications{teacher.posts_count > 0 ? ` (${teacher.posts_count})` : ""}
+          </Text>
+          <AuthorPostsList authorId={teacher.id} />
+        </View>
 
         <View className="bg-white rounded-3xl p-5 border border-xporadia-border gap-3">
           <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">

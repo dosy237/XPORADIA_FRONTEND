@@ -13,6 +13,10 @@ export interface TeacherDirectoryCard {
   available_for_employment: boolean;
   current_level: CertificationLevel | null;
   total_points: number;
+  followers_count: number;
+  following_count: number;
+  is_following: boolean;
+  posts_count: number;
   // Uniquement révélé quand l'appelant est un parent — voir
   // TeacherTutoringCardSerializer côté backend.
   hourly_rate?: string;

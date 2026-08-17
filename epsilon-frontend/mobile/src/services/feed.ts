@@ -33,13 +33,15 @@ export interface PostComment {
   post: number;
   author: PostAuthor;
   body: string;
+  like_count: number;
+  is_liked_by_me: boolean;
   created_at: string;
 }
 
-export const fetchPosts = (filters?: { authorId?: number; hashtag?: string }) =>
+export const fetchPosts = (filters?: { authorId?: number; hashtag?: string; q?: string }) =>
   api
     .get<Paginated<Post>>("/feed/posts/", {
-      params: { author: filters?.authorId, hashtag: filters?.hashtag },
+      params: { author: filters?.authorId, hashtag: filters?.hashtag, q: filters?.q },
     })
     .then((r) => r.data.results);
 
@@ -100,3 +102,19 @@ export const createPostComment = (postId: number, body: string) =>
 
 export const deletePostComment = (postId: number, commentId: number) =>
   api.delete(`/feed/posts/${postId}/comments/${commentId}/`);
+
+export const toggleCommentLike = (postId: number, commentId: number) =>
+  api
+    .post<{ liked: boolean; like_count: number }>(`/feed/posts/${postId}/comments/${commentId}/like/`)
+    .then((r) => r.data);
+
+export interface PeopleSearchResult {
+  type: "teacher" | "establishment" | "company";
+  id: number;
+  name: string;
+  avatar: string | null;
+  subtitle: string;
+}
+
+export const searchPeople = (q: string) =>
+  api.get<PeopleSearchResult[]>("/auth/search/people/", { params: { q } }).then((r) => r.data);

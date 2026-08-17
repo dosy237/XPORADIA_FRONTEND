@@ -16,7 +16,7 @@ import {
 import { PostCard } from "@/components/feed/PostCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { TrashIcon } from "@/components/ui/Icon";
+import { HeartIcon, TrashIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useFeedSocket } from "@/hooks/useFeedSocket";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
@@ -27,10 +27,12 @@ function CommentRow({
   comment,
   canDelete,
   onDelete,
+  onToggleLike,
 }: {
   comment: feedApi.PostComment;
   canDelete: boolean;
   onDelete: () => void;
+  onToggleLike: () => void;
 }) {
   const [firstName, ...rest] = comment.author.full_name.split(" ");
   const relativeTime = useRelativeTime(comment.created_at);
@@ -57,6 +59,22 @@ function CommentRow({
           </View>
         </View>
         <Text className="text-sm text-xporadia-text-primary mt-1">{comment.body}</Text>
+        <Pressable
+          onPress={onToggleLike}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={comment.is_liked_by_me ? "Ne plus aimer ce commentaire" : "Aimer ce commentaire"}
+          className="flex-row items-center gap-1 mt-2 self-start"
+        >
+          <HeartIcon
+            size={13}
+            color={comment.is_liked_by_me ? Colors.orange : Colors.textSecondary}
+            filled={comment.is_liked_by_me}
+          />
+          {comment.like_count > 0 ? (
+            <Text className="text-[10px] text-xporadia-text-secondary">{comment.like_count}</Text>
+          ) : null}
+        </Pressable>
       </View>
     </View>
   );
@@ -96,6 +114,11 @@ export default function PostDetailScreen() {
         current?.filter((c) => c.id !== commentId),
       );
     },
+    onCommentLikeUpdated: (commentId, likeCount) => {
+      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
+        current?.map((c) => (c.id === commentId ? { ...c, like_count: likeCount } : c)),
+      );
+    },
   });
 
   const deleteCommentMutation = useMutation({
@@ -115,6 +138,17 @@ export default function PostDetailScreen() {
       queryClient.setQueryData<typeof posts>(["posts"], (current) =>
         current?.map((p) =>
           p.id === Number(postId) ? { ...p, is_liked_by_me: result.liked, like_count: result.like_count } : p,
+        ),
+      );
+    },
+  });
+
+  const commentLikeMutation = useMutation({
+    mutationFn: (commentId: number) => feedApi.toggleCommentLike(Number(postId), commentId),
+    onSuccess: (result, commentId) => {
+      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
+        current?.map((c) =>
+          c.id === commentId ? { ...c, is_liked_by_me: result.liked, like_count: result.like_count } : c,
         ),
       );
     },
@@ -187,6 +221,7 @@ export default function PostDetailScreen() {
                     { text: "Supprimer", style: "destructive", onPress: () => deleteCommentMutation.mutate(c.id) },
                   ])
                 }
+                onToggleLike={() => commentLikeMutation.mutate(c.id)}
               />
             ))}
           </View>

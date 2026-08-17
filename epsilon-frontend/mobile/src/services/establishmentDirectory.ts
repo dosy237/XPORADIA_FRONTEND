@@ -16,6 +16,10 @@ export interface EstablishmentDirectoryCard {
   student_count: number;
   is_partner: boolean;
   avatar: string | null;
+  followers_count: number;
+  following_count: number;
+  is_following: boolean;
+  posts_count: number;
 }
 
 export interface EstablishmentDirectoryDetail extends EstablishmentDirectoryCard {

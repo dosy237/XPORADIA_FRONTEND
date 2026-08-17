@@ -1,18 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { Text, View, ScrollView } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { AdminModerationBar } from "@/components/admin/AdminModerationBar";
+import { AuthorPostsList } from "@/components/feed/AuthorPostsList";
+import { FollowButton, ProfileSocialStats } from "@/components/feed/ProfileSocialBar";
 import { Chip } from "@/components/ui/Chip";
 import { BuildingIcon, PinIcon, UsersIcon } from "@/components/ui/Icon";
 import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
 import { openInMaps } from "@/lib/openInMaps";
 import * as establishmentApi from "@/services/establishmentDirectory";
+import { useAuthStore } from "@/store/authStore";
 
 export default function FeedEstablishmentDetailScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const currentUser = useAuthStore((s) => s.user);
+  const [followersCount, setFollowersCount] = useState<number | null>(null);
 
   const { data: establishment, isLoading } = useQuery({
     queryKey: ["establishment-directory-detail", userId],
@@ -50,6 +57,22 @@ export default function FeedEstablishmentDetailScreen() {
             <Chip label={`${establishment.average_rating}/5 (${establishment.review_count} avis)`} variant="orange" />
           )}
         </View>
+        <View className="mt-4">
+          <ProfileSocialStats
+            postsCount={establishment.posts_count}
+            followersCount={followersCount ?? establishment.followers_count}
+            followingCount={establishment.following_count}
+          />
+        </View>
+        {isAuthenticated && currentUser?.id !== establishment.id ? (
+          <View className="mt-4">
+            <FollowButton
+              userId={establishment.id}
+              initialIsFollowing={establishment.is_following}
+              onChange={(_isFollowing, count) => setFollowersCount(count)}
+            />
+          </View>
+        ) : null}
       </View>
 
       <View className="px-6 gap-5">
@@ -108,6 +131,13 @@ export default function FeedEstablishmentDetailScreen() {
             ))}
           </View>
         )}
+
+        <View className="gap-3">
+          <Text className="text-base font-bold text-xporadia-navy">
+            Publications{establishment.posts_count > 0 ? ` (${establishment.posts_count})` : ""}
+          </Text>
+          <AuthorPostsList authorId={establishment.id} />
+        </View>
       </View>
     </ScrollView>
   );

@@ -1,17 +1,71 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 import { PostCard } from "@/components/feed/PostCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { PlusIcon, UsersIcon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/Input";
+import { PlusIcon, SearchIcon, UsersIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useFeedSocket } from "@/hooks/useFeedSocket";
 import * as feedApi from "@/services/feed";
 import type { Post } from "@/services/feed";
 import { useAuthStore } from "@/store/authStore";
+
+function peopleSearchRoute(result: feedApi.PeopleSearchResult) {
+  if (result.type === "teacher") return `/(tabs)/directory/${result.id}` as const;
+  if (result.type === "establishment") return `/(tabs)/directory/establishment/${result.id}` as const;
+  return `/(tabs)/directory/company/${result.id}` as const;
+}
+
+function PeopleSearchResults({ query }: { query: string }) {
+  const { data: results, isLoading } = useQuery({
+    queryKey: ["people-search", query],
+    queryFn: () => feedApi.searchPeople(query),
+    enabled: query.trim().length > 0,
+  });
+
+  if (isLoading) {
+    return (
+      <View className="py-10 items-center">
+        <ActivityIndicator color={Colors.navy} />
+      </View>
+    );
+  }
+
+  if (!results || results.length === 0) {
+    return (
+      <Text className="text-xs text-xporadia-text-secondary text-center py-6">
+        Aucun résultat pour « {query} ».
+      </Text>
+    );
+  }
+
+  return (
+    <View className="gap-2">
+      {results.map((result) => (
+        <Pressable
+          key={`${result.type}-${result.id}`}
+          onPress={() => router.push(peopleSearchRoute(result))}
+          accessibilityRole="button"
+          accessibilityLabel={`Voir le profil de ${result.name}`}
+          className="bg-white rounded-xl p-3 shadow-soft flex-row items-center gap-3"
+        >
+          <Avatar firstName={result.name} lastName="" imageUri={result.avatar} size={40} />
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-xporadia-text-primary" numberOfLines={1}>
+              {result.name}
+            </Text>
+            <Text className="text-xs text-xporadia-text-secondary">{result.subtitle}</Text>
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 
 function ComposePrompt() {
   const user = useAuthStore((s) => s.user);
@@ -55,6 +109,7 @@ export default function ActualitesScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isVerified = useAuthStore((s) => s.user?.is_verified);
   const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["posts"],
@@ -113,28 +168,44 @@ export default function ActualitesScreen() {
           </Text>
         </View>
 
-        {isAuthenticated ? (isVerified ? <ComposePrompt /> : <UnverifiedNotice />) : <GuestComposerPrompt />}
+        <Input
+          placeholder="Rechercher un enseignant, un établissement, une entreprise..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          accessibilityLabel="Rechercher une personne ou un compte"
+          leftIcon={<SearchIcon size={18} color={Colors.textSecondary} />}
+        />
 
-        {isLoading ? (
-          <View className="py-10 items-center">
-            <ActivityIndicator color={Colors.navy} />
-          </View>
-        ) : posts && posts.length > 0 ? (
-          <View className="gap-3">
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} onToggleLike={() => likeMutation.mutate(post.id)} />
-            ))}
-          </View>
+        {searchQuery.trim().length > 0 ? (
+          <PeopleSearchResults query={searchQuery.trim()} />
         ) : (
-          <View className="items-center gap-3 py-10">
-            <View className="h-14 w-14 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-              <UsersIcon color={Colors.textSecondary} size={26} />
-            </View>
-            <Text className="text-sm font-semibold text-xporadia-text-primary">Aucune actualité pour l'instant</Text>
-            <Text className="text-xs text-xporadia-text-secondary text-center px-8">
-              Soyez le premier à partager quelque chose avec la communauté.
-            </Text>
-          </View>
+          <>
+            {isAuthenticated ? (isVerified ? <ComposePrompt /> : <UnverifiedNotice />) : <GuestComposerPrompt />}
+
+            {isLoading ? (
+              <View className="py-10 items-center">
+                <ActivityIndicator color={Colors.navy} />
+              </View>
+            ) : posts && posts.length > 0 ? (
+              <View className="gap-3">
+                {posts.map((post) => (
+                  <PostCard key={post.id} post={post} onToggleLike={() => likeMutation.mutate(post.id)} />
+                ))}
+              </View>
+            ) : (
+              <View className="items-center gap-3 py-10">
+                <View className="h-14 w-14 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
+                  <UsersIcon color={Colors.textSecondary} size={26} />
+                </View>
+                <Text className="text-sm font-semibold text-xporadia-text-primary">
+                  Aucune actualité pour l'instant
+                </Text>
+                <Text className="text-xs text-xporadia-text-secondary text-center px-8">
+                  Soyez le premier à partager quelque chose avec la communauté.
+                </Text>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
 

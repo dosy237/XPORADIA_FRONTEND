@@ -1,18 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { AdminModerationBar } from "@/components/admin/AdminModerationBar";
+import { AuthorPostsList } from "@/components/feed/AuthorPostsList";
+import { FollowButton, ProfileSocialStats } from "@/components/feed/ProfileSocialBar";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, PinIcon } from "@/components/ui/Icon";
 import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
 import { openInMaps } from "@/lib/openInMaps";
 import * as companyApi from "@/services/companyDirectory";
+import { useAuthStore } from "@/store/authStore";
 
 export default function CompanyDirectoryDetailScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const currentUser = useAuthStore((s) => s.user);
+  const [followersCount, setFollowersCount] = useState<number | null>(null);
+  // Seul un directeur candidate au nom d'un élève — l'établissement reste
+  // le médiateur de la candidature (voir InternshipApplication.school côté
+  // backend). Pour les autres rôles, on ouvre simplement la fiche publique.
+  const isDirector = currentUser?.primary_role === "director";
 
   const { data: company, isLoading } = useQuery({
     queryKey: ["company-directory-detail", userId],
@@ -50,6 +61,22 @@ export default function CompanyDirectoryDetailScreen() {
             <Chip label={`${company.average_rating}/5 (${company.review_count} avis)`} variant="orange" />
           )}
         </View>
+        <View className="mt-4">
+          <ProfileSocialStats
+            postsCount={company.posts_count}
+            followersCount={followersCount ?? company.followers_count}
+            followingCount={company.following_count}
+          />
+        </View>
+        {isAuthenticated && currentUser?.id !== company.id ? (
+          <View className="mt-4">
+            <FollowButton
+              userId={company.id}
+              initialIsFollowing={company.is_following}
+              onChange={(_isFollowing, count) => setFollowersCount(count)}
+            />
+          </View>
+        ) : null}
       </View>
 
       <View className="px-6 gap-5">
@@ -84,18 +111,42 @@ export default function CompanyDirectoryDetailScreen() {
           <View className="gap-3">
             <Text className="text-base font-bold text-xporadia-navy">Offres de stage ouvertes</Text>
             {company.open_internship_offers.map((offer) => (
-              <View key={offer.id} className="bg-white rounded-2xl p-4 shadow-soft gap-1.5">
-                <View className="flex-row items-center justify-between">
+              <Pressable
+                key={offer.id}
+                onPress={() =>
+                  router.push(
+                    isDirector
+                      ? `/(app)/director/internship-offers/${offer.id}`
+                      : `/(tabs)/certifications/stage/${offer.id}`,
+                  )
+                }
+                accessibilityRole="button"
+                accessibilityLabel={isDirector ? `Postuler à l'offre ${offer.title}` : `Voir l'offre ${offer.title}`}
+                className="bg-white rounded-2xl p-4 shadow-soft gap-1.5"
+              >
+                <View className="flex-row items-center justify-between gap-2">
                   <Text className="text-sm font-semibold text-xporadia-text-primary flex-1">{offer.title}</Text>
                   {offer.is_premium && <Chip label="Premium" variant="orange" />}
                 </View>
                 <Text className="text-xs text-xporadia-text-secondary">
                   {offer.domain} · {offer.city}
                 </Text>
-              </View>
+                {isDirector && (
+                  <Text className="text-xs font-semibold text-xporadia-orange-text mt-1">
+                    Postuler pour un élève →
+                  </Text>
+                )}
+              </Pressable>
             ))}
           </View>
         )}
+
+        <View className="gap-3">
+          <Text className="text-base font-bold text-xporadia-navy">
+            Publications{company.posts_count > 0 ? ` (${company.posts_count})` : ""}
+          </Text>
+          <AuthorPostsList authorId={company.id} />
+        </View>
       </View>
     </ScrollView>
   );
