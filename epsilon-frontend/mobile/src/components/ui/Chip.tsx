@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 type ChipVariant = "orange" | "navy" | "navy-subtle" | "neutral";
 
@@ -21,15 +21,31 @@ interface ChipProps {
   label: string;
   variant?: ChipVariant;
   icon?: ReactNode;
+  onPress?: () => void;
 }
 
-export function Chip({ label, variant = "orange", icon }: ChipProps) {
-  return (
-    <View
-      className={`flex-row items-center gap-1.5 rounded-full border px-3 py-1.5 ${VARIANT_CLASSES[variant]}`}
-    >
+export function Chip({ label, variant = "orange", icon, onPress }: ChipProps) {
+  const classes = `flex-row items-center gap-1.5 rounded-full border px-3 py-1.5 ${VARIANT_CLASSES[variant]}`;
+  const content = (
+    <>
       {icon}
       <Text className={`text-xs font-semibold ${VARIANT_TEXT_CLASSES[variant]}`}>{label}</Text>
-    </View>
+    </>
   );
+
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        hitSlop={4}
+        className={`${classes} active:opacity-70`}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return <View className={classes}>{content}</View>;
 }

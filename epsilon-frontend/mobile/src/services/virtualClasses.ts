@@ -1,14 +1,17 @@
 import api from "@/services/api";
 
 export type ExerciseStatus = "draft" | "published" | "closed";
+export type ExerciseKind = "homework" | "exam";
 
 export interface Exercise {
   id: string;
+  kind: ExerciseKind;
   title: string;
   instructions: string;
   attachments: string[];
   deadline: string | null;
   status: ExerciseStatus;
+  is_overdue: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -39,7 +42,7 @@ export const fetchExercises = (subjectId: number) =>
 
 export const createExercise = (
   subjectId: number,
-  payload: { title: string; instructions: string; status?: ExerciseStatus; deadline?: string }
+  payload: { title: string; instructions: string; kind?: ExerciseKind; status?: ExerciseStatus; deadline?: string }
 ) => api.post<Exercise>(`/virtual-classes/subjects/${subjectId}/exercises/`, payload).then((r) => r.data);
 
 export const updateExercise = (exerciseId: string, payload: Partial<{ status: ExerciseStatus }>) =>
@@ -60,16 +63,21 @@ export interface Submission {
   status: SubmissionStatus;
   grade: string | null;
   feedback: string;
+  is_late: boolean;
   submitted_at: string;
+  updated_at: string;
   graded_at: string | null;
 }
 
 export interface ChildExercise {
   id: string;
+  kind: ExerciseKind;
   title: string;
   instructions: string;
   attachments: string[];
   deadline: string | null;
+  status: ExerciseStatus;
+  is_overdue: boolean;
   published_at: string | null;
   my_submission: Submission | null;
 }
@@ -84,11 +92,36 @@ export interface ChildSubject {
 export const fetchChildSubjects = (childId: number) =>
   api.get<ChildSubject[]>(`/virtual-classes/children/${childId}/subjects/`).then((r) => r.data);
 
-export const fetchExerciseSubmissions = (exerciseId: string) =>
-  api.get<Submission[]>(`/virtual-classes/exercises/${exerciseId}/submissions/`).then((r) => r.data);
+/** Équivalent de fetchChildSubjects, mais pour l'élève connecté lui-même
+ * (pas besoin de préciser childId — résolu côté backend via son compte). */
+export const fetchMySubjects = () =>
+  api.get<ChildSubject[]>("/virtual-classes/my-subjects/").then((r) => r.data);
+
+export const fetchExerciseSubmissions = (
+  exerciseId: string,
+  params?: { search?: string; ordering?: string },
+) => api.get<Submission[]>(`/virtual-classes/exercises/${exerciseId}/submissions/`, { params }).then((r) => r.data);
+
+export interface ExerciseSubmissionStats {
+  total_enrolled: number;
+  submitted_count: number;
+  not_submitted_count: number;
+  late_count: number;
+  graded_count: number;
+}
+
+export const fetchExerciseSubmissionStats = (exerciseId: string) =>
+  api
+    .get<ExerciseSubmissionStats>(`/virtual-classes/exercises/${exerciseId}/submissions/stats/`)
+    .then((r) => r.data);
 
 export const submitExercise = (exerciseId: string, payload: { child_id: number; content: string }) =>
   api.post<Submission>(`/virtual-classes/exercises/${exerciseId}/submissions/`, payload).then((r) => r.data);
+
+/** Modification de sa propre copie avant échéance — distinct de
+ * gradeSubmission (réservé au prof). */
+export const editSubmission = (id: number, payload: { content?: string; attachments?: string[] }) =>
+  api.patch<Submission>(`/virtual-classes/submissions/${id}/`, payload).then((r) => r.data);
 
 export const fetchSubmission = (id: number) =>
   api.get<Submission>(`/virtual-classes/submissions/${id}/`).then((r) => r.data);
@@ -98,3 +131,15 @@ export const gradeSubmission = (id: number, payload: { grade: number; feedback: 
 
 export const fetchMySubmissions = () =>
   api.get<Submission[]>("/virtual-classes/my-submissions/").then((r) => r.data);
+
+export interface GradingQueueItem {
+  exercise_id: string;
+  title: string;
+  subject_name: string;
+  pending_count: number;
+}
+
+export const fetchMyGradingQueue = () =>
+  api
+    .get<{ total_pending: number; exercises: GradingQueueItem[] }>("/virtual-classes/my-grading-queue/")
+    .then((r) => r.data);

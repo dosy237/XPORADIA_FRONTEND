@@ -49,7 +49,7 @@ export default function MySessionEnrollmentsScreen() {
           </Text>
           {enrollment.payment && (
             <Text className="text-xs text-xporadia-text-secondary">
-              {enrollment.payment.amount.toLocaleString("fr-FR")} FCFA — {enrollment.payment.tx_ref}
+              {enrollment.payment.amount.toLocaleString("fr-FR")} FCFA · {enrollment.payment.tx_ref}
             </Text>
           )}
           {enrollment.attendance_score !== null && (

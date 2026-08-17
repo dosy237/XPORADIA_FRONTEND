@@ -115,17 +115,17 @@ export default function DirectorProfileScreen() {
                   <StatBox
                     icon={<BuildingIcon color={Colors.navy} size={18} />}
                     label="Établissement"
-                    value={profile.school_name || "—"}
+                    value={profile.school_name || "Non renseigné"}
                   />
                   <StatBox
                     icon={<UsersIcon color={Colors.navy} size={18} />}
                     label="Effectif"
-                    value={profile.student_count != null ? `${profile.student_count} élèves` : "—"}
+                    value={profile.student_count != null ? `${profile.student_count} élèves` : "Non renseigné"}
                   />
                   <StatBox
                     icon={<LayersIcon color={Colors.navy} size={18} />}
                     label="Niveaux"
-                    value={profile.levels_taught.length ? String(profile.levels_taught.length) : "—"}
+                    value={profile.levels_taught.length ? String(profile.levels_taught.length) : "Non renseigné"}
                   />
                 </View>
 

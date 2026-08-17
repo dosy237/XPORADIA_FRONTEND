@@ -222,7 +222,7 @@ export default function LibraryScreen() {
 
       {adding ? (
         <View className="bg-white rounded-2xl p-4 border border-xporadia-orange/30 gap-3">
-          <Input label="Titre" value={title} onChangeText={setTitle} placeholder="Fiche de révision — Algèbre" />
+          <Input label="Titre" value={title} onChangeText={setTitle} placeholder="Fiche de révision : Algèbre" />
           <Input
             label="Description (optionnel)"
             value={description}

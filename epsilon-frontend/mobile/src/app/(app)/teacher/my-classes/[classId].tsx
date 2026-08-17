@@ -173,10 +173,40 @@ export default function ClassSubjectsScreen() {
         }
         accessibilityRole="button"
         accessibilityLabel="Gérer les effectifs de la classe"
-        className="bg-white rounded-2xl p-4 border border-xporadia-border flex-row items-center justify-between"
+        className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center justify-between"
       >
         <Text className="text-sm font-semibold text-xporadia-text-primary">Effectifs de la classe</Text>
         <Text className="text-xs font-semibold text-xporadia-orange">Gérer →</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(app)/teacher/timetable-editor/[classId]",
+            params: { classId: String(classId), className: className ?? "" },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel="Gérer l'emploi du temps de la classe"
+        className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center justify-between"
+      >
+        <Text className="text-sm font-semibold text-xporadia-text-primary">Emploi du temps</Text>
+        <Text className="text-xs font-semibold text-xporadia-orange">Gérer →</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(app)/teacher/year-end-promotion/[classId]",
+            params: { classId: String(classId), className: className ?? "" },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel="Traiter le passage de fin d'année"
+        className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center justify-between"
+      >
+        <Text className="text-sm font-semibold text-xporadia-text-primary">Fin d&apos;année</Text>
+        <Text className="text-xs font-semibold text-xporadia-orange">Traiter le passage →</Text>
       </Pressable>
 
       <Text className="text-xs text-xporadia-text-secondary leading-5">

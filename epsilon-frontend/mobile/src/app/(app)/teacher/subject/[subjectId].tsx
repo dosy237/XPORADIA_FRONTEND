@@ -4,16 +4,24 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
-import { PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import { NewspaperIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { Colors } from "@/constants/theme";
+import * as messagingApi from "@/services/messaging";
 import * as virtualClassesApi from "@/services/virtualClasses";
-import type { Exercise, ExerciseStatus } from "@/services/virtualClasses";
+import type { Exercise, ExerciseKind, ExerciseStatus } from "@/services/virtualClasses";
 
 const STATUS_LABELS: Record<ExerciseStatus, string> = {
   draft: "Brouillon",
   published: "Publié",
   closed: "Clôturé",
+};
+
+const KIND_LABELS: Record<ExerciseKind, string> = {
+  homework: "Devoir",
+  exam: "Examen",
 };
 
 function ExerciseCard({
@@ -30,12 +38,15 @@ function ExerciseCard({
   onDelete: (id: string) => void;
 }) {
   return (
-    <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
-      <View className="flex-row items-center justify-between">
+    <Card className="gap-2">
+      <View className="flex-row items-center justify-between gap-2">
         <Text className="text-base font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
           {exercise.title}
         </Text>
-        <Chip label={STATUS_LABELS[exercise.status]} variant="navy-subtle" />
+        <View className="flex-row gap-1.5">
+          <Chip label={KIND_LABELS[exercise.kind]} variant="orange" />
+          <Chip label={STATUS_LABELS[exercise.status]} variant="navy-subtle" />
+        </View>
       </View>
       <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
         {exercise.instructions}
@@ -65,11 +76,55 @@ function ExerciseCard({
             hitSlop={8}
             className="ml-auto"
           >
-            <TrashIcon size={16} />
+            <TrashIcon size={16} color={Colors.red} />
           </Pressable>
         </View>
       )}
-    </View>
+    </Card>
+  );
+}
+
+function SubjectChannelBanner({ subjectId }: { subjectId: number }) {
+  const queryClient = useQueryClient();
+  const { data: channels } = useQuery({ queryKey: ["channels"], queryFn: messagingApi.fetchChannels });
+  const existingChannel = channels?.find((c) => c.channel_type === "subject" && c.subject_id === subjectId);
+
+  const createMutation = useMutation({
+    mutationFn: () => messagingApi.createSubjectChannel(subjectId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["channels"] }),
+  });
+
+  if (existingChannel) {
+    return (
+      <Card
+        onPress={() => router.push(`/(app)/messages/${existingChannel.id}`)}
+        className="flex-row items-center gap-3"
+      >
+        <View className="h-10 w-10 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
+          <NewspaperIcon size={16} color={Colors.navy} />
+        </View>
+        <View className="flex-1">
+          <Text className="text-sm font-semibold text-xporadia-text-primary">Canal de la matière</Text>
+          <Text className="text-xs text-xporadia-text-secondary">Ouvrir la discussion avec vos élèves</Text>
+        </View>
+      </Card>
+    );
+  }
+
+  return (
+    <Card onPress={() => createMutation.mutate()} className="flex-row items-center gap-3">
+      <View className="h-10 w-10 rounded-full bg-xporadia-orange/10 items-center justify-center">
+        <PlusIcon size={16} color={Colors.orange} />
+      </View>
+      <View className="flex-1">
+        <Text className="text-sm font-semibold text-xporadia-text-primary">
+          {createMutation.isPending ? "Création en cours..." : "Créer le canal de discussion"}
+        </Text>
+        <Text className="text-xs text-xporadia-text-secondary">
+          Ouvre un fil d'échange public avec tous les élèves de la classe.
+        </Text>
+      </View>
+    </Card>
   );
 }
 
@@ -83,6 +138,7 @@ export default function SubjectVirtualClassScreen() {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
+  const [kind, setKind] = useState<ExerciseKind>("homework");
 
   const virtualClassQuery = useQuery({
     queryKey: ["subject-virtual-class", subjectId],
@@ -98,13 +154,14 @@ export default function SubjectVirtualClassScreen() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () => virtualClassesApi.createExercise(Number(subjectId), { title, instructions }),
+    mutationFn: () => virtualClassesApi.createExercise(Number(subjectId), { title, instructions, kind }),
     onSuccess: (exercise) => {
       queryClient.setQueryData<Exercise[] | undefined>(exercisesQueryKey, (prev) =>
         prev ? [exercise, ...prev] : [exercise]
       );
       setTitle("");
       setInstructions("");
+      setKind("homework");
       setAdding(false);
     },
   });
@@ -133,7 +190,7 @@ export default function SubjectVirtualClassScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       {virtualClass ? (
-        <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-1">
+        <Card className="gap-1">
           <Text className="text-base font-semibold text-xporadia-text-primary">
             {virtualClass.subject_name}
           </Text>
@@ -143,11 +200,13 @@ export default function SubjectVirtualClassScreen() {
               {virtualClass.description}
             </Text>
           ) : null}
-        </View>
+        </Card>
       ) : null}
 
+      {editable && subjectId ? <SubjectChannelBanner subjectId={Number(subjectId)} /> : null}
+
       <Text className="text-xs text-xporadia-text-secondary leading-5">
-        Cours et exercices de cette matière.
+        Cours, devoirs et examens de cette matière.
       </Text>
 
       {exercisesQuery.isLoading ? (
@@ -171,7 +230,11 @@ export default function SubjectVirtualClassScreen() {
 
       {editable &&
         (adding ? (
-          <View className="bg-white rounded-2xl p-4 border border-xporadia-orange/30 gap-3">
+          <Card className="gap-3">
+            <View className="flex-row gap-2">
+              <Chip label="Devoir" variant={kind === "homework" ? "navy" : "neutral"} onPress={() => setKind("homework")} />
+              <Chip label="Examen" variant={kind === "exam" ? "navy" : "neutral"} onPress={() => setKind("exam")} />
+            </View>
             <Input label="Titre" value={title} onChangeText={setTitle} placeholder="Devoir n°1" />
             <Input
               label="Consignes"
@@ -196,17 +259,9 @@ export default function SubjectVirtualClassScreen() {
                 />
               </View>
             </View>
-          </View>
+          </Card>
         ) : (
-          <Pressable
-            onPress={() => setAdding(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Ajouter un cours ou exercice"
-            className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-3.5"
-          >
-            <PlusIcon size={16} />
-            <Text className="text-white font-semibold">Ajouter un cours / exercice</Text>
-          </Pressable>
+          <Button label="Ajouter un cours / devoir / examen" pill onPress={() => setAdding(true)} />
         ))}
     </ScrollView>
   );

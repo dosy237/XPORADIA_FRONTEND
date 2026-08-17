@@ -6,34 +6,50 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } fro
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { BookIcon, BriefcaseIcon, BuildingIcon, GraduationCapIcon, UsersIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { StepProgress } from "@/components/ui/StepProgress";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 import type { UserRole } from "@/types/user";
 
-type RegisterableRole = Extract<UserRole, "teacher" | "director" | "parent" | "company">;
+type RegisterableRole = Extract<UserRole, "teacher" | "director" | "parent" | "company" | "student">;
 
-const ROLE_CARDS: { value: RegisterableRole; title: string; description: string }[] = [
+const ROLE_CARDS: {
+  value: RegisterableRole;
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+}[] = [
+  {
+    value: "student",
+    title: "Je suis élève",
+    description: "Suivez vos cours, vos devoirs et vos résultats.",
+    icon: GraduationCapIcon,
+  },
   {
     value: "teacher",
     title: "Je suis enseignant",
-    description: "Obtenez votre certification et accédez au marché de l'emploi Xporadia.",
+    description: "Obtenez votre certification et accédez au marché de l'emploi.",
+    icon: BookIcon,
   },
   {
     value: "director",
     title: "Je suis directeur d'établissement",
     description: "Recrutez des enseignants certifiés et gérez vos stages.",
+    icon: BuildingIcon,
   },
   {
     value: "parent",
     title: "Je suis parent",
     description: "Trouvez des cours particuliers certifiés pour vos enfants.",
+    icon: UsersIcon,
   },
   {
     value: "company",
     title: "Je représente une entreprise",
     description: "Publiez des offres de stage et évaluez vos stagiaires.",
+    icon: BriefcaseIcon,
   },
 ];
 
@@ -81,6 +97,8 @@ export default function RegisterScreen() {
   const [sector, setSector] = useState("");
   const [companyAddress, setCompanyAddress] = useState("");
 
+  const [declaredLevel, setDeclaredLevel] = useState("");
+
   const mutation = useMutation({
     mutationFn: async () => {
       const common = {
@@ -120,6 +138,8 @@ export default function RegisterScreen() {
           sector,
           address: companyAddress,
         });
+      } else if (status === "student") {
+        await authApi.registerStudent({ ...common, declared_level: declaredLevel });
       }
 
       return authApi.login(common.email, password);
@@ -141,7 +161,8 @@ export default function RegisterScreen() {
   const canSubmit =
     !!status && firstName && lastName && email && password.length >= 8 &&
     (status !== "director" || (schoolName && schoolAddress)) &&
-    (status !== "company" || (companyName && companyAddress));
+    (status !== "company" || (companyName && companyAddress)) &&
+    (status !== "student" || declaredLevel);
 
   const goBack = () => {
     if (step > 1) setStep((s) => s - 1);
@@ -156,33 +177,51 @@ export default function RegisterScreen() {
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10">
         <AuthHeader title="Créer un compte" subtitle="Rejoignez la communauté Xporadia" onBack={goBack} showBack />
 
-        <View className="px-6 pt-4">
-          <View className="bg-white rounded-2xl p-6 gap-5 shadow-card border border-xporadia-border">
+        <View className="px-6 pt-6">
+          <View className="bg-white rounded-2xl p-6 gap-5 shadow-soft">
             <StepProgress step={step} total={TOTAL_STEPS} />
 
             {step === 1 && (
               <View className="gap-3">
-                <Text className="text-lg font-bold text-xporadia-navy mb-1">Quel est votre profil ?</Text>
-                {ROLE_CARDS.map((role) => (
-                  <Card
-                    key={role.value}
-                    onPress={() => {
-                      setStatus(role.value);
-                      setStep(2);
-                    }}
-                    selected={status === role.value}
-                    className="gap-1.5"
-                  >
-                    <Text className="text-base font-semibold text-xporadia-text-primary">{role.title}</Text>
-                    <Text className="text-sm text-xporadia-text-secondary">{role.description}</Text>
-                  </Card>
-                ))}
+                <View className="mb-1">
+                  <Text className="text-xl font-bold text-xporadia-navy">Quel est votre profil ?</Text>
+                  <Text className="text-sm text-xporadia-text-secondary mt-1">
+                    Choisissez le profil qui correspond à votre usage de Xporadia.
+                  </Text>
+                </View>
+                {ROLE_CARDS.map((role) => {
+                  const RoleIcon = role.icon;
+                  const isSelected = status === role.value;
+                  return (
+                    <Card
+                      key={role.value}
+                      onPress={() => {
+                        setStatus(role.value);
+                        setStep(2);
+                      }}
+                      selected={isSelected}
+                      className="flex-row items-center gap-3.5"
+                    >
+                      <View
+                        className={`h-11 w-11 items-center justify-center rounded-full ${
+                          isSelected ? "bg-xporadia-orange" : "bg-xporadia-bg"
+                        }`}
+                      >
+                        <RoleIcon size={20} color={isSelected ? "#FFFFFF" : "#5A6A8A"} />
+                      </View>
+                      <View className="flex-1 gap-0.5">
+                        <Text className="text-base font-semibold text-xporadia-text-primary">{role.title}</Text>
+                        <Text className="text-sm text-xporadia-text-secondary">{role.description}</Text>
+                      </View>
+                    </Card>
+                  );
+                })}
               </View>
             )}
 
             {step === 2 && (
               <View className="gap-4">
-                <Text className="text-lg font-bold text-xporadia-navy mb-1">Vos informations</Text>
+                <Text className="text-xl font-bold text-xporadia-navy mb-1">Vos informations</Text>
                 <Input label="Prénom" value={firstName} onChangeText={setFirstName} />
                 <Input label="Nom" value={lastName} onChangeText={setLastName} />
                 <Input
@@ -211,9 +250,7 @@ export default function RegisterScreen() {
 
             {step === 3 && (
               <View className="gap-4">
-                <Text className="text-lg font-bold text-xporadia-navy mb-1">
-                  Dernière étape
-                </Text>
+                <Text className="text-xl font-bold text-xporadia-navy mb-1">Dernière étape</Text>
 
                 {status === "teacher" && (
                   <>
@@ -253,12 +290,15 @@ export default function RegisterScreen() {
                       Vos enfants ({children.length}/5)
                     </Text>
                     {children.map((child, index) => (
-                      <Card key={index} className="gap-3">
+                      <Card key={index} variant="flat" className="gap-3 bg-xporadia-bg">
                         <View className="flex-row justify-between items-center">
                           <Text className="font-medium text-xporadia-text-primary">Enfant {index + 1}</Text>
                           {children.length > 1 ? (
-                            <Pressable onPress={() => setChildren((prev) => prev.filter((_, i) => i !== index))}>
-                              <Text className="text-xporadia-red text-sm">Retirer</Text>
+                            <Pressable
+                              onPress={() => setChildren((prev) => prev.filter((_, i) => i !== index))}
+                              hitSlop={8}
+                            >
+                              <Text className="text-xporadia-red text-sm font-medium">Retirer</Text>
                             </Pressable>
                           ) : null}
                         </View>
@@ -298,7 +338,16 @@ export default function RegisterScreen() {
                   </>
                 )}
 
-                {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
+                {status === "student" && (
+                  <Input
+                    label="Votre niveau actuel"
+                    value={declaredLevel}
+                    onChangeText={setDeclaredLevel}
+                    placeholder="3ème, Terminale D, ..."
+                  />
+                )}
+
+                {formError ? <Text className="text-xporadia-red text-sm text-center">{formError}</Text> : null}
 
                 <Button
                   label="Créer mon compte"

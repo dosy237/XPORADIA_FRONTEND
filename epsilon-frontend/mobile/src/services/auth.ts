@@ -62,6 +62,19 @@ export interface ParentRegisterPayload {
   children?: ChildPayload[];
 }
 
+export interface StudentRegisterPayload {
+  email: string;
+  phone?: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  declared_level: string;
+}
+
+export interface StudentRegisterResponse extends RegisterResponse {
+  child_id: number;
+}
+
 export const registerTeacher = (payload: TeacherRegisterPayload) =>
   api.post<RegisterResponse>("/auth/register/teacher/", payload).then((r) => r.data);
 
@@ -73,6 +86,9 @@ export const registerParent = (payload: ParentRegisterPayload) =>
 
 export const registerCompany = (payload: CompanyRegisterPayload) =>
   api.post<RegisterResponse>("/auth/register/company/", payload).then((r) => r.data);
+
+export const registerStudent = (payload: StudentRegisterPayload) =>
+  api.post<StudentRegisterResponse>("/auth/register/student/", payload).then((r) => r.data);
 
 export const login = (email: string, password: string) =>
   api.post<LoginResponse>("/auth/token/", { email, password }).then((r) => r.data);

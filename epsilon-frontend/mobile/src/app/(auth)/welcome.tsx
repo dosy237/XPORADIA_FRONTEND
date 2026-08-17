@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { Link, router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
@@ -10,14 +11,19 @@ export default function WelcomeScreen() {
 
   return (
     <View className="flex-1 bg-xporadia-navy">
-      {/* Photo de fond */}
       <Image
         source={require("@/assets/images/brand/cover.jpg")}
         style={StyleSheet.absoluteFill}
         contentFit="cover"
       />
-      {/* Voile bleu semi-transparent par-dessus la photo — laisse deviner l'image */}
-      <View className="absolute inset-0 bg-xporadia-navy/75" />
+      {/* Dégradé progressif du haut vers le bas, le logo reste lisible sur
+          la photo tout en la laissant respirer en haut, le texte et les CTA
+          en bas gagnent le contraste dont ils ont besoin. */}
+      <LinearGradient
+        colors={["rgba(15,23,42,0.55)", "rgba(15,23,42,0.55)", "rgba(15,23,42,0.94)"]}
+        locations={[0, 0.4, 1]}
+        style={StyleSheet.absoluteFill}
+      />
 
       <View
         className="flex-1 px-8"
@@ -26,18 +32,29 @@ export default function WelcomeScreen() {
         <View className="flex-1 items-center justify-center">
           <Image
             source={require("@/assets/images/brand/logo-white.png")}
-            style={{ width: 240, height: (240 * 506) / 1200 }}
+            style={{ width: 220, height: (220 * 506) / 1200 }}
             contentFit="contain"
           />
         </View>
 
-        <View className="gap-4">
-          <Button label="Se connecter" pill onPress={() => router.replace("/(auth)/login")} />
-          <View className="flex-row justify-center items-center gap-1">
-            <Text className="text-white/80">Pas de compte ?</Text>
-            <Link href="/(auth)/register" asChild>
-              <Text className="text-white font-semibold">S'inscrire</Text>
-            </Link>
+        <View className="gap-8">
+          <View className="gap-2">
+            <Text className="text-white font-bold text-3xl text-center leading-tight">
+              L'excellence pédagogique{"\n"}certifiée.
+            </Text>
+            <Text className="text-white/70 text-base text-center leading-relaxed">
+              Rejoignez la plateforme de certification pour les enseignants du privé en Afrique.
+            </Text>
+          </View>
+
+          <View className="gap-4">
+            <Button label="Commencer" pill onPress={() => router.push("/(auth)/register")} />
+            <View className="flex-row justify-center items-center gap-1">
+              <Text className="text-white/70">Déjà un compte ?</Text>
+              <Link href="/(auth)/login" asChild>
+                <Text className="text-white font-semibold">Se connecter</Text>
+              </Link>
+            </View>
           </View>
         </View>
       </View>

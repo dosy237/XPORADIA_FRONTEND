@@ -13,7 +13,7 @@ interface ButtonProps {
 }
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: "bg-xporadia-orange active:bg-xporadia-orange-light",
+  primary: "bg-xporadia-orange active:bg-xporadia-orange-light shadow-deep-orange",
   secondary: "bg-white border border-xporadia-border active:bg-xporadia-bg",
   navy: "bg-xporadia-navy active:bg-xporadia-navy-light",
   danger: "bg-xporadia-red active:opacity-90",
@@ -44,12 +44,12 @@ export function Button({
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       hitSlop={4}
-      className={`${pill ? "rounded-full" : "rounded-xporadia"} items-center justify-center py-3.5 px-4 ${
+      className={`${pill ? "rounded-full" : "rounded-xl"} items-center justify-center py-4 px-5 ${
         VARIANT_CLASSES[variant]
-      } ${isDisabled ? "opacity-50" : ""}`}
+      } ${isDisabled ? "opacity-50 shadow-none" : ""}`}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "secondary" ? "#1B2A4A" : "#FFFFFF"} />
+        <ActivityIndicator color={variant === "secondary" ? "#0F172A" : "#FFFFFF"} />
       ) : (
         <Text className={`font-semibold text-base ${VARIANT_TEXT_CLASSES[variant]}`}>{label}</Text>
       )}
