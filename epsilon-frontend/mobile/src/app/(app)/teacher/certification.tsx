@@ -12,7 +12,7 @@ import * as certificationApi from "@/services/certification";
 function ModuleCard({ module }: { module: certificationApi.TrainingModule }) {
   return (
     <Pressable
-      onPress={() => router.push(`/(app)/teacher/module/${module.id}`)}
+      onPress={() => router.push(`/(tabs)/certifications/${module.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`Voir le module ${module.title}`}
       className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"

@@ -97,15 +97,25 @@ export const updateInternshipApplicationStatus = (
 export interface InternshipConvention {
   id: string;
   application: InternshipApplication;
+  position_title: string;
+  document: string | null;
   pdf_url: string;
   status: ConventionStatus;
+  channel_id: number | null;
   signed_by_school_at: string | null;
   signed_by_company_at: string | null;
   generated_at: string;
+  has_company_review: boolean;
+  can_review_company: boolean;
 }
 
 export const fetchMyConventions = () =>
   api.get<InternshipConvention[]>("/internships/my-conventions/").then((r) => r.data);
+
+export const submitCompanyReview = (
+  conventionId: string,
+  payload: { atmosphere: number; mentorship: number; role_accuracy: number; learning_value: number; comment?: string }
+) => api.post(`/internships/conventions/${conventionId}/company-review/`, payload);
 
 export const signConvention = (conventionId: string) =>
   api.post<InternshipConvention>(`/internships/conventions/${conventionId}/sign/`).then((r) => r.data);

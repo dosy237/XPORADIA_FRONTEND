@@ -16,6 +16,46 @@ export interface TrainingModule {
   has_online_exam: boolean;
 }
 
+export interface AdminTrainingModule {
+  id: string;
+  title: string;
+  category: ModuleCategory;
+  description: string;
+  objectives: string[];
+  prerequisites: string;
+  duration_hours: number;
+  price: number;
+  points: number;
+  target_level: CertificationLevel;
+  is_active: boolean;
+  created_at: string;
+}
+
+export type AdminTrainingModulePayload = Omit<AdminTrainingModule, "id" | "created_at">;
+
+export const fetchAdminModules = () =>
+  api.get<AdminTrainingModule[]>("/certification/admin/modules/").then((r) => r.data);
+
+export const createAdminModule = (payload: Partial<AdminTrainingModulePayload>) =>
+  api.post<AdminTrainingModule>("/certification/admin/modules/", payload).then((r) => r.data);
+
+export const updateAdminModule = (moduleId: string, payload: Partial<AdminTrainingModulePayload>) =>
+  api.patch<AdminTrainingModule>(`/certification/admin/modules/${moduleId}/`, payload).then((r) => r.data);
+
+export const revokeCertification = (certificationId: string) =>
+  api
+    .post<{ id: string; is_valid: boolean; revoked_at: string }>(
+      `/admin-panel/certifications/${certificationId}/revoke/`
+    )
+    .then((r) => r.data);
+
+export const reinstateCertification = (certificationId: string) =>
+  api
+    .post<{ id: string; is_valid: boolean; revoked_at: null }>(
+      `/admin-panel/certifications/${certificationId}/reinstate/`
+    )
+    .then((r) => r.data);
+
 export type ExamQuestionType = "mcq" | "open" | "tf";
 
 export interface ExamQuestion {
@@ -66,7 +106,9 @@ export interface Certification {
 
 export interface MyCertificationStatus {
   current_level: CertificationLevel | null;
+  total_points: number;
   next_level: CertificationLevel | null;
+  points_needed_for_next: number | null;
   levels_achieved: CertificationLevel[];
   certifications: Certification[];
 }
@@ -120,3 +162,16 @@ export const enrollInSession = (
   api
     .post<SessionEnrollment>(`/certification/sessions/${sessionId}/enroll/`, payload)
     .then((r) => r.data);
+
+export interface PublicCertificationVerification {
+  teacher_name: string;
+  module_title: string;
+  level: CertificationLevel;
+  issued_at: string;
+  expires_at: string;
+  is_valid: boolean;
+  is_expired: boolean;
+}
+
+export const verifyCertification = (qrCode: string) =>
+  api.get<PublicCertificationVerification>(`/certification/verify/${qrCode}/`).then((r) => r.data);
