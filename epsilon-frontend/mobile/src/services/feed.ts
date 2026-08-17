@@ -19,6 +19,8 @@ export interface Post {
   body: string;
   hashtags: string[];
   images: { id: number; image: string; order: number }[];
+  video: string | null;
+  video_duration_seconds: number | null;
   visibility: "public" | "members";
   like_count: number;
   comment_count: number;
@@ -41,13 +43,15 @@ export const fetchPosts = (filters?: { authorId?: number; hashtag?: string }) =>
     })
     .then((r) => r.data.results);
 
-/** Publication avec photos (0 à 6) — multipart, cohérent avec le seul
- * autre upload de fichier de l'app (documents personnels élève). */
+/** Publication avec photos (0 à 6) OU une vidéo (60s max, exclusif des
+ * photos) — multipart, cohérent avec le seul autre upload de fichier de
+ * l'app (documents personnels élève). */
 export const createPost = (
   body: string,
   images: { uri: string; name: string; mimeType?: string | null }[] = [],
   visibility: "public" | "members" = "public",
   title?: string,
+  video?: { uri: string; name: string; mimeType?: string | null; durationSeconds: number },
 ) => {
   const formData = new FormData();
   if (title) formData.append("title", title);
@@ -60,6 +64,14 @@ export const createPost = (
       type: img.mimeType ?? "image/jpeg",
     } as unknown as Blob);
   });
+  if (video) {
+    formData.append("video", {
+      uri: video.uri,
+      name: video.name,
+      type: video.mimeType ?? "video/mp4",
+    } as unknown as Blob);
+    formData.append("video_duration_seconds", String(Math.round(video.durationSeconds)));
+  }
   return api
     .post<Post>("/feed/posts/", formData, { headers: { "Content-Type": "multipart/form-data" } })
     .then((r) => r.data);

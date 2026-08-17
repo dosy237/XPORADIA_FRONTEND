@@ -505,6 +505,21 @@ export function EyeIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
   );
 }
 
+export function VideoIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="2.5" y="6" width="13" height="12" rx="2.5" stroke={color} strokeWidth={2} />
+      <Path
+        d="m18.5 10 3-2.2v8.4l-3-2.2"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function CloseIcon({ size = 16, color = "#FFFFFF" }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

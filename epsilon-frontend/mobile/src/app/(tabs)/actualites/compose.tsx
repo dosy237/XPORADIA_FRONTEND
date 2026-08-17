@@ -3,12 +3,13 @@ import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 import { PostCard } from "@/components/feed/PostCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { CloseIcon, EyeIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import { CloseIcon, EyeIcon, PlusIcon, TrashIcon, VideoIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as feedApi from "@/services/feed";
@@ -17,6 +18,7 @@ import { useAuthStore } from "@/store/authStore";
 const MAX_LENGTH = 2000;
 const MAX_TITLE_LENGTH = 150;
 const MAX_IMAGES = 6;
+const MAX_VIDEO_SECONDS = 60;
 
 const ROLE_LABELS: Record<string, string> = {
   teacher: "Enseignant",
@@ -34,7 +36,11 @@ export default function ComposeScreen() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
+  const [video, setVideo] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [previewing, setPreviewing] = useState(false);
+  const videoPlayer = useVideoPlayer(video?.uri ?? null, (player) => {
+    player.loop = true;
+  });
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -43,6 +49,14 @@ export default function ComposeScreen() {
         images.map((img) => ({ uri: img.uri, name: img.fileName ?? "photo.jpg", mimeType: img.mimeType })),
         "public",
         title.trim() || undefined,
+        video
+          ? {
+              uri: video.uri,
+              name: video.fileName ?? "video.mp4",
+              mimeType: video.mimeType,
+              durationSeconds: (video.duration ?? 0) / 1000,
+            }
+          : undefined,
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
@@ -68,6 +82,25 @@ export default function ComposeScreen() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const pickVideo = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      videoMaxDuration: MAX_VIDEO_SECONDS,
+      quality: 0.7,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    const durationSeconds = (asset.duration ?? 0) / 1000;
+    if (durationSeconds > MAX_VIDEO_SECONDS) {
+      Alert.alert(
+        "Vidéo trop longue",
+        `Les vidéos sont limitées à ${MAX_VIDEO_SECONDS} secondes. Choisissez un extrait plus court.`,
+      );
+      return;
+    }
+    setVideo(asset);
+  };
+
   if (!user) return null;
 
   const previewPost: feedApi.Post = {
@@ -85,6 +118,8 @@ export default function ComposeScreen() {
     body: body.trim(),
     hashtags: Array.from(new Set(Array.from(body.matchAll(/#(\w+)/g), (m) => m[1]))),
     images: images.map((img, order) => ({ id: order, image: img.uri, order })),
+    video: video?.uri ?? null,
+    video_duration_seconds: video?.duration ? Math.round(video.duration / 1000) : null,
     visibility: "public",
     like_count: 0,
     comment_count: 0,
@@ -134,21 +169,56 @@ export default function ComposeScreen() {
           </ScrollView>
         ) : null}
 
-        <View className="flex-row items-center justify-between">
-          <Pressable
-            onPress={pickImages}
-            disabled={images.length >= MAX_IMAGES}
-            className="flex-row items-center gap-2 border border-xporadia-border rounded-full px-4 py-2"
-          >
-            <PlusIcon size={14} color={images.length >= MAX_IMAGES ? Colors.textSecondary : Colors.navy} />
-            <Text
-              className={`text-xs font-semibold ${
-                images.length >= MAX_IMAGES ? "text-xporadia-text-secondary" : "text-xporadia-navy"
-              }`}
+        {video ? (
+          <View className="relative">
+            <VideoView
+              player={videoPlayer}
+              style={{ width: "100%", height: 200, borderRadius: 14 }}
+              contentFit="cover"
+              nativeControls
+            />
+            <Pressable
+              onPress={() => setVideo(null)}
+              className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-xporadia-navy items-center justify-center"
+              accessibilityRole="button"
+              accessibilityLabel="Retirer cette vidéo"
             >
-              Photos ({images.length}/{MAX_IMAGES})
-            </Text>
-          </Pressable>
+              <TrashIcon size={12} color={Colors.white} />
+            </Pressable>
+          </View>
+        ) : null}
+
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <Pressable
+              onPress={pickImages}
+              disabled={images.length >= MAX_IMAGES || !!video}
+              className="flex-row items-center gap-2 border border-xporadia-border rounded-full px-4 py-2"
+            >
+              <PlusIcon size={14} color={images.length >= MAX_IMAGES || video ? Colors.textSecondary : Colors.navy} />
+              <Text
+                className={`text-xs font-semibold ${
+                  images.length >= MAX_IMAGES || video ? "text-xporadia-text-secondary" : "text-xporadia-navy"
+                }`}
+              >
+                Photos ({images.length}/{MAX_IMAGES})
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={pickVideo}
+              disabled={!!video || images.length > 0}
+              className="flex-row items-center gap-2 border border-xporadia-border rounded-full px-4 py-2"
+            >
+              <VideoIcon size={14} color={video || images.length > 0 ? Colors.textSecondary : Colors.navy} />
+              <Text
+                className={`text-xs font-semibold ${
+                  video || images.length > 0 ? "text-xporadia-text-secondary" : "text-xporadia-navy"
+                }`}
+              >
+                Vidéo (1 min max)
+              </Text>
+            </Pressable>
+          </View>
           <Text className="text-xs text-xporadia-text-secondary">{body.length}/{MAX_LENGTH}</Text>
         </View>
 

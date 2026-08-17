@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
+import { useVideoPlayer, VideoView } from "expo-video";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, Dimensions, Pressable, ScrollView, Text, View } from "react-native";
@@ -56,6 +57,20 @@ function ImageCarousel({ images, onImagePress }: { images: Post["images"]; onIma
         </Pressable>
       ))}
     </ScrollView>
+  );
+}
+
+function PostVideoPlayer({ uri }: { uri: string }) {
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = false;
+  });
+  return (
+    <VideoView
+      player={player}
+      style={{ width: "100%", height: 220, borderRadius: 14 }}
+      contentFit="cover"
+      nativeControls
+    />
   );
 }
 
@@ -179,6 +194,7 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
         </View>
       ) : null}
 
+      {post.video ? <PostVideoPlayer uri={post.video} /> : null}
       <ImageCarousel images={post.images} onImagePress={setViewerIndex} />
       <FullscreenImageViewer
         images={post.images}
