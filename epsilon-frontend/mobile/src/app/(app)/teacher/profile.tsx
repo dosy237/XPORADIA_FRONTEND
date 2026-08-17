@@ -10,28 +10,18 @@ import {
   View,
 } from "react-native";
 
-import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPicker } from "@/components/ui/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, MedalIcon, PencilIcon, PinIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { StatBox } from "@/components/ui/StatBox";
 import { LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
+import { openInMaps } from "@/lib/openInMaps";
 import * as certificationApi from "@/services/certification";
 import * as teacherApi from "@/services/teacherProfile";
 import { useAuthStore } from "@/store/authStore";
-
-function StatBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-2 items-center">
-      <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-soft">{icon}</View>
-      <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={1}>
-        {value}
-      </Text>
-      <Text className="text-[11px] text-xporadia-text-secondary">{label}</Text>
-    </View>
-  );
-}
 
 export default function TeacherProfileScreen() {
   const queryClient = useQueryClient();
@@ -100,12 +90,7 @@ export default function TeacherProfileScreen() {
             className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
             pointerEvents="none"
           />
-          <View>
-            <Avatar firstName={user?.first_name} lastName={user?.last_name} />
-            <View
-              className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white"
-            />
-          </View>
+          <AvatarPicker firstName={user?.first_name} lastName={user?.last_name} imageUri={user?.avatar} />
           <Text className="text-xl font-bold text-xporadia-navy mt-3">
             {user?.first_name} {user?.last_name}
           </Text>
@@ -136,6 +121,7 @@ export default function TeacherProfileScreen() {
                     icon={<PinIcon color={Colors.navy} size={18} />}
                     label="Localisation"
                     value={profile.location || "Non renseigné"}
+                    onPress={profile.location ? () => openInMaps(profile.location) : undefined}
                   />
                 </View>
 

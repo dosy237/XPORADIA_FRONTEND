@@ -85,3 +85,6 @@ export const fetchPostComments = (postId: number) =>
 
 export const createPostComment = (postId: number, body: string) =>
   api.post<PostComment>(`/feed/posts/${postId}/comments/`, { body }).then((r) => r.data);
+
+export const deletePostComment = (postId: number, commentId: number) =>
+  api.delete(`/feed/posts/${postId}/comments/${commentId}/`);

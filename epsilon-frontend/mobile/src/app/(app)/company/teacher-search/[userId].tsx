@@ -6,21 +6,11 @@ import { LevelPath } from "@/components/certification/LevelBadge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, MedalIcon, PinIcon } from "@/components/ui/Icon";
+import { StatBox } from "@/components/ui/StatBox";
 import { LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
+import { openInMaps } from "@/lib/openInMaps";
 import * as directoryApi from "@/services/teacherDirectory";
-
-function StatBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-2 items-center">
-      <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-card">{icon}</View>
-      <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={1}>
-        {value}
-      </Text>
-      <Text className="text-[11px] text-xporadia-text-secondary">{label}</Text>
-    </View>
-  );
-}
 
 export default function CompanyTeacherSearchDetailScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
@@ -42,7 +32,7 @@ export default function CompanyTeacherSearchDetailScreen() {
   return (
     <View className="flex-1 bg-xporadia-bg">
       <View className="items-center pt-10 pb-5 overflow-hidden">
-        <Avatar firstName={teacher.first_name} lastName={teacher.last_name} />
+        <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} />
         <Text className="text-xl font-bold text-xporadia-navy mt-3">
           {teacher.first_name} {teacher.last_name}
         </Text>
@@ -63,6 +53,7 @@ export default function CompanyTeacherSearchDetailScreen() {
               icon={<PinIcon color={Colors.navy} size={18} />}
               label="Localisation"
               value={teacher.location || "Non renseigné"}
+              onPress={teacher.location ? () => openInMaps(teacher.location) : undefined}
             />
             <StatBox
               icon={<MedalIcon color={Colors.navy} size={18} />}

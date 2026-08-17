@@ -69,7 +69,7 @@ export default function ComposeScreen() {
         />
 
         <View className="flex-row items-start gap-3">
-          <Avatar firstName={user.first_name} lastName={user.last_name} size={44} />
+          <Avatar firstName={user.first_name} lastName={user.last_name} imageUri={user.avatar} size={44} />
           <TextInput
             value={body}
             onChangeText={setBody}

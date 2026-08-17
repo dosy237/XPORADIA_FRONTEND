@@ -9,26 +9,16 @@ import {
   View,
 } from "react-native";
 
-import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPicker } from "@/components/ui/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { BuildingIcon, LayersIcon, PencilIcon, UsersIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
+import { openInMaps } from "@/lib/openInMaps";
 import * as directorApi from "@/services/directorProfile";
 import { useAuthStore } from "@/store/authStore";
-
-function StatBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-2 items-center">
-      <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-card">{icon}</View>
-      <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={1}>
-        {value}
-      </Text>
-      <Text className="text-[11px] text-xporadia-text-secondary">{label}</Text>
-    </View>
-  );
-}
 
 export default function DirectorProfileScreen() {
   const queryClient = useQueryClient();
@@ -91,10 +81,10 @@ export default function DirectorProfileScreen() {
             pointerEvents="none"
           />
           <View>
-            <Avatar firstName={user?.first_name} lastName={user?.last_name} />
+            <AvatarPicker firstName={user?.first_name} lastName={user?.last_name} imageUri={user?.avatar} />
             {profile.is_partner && (
               <View
-                className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white"
+                className="absolute bottom-1 left-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white"
               />
             )}
           </View>
@@ -129,12 +119,18 @@ export default function DirectorProfileScreen() {
                   />
                 </View>
 
-                <View className="gap-1">
+                <Pressable
+                  onPress={() => openInMaps(profile.address)}
+                  disabled={!profile.address}
+                  className="gap-1"
+                  accessibilityRole="button"
+                  accessibilityLabel="Ouvrir l'adresse dans Maps"
+                >
                   <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
                     Adresse
                   </Text>
                   <Text className="text-sm text-xporadia-text-primary leading-5">{profile.address}</Text>
-                </View>
+                </Pressable>
 
                 {profile.levels_taught.length > 0 && (
                   <View className="gap-2">

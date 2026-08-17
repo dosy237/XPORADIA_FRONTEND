@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { HeartIcon, MoreIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
-import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import { useRelativeTime } from "@/hooks/useRelativeTime";
 import * as feedApi from "@/services/feed";
 import type { Post } from "@/services/feed";
 import { useAuthStore } from "@/store/authStore";
@@ -53,6 +53,7 @@ function ImageCarousel({ images }: { images: Post["images"] }) {
 export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation }: PostCardProps) {
   const [firstName, ...rest] = post.author.full_name.split(" ");
   const lastName = rest.join(" ");
+  const relativeTime = useRelativeTime(post.created_at);
   const queryClient = useQueryClient();
   const currentUser = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -98,11 +99,11 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
   const content = (
     <View className="gap-3">
       <View className="flex-row items-center gap-3">
-        <Avatar firstName={firstName} lastName={lastName} size={44} />
+        <Avatar firstName={firstName} lastName={lastName} imageUri={post.author.avatar} size={44} />
         <View className="flex-1">
           <Text className="text-sm font-semibold text-xporadia-text-primary">{post.author.full_name}</Text>
           <Text className="text-xs text-xporadia-text-secondary">
-            {post.author.role_label} · {formatRelativeTime(post.created_at)}
+            {post.author.role_label} · {relativeTime}
           </Text>
         </View>
         {!isOwnPost ? (

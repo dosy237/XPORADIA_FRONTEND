@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -33,12 +34,12 @@ function TeacherCard({ teacher }: { teacher: TeacherDirectoryCard }) {
       accessibilityLabel={`Voir le profil de ${teacher.first_name} ${teacher.last_name}`}
       className="flex-row items-center gap-3"
     >
-      <Avatar firstName={teacher.first_name} lastName={teacher.last_name} size={52} />
+      <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} size={52} />
       <View className="flex-1 gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">
           {teacher.first_name} {teacher.last_name}
         </Text>
-        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={1}>
+        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
           {teacher.subjects.join(", ") || "Matières non renseignées"}
           {teacher.location ? ` · ${teacher.location}` : ""}
         </Text>
@@ -60,12 +61,18 @@ function EstablishmentCard({ establishment }: { establishment: EstablishmentDire
       accessibilityLabel={`Voir l'établissement ${establishment.school_name}`}
       className="flex-row items-center gap-3"
     >
-      <View className="h-[52px] w-[52px] rounded-full bg-xporadia-navy/[0.08] items-center justify-center">
-        <BuildingIcon color={Colors.navy} size={24} />
-      </View>
+      {establishment.avatar ? (
+        <View className="h-[52px] w-[52px] rounded-full overflow-hidden bg-xporadia-navy/[0.08]">
+          <Image source={{ uri: establishment.avatar }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+        </View>
+      ) : (
+        <View className="h-[52px] w-[52px] rounded-full bg-xporadia-navy/[0.08] items-center justify-center">
+          <BuildingIcon color={Colors.navy} size={24} />
+        </View>
+      )}
       <View className="flex-1 gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">{establishment.school_name}</Text>
-        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={1}>
+        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
           {establishment.address || "Établissement"}
           {establishment.student_count ? ` · ${establishment.student_count} élèves` : ""}
         </Text>
@@ -85,12 +92,18 @@ function CompanyCard({ company }: { company: CompanyDirectoryCard }) {
       accessibilityLabel={`Voir l'entreprise ${company.company_name}`}
       className="flex-row items-center gap-3"
     >
-      <View className="h-[52px] w-[52px] rounded-full bg-xporadia-navy/[0.08] items-center justify-center">
-        <BriefcaseIcon color={Colors.navy} size={24} />
-      </View>
+      {company.avatar ? (
+        <View className="h-[52px] w-[52px] rounded-full overflow-hidden bg-xporadia-navy/[0.08]">
+          <Image source={{ uri: company.avatar }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
+        </View>
+      ) : (
+        <View className="h-[52px] w-[52px] rounded-full bg-xporadia-navy/[0.08] items-center justify-center">
+          <BriefcaseIcon color={Colors.navy} size={24} />
+        </View>
+      )}
       <View className="flex-1 gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">{company.company_name}</Text>
-        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={1}>
+        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
           {company.sector || "Entreprise"}
           {company.address ? ` · ${company.address}` : ""}
         </Text>

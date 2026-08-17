@@ -5,7 +5,9 @@ import { ScrollView, Text, View } from "react-native";
 
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, ClockIcon, PinIcon, UsersIcon } from "@/components/ui/Icon";
+import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
+import { openInMaps } from "@/lib/openInMaps";
 import * as internshipsApi from "@/services/internships";
 
 const LEVEL_LABELS: Record<string, string> = {
@@ -14,18 +16,6 @@ const LEVEL_LABELS: Record<string, string> = {
   "1ere": "Première",
   terminale: "Terminale",
 };
-
-function StatBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-2 items-center">
-      <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-soft">{icon}</View>
-      <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={1}>
-        {value}
-      </Text>
-      <Text className="text-[11px] text-xporadia-text-secondary">{label}</Text>
-    </View>
-  );
-}
 
 export default function InternshipOfferDetailScreen() {
   const { offerId } = useLocalSearchParams<{ offerId: string }>();
@@ -64,7 +54,12 @@ export default function InternshipOfferDetailScreen() {
 
       <View className="bg-white rounded-3xl p-6 shadow-soft gap-5">
         <View className="flex-row gap-3">
-          <StatBox icon={<PinIcon color={Colors.navy} size={18} />} label="Ville" value={offer.city} />
+          <StatBox
+            icon={<PinIcon color={Colors.navy} size={18} />}
+            label="Ville"
+            value={offer.city}
+            onPress={() => openInMaps(offer.city)}
+          />
           <StatBox icon={<ClockIcon color={Colors.navy} size={18} />} label="Durée" value={`${offer.duration_weeks} sem.`} />
           <StatBox icon={<UsersIcon color={Colors.navy} size={18} />} label="Places" value={String(offer.places)} />
         </View>

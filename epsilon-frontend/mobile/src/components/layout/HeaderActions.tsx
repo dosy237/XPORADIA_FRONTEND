@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
-import { BellIcon, GearIcon } from "@/components/ui/Icon";
+import { BellIcon, GearIcon, LogoutIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as notificationsApi from "@/services/notifications";
 import { useAuthStore } from "@/store/authStore";
@@ -51,7 +51,7 @@ export function HeaderActions() {
         accessibilityLabel="Se déconnecter"
         hitSlop={8}
       >
-        <Text style={{ color: Colors.white }}>Déconnexion</Text>
+        <LogoutIcon color={Colors.white} size={20} />
       </Pressable>
     </View>
   );

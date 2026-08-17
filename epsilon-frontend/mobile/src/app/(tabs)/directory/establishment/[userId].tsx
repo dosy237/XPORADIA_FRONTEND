@@ -6,20 +6,10 @@ import { Avatar } from "@/components/ui/Avatar";
 import { AdminModerationBar } from "@/components/admin/AdminModerationBar";
 import { Chip } from "@/components/ui/Chip";
 import { BuildingIcon, PinIcon, UsersIcon } from "@/components/ui/Icon";
+import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
+import { openInMaps } from "@/lib/openInMaps";
 import * as establishmentApi from "@/services/establishmentDirectory";
-
-function StatBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-2 items-center">
-      <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-card">{icon}</View>
-      <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={1}>
-        {value}
-      </Text>
-      <Text className="text-[11px] text-xporadia-text-secondary">{label}</Text>
-    </View>
-  );
-}
 
 export default function FeedEstablishmentDetailScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
@@ -49,7 +39,7 @@ export default function FeedEstablishmentDetailScreen() {
           className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
           pointerEvents="none"
         />
-        <Avatar firstName={establishment.school_name} lastName="" />
+        <Avatar firstName={establishment.school_name} lastName="" imageUri={establishment.avatar} />
         <Text className="text-xl font-bold text-xporadia-navy mt-3 text-center px-6">
           {establishment.school_name}
         </Text>
@@ -75,6 +65,7 @@ export default function FeedEstablishmentDetailScreen() {
               icon={<PinIcon color={Colors.navy} size={18} />}
               label="Adresse"
               value={establishment.address || "Non renseigné"}
+              onPress={establishment.address ? () => openInMaps(establishment.address) : undefined}
             />
             <StatBox
               icon={<UsersIcon color={Colors.navy} size={18} />}

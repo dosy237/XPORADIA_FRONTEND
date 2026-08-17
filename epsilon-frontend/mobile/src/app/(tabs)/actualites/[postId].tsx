@@ -6,6 +6,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   Text,
   TextInput,
@@ -15,21 +16,45 @@ import {
 import { PostCard } from "@/components/feed/PostCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { TrashIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useFeedSocket } from "@/hooks/useFeedSocket";
-import { formatRelativeTime } from "@/lib/formatRelativeTime";
+import { useRelativeTime } from "@/hooks/useRelativeTime";
 import * as feedApi from "@/services/feed";
 import { useAuthStore } from "@/store/authStore";
 
-function CommentRow({ comment }: { comment: feedApi.PostComment }) {
+function CommentRow({
+  comment,
+  canDelete,
+  onDelete,
+}: {
+  comment: feedApi.PostComment;
+  canDelete: boolean;
+  onDelete: () => void;
+}) {
   const [firstName, ...rest] = comment.author.full_name.split(" ");
+  const relativeTime = useRelativeTime(comment.created_at);
   return (
     <View className="flex-row items-start gap-3">
-      <Avatar firstName={firstName} lastName={rest.join(" ")} size={36} />
+      <Avatar firstName={firstName} lastName={rest.join(" ")} imageUri={comment.author.avatar} size={36} />
       <View className="flex-1 bg-white rounded-2xl px-4 py-3 shadow-soft">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-xs font-semibold text-xporadia-text-primary">{comment.author.full_name}</Text>
-          <Text className="text-[10px] text-xporadia-text-secondary">{formatRelativeTime(comment.created_at)}</Text>
+        <View className="flex-row items-center justify-between gap-2">
+          <Text className="text-xs font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+            {comment.author.full_name}
+          </Text>
+          <View className="flex-row items-center gap-2 flex-shrink-0">
+            <Text className="text-[10px] text-xporadia-text-secondary">{relativeTime}</Text>
+            {canDelete ? (
+              <Pressable
+                onPress={onDelete}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel="Supprimer ce commentaire"
+              >
+                <TrashIcon size={12} color={Colors.textSecondary} />
+              </Pressable>
+            ) : null}
+          </View>
         </View>
         <Text className="text-sm text-xporadia-text-primary mt-1">{comment.body}</Text>
       </View>
@@ -66,6 +91,22 @@ export default function PostDetailScreen() {
         current?.map((p) => (p.id === Number(postId) ? { ...p, like_count: likeCount } : p)),
       );
     },
+    onCommentDeleted: (commentId) => {
+      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
+        current?.filter((c) => c.id !== commentId),
+      );
+    },
+  });
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId: number) => feedApi.deletePostComment(Number(postId), commentId),
+    onSuccess: (_data, commentId) => {
+      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
+        current?.filter((c) => c.id !== commentId),
+      );
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: () => Alert.alert("Erreur", "Impossible de supprimer ce commentaire."),
   });
 
   const likeMutation = useMutation({
@@ -136,7 +177,17 @@ export default function PostDetailScreen() {
         ) : comments && comments.length > 0 ? (
           <View className="gap-3">
             {comments.map((c) => (
-              <CommentRow key={c.id} comment={c} />
+              <CommentRow
+                key={c.id}
+                comment={c}
+                canDelete={c.author.id === currentUser?.id || currentUser?.primary_role === "admin"}
+                onDelete={() =>
+                  Alert.alert("Supprimer ce commentaire ?", undefined, [
+                    { text: "Annuler", style: "cancel" },
+                    { text: "Supprimer", style: "destructive", onPress: () => deleteCommentMutation.mutate(c.id) },
+                  ])
+                }
+              />
             ))}
           </View>
         ) : (

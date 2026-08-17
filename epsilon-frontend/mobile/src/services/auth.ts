@@ -115,6 +115,20 @@ export interface UpdateMePayload {
 export const updateMe = (payload: UpdateMePayload) =>
   api.patch<User>("/auth/me/", payload).then((r) => r.data);
 
+export const uploadMyAvatar = (asset: { uri: string; name: string; mimeType?: string | null }) => {
+  const formData = new FormData();
+  formData.append("avatar", {
+    uri: asset.uri,
+    name: asset.name,
+    type: asset.mimeType ?? "image/jpeg",
+  } as unknown as Blob);
+  return api
+    .post<User>("/auth/me/avatar/", formData, { headers: { "Content-Type": "multipart/form-data" } })
+    .then((r) => r.data);
+};
+
+export const deleteMyAvatar = () => api.delete<User>("/auth/me/avatar/").then((r) => r.data);
+
 export const changePassword = (oldPassword: string, newPassword: string) =>
   api
     .post<{ detail: string }>("/auth/me/change-password/", {

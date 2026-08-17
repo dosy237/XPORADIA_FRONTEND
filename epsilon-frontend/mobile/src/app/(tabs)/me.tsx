@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Share, Text, View } from "react-native";
 
-import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPicker } from "@/components/ui/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -201,7 +201,7 @@ function ProfileScreen() {
     <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="p-6 gap-5 pb-12">
         <View className="items-center gap-3 pt-2">
-          <Avatar firstName={user.first_name} lastName={user.last_name} size={88} />
+          <AvatarPicker firstName={user.first_name} lastName={user.last_name} imageUri={user.avatar} size={88} />
           <View className="items-center gap-1">
             <Text className="text-xl font-bold text-xporadia-navy">
               {user.first_name} {user.last_name}

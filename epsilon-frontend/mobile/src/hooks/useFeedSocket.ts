@@ -8,7 +8,8 @@ type FeedRealtimeEvent =
   | { event: "post_deleted"; post_id: number }
   | { event: "post_like_updated"; post_id: number; like_count: number }
   | { event: "post_comment_count_updated"; post_id: number; comment_count: number }
-  | { event: "comment_created"; comment: PostComment };
+  | { event: "comment_created"; comment: PostComment }
+  | { event: "comment_deleted"; comment_id: number };
 
 interface UseFeedSocketOptions {
   onPostCreated?: (post: Post) => void;
@@ -16,6 +17,7 @@ interface UseFeedSocketOptions {
   onLikeUpdated?: (postId: number, likeCount: number) => void;
   onCommentCountUpdated?: (postId: number, commentCount: number) => void;
   onCommentCreated?: (comment: PostComment) => void;
+  onCommentDeleted?: (commentId: number) => void;
 }
 
 const WS_BASE = API_URL.replace(/^http/, "ws").replace(/\/api\/v1\/?$/, "");
@@ -54,6 +56,7 @@ export function useFeedSocket(postId: number | undefined, options: UseFeedSocket
           else if (data.event === "post_comment_count_updated")
             optionsRef.current.onCommentCountUpdated?.(data.post_id, data.comment_count);
           else if (data.event === "comment_created") optionsRef.current.onCommentCreated?.(data.comment);
+          else if (data.event === "comment_deleted") optionsRef.current.onCommentDeleted?.(data.comment_id);
         } catch {
           // Ignoré — le polling de secours prend le relai si besoin.
         }

@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 
-import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPicker } from "@/components/ui/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -173,7 +173,7 @@ export default function ParentProfileScreen() {
             className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
             pointerEvents="none"
           />
-          <Avatar firstName={user?.first_name} lastName={user?.last_name} />
+          <AvatarPicker firstName={user?.first_name} lastName={user?.last_name} imageUri={user?.avatar} />
           <Text className="text-xl font-bold text-xporadia-navy mt-3">
             {user?.first_name} {user?.last_name}
           </Text>

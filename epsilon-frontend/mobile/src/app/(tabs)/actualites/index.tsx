@@ -22,7 +22,7 @@ function ComposePrompt() {
       onPress={() => router.push("/(tabs)/actualites/compose")}
       className="bg-white rounded-xl p-4 shadow-soft flex-row items-center gap-3"
     >
-      <Avatar firstName={user.first_name} lastName={user.last_name} size={40} />
+      <Avatar firstName={user.first_name} lastName={user.last_name} imageUri={user.avatar} size={40} />
       <Text className="flex-1 text-sm text-xporadia-text-secondary">
         Partagez une actualité avec la communauté...
       </Text>
