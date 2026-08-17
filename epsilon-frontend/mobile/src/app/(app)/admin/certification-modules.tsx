@@ -129,8 +129,9 @@ export default function AdminCertificationModulesScreen() {
           </View>
 
           <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Niveau visé</Text>
-          <View className="flex-row gap-2">
-            {LEVEL_ORDER.map((lvl) => (
+          <View className="flex-row flex-wrap gap-2">
+            {/* "Zéro" est le palier de départ, jamais un niveau qu'un module peut faire atteindre. */}
+            {LEVEL_ORDER.filter((lvl) => lvl !== "zero").map((lvl) => (
               <Chip key={lvl} label={LEVEL_LABELS[lvl]} variant={targetLevel === lvl ? "navy" : "neutral"} onPress={() => setTargetLevel(lvl)} />
             ))}
           </View>

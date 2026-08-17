@@ -12,6 +12,8 @@ export const Colors = {
   bronze: "#B45309",
   silver: "#94A3B8",
   purple: "#7B2FFF",
+  platinum: "#38BDF8",
+  zeroLevel: "#CBD5E1",
   textPrimary: "#0F172A",
   textSecondary: "#5A6A8A",
   navyLight: "#1E293B",

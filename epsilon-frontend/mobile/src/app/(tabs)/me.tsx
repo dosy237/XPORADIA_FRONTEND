@@ -299,9 +299,11 @@ export default function MeScreen() {
 
   // Un visiteur non connecté qui touche l'onglet Profil est renvoyé
   // directement vers l'authentification plutôt que de voir un écran
-  // "connectez-vous" planté dans la barre d'onglets.
+  // "connectez-vous" planté dans la barre d'onglets. `push` (pas
+  // `replace`) pour que le retour ramène aux pages publiques au lieu
+  // de bloquer l'utilisateur sur l'écran d'authentification.
   useEffect(() => {
-    if (!isAuthenticated) router.replace("/(auth)/welcome");
+    if (!isAuthenticated) router.push("/(auth)/welcome");
   }, [isAuthenticated]);
 
   if (!isAuthenticated) return null;

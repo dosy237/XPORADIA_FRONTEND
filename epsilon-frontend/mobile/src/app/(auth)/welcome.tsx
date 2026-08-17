@@ -1,13 +1,15 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { Link, router } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/Button";
+import { CloseIcon } from "@/components/ui/Icon";
 
 export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
+  const canGoBack = router.canGoBack();
 
   return (
     <View className="flex-1 bg-xporadia-navy">
@@ -24,6 +26,19 @@ export default function WelcomeScreen() {
         locations={[0, 0.4, 1]}
         style={StyleSheet.absoluteFill}
       />
+
+      {canGoBack ? (
+        <Pressable
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Retour"
+          hitSlop={12}
+          className="absolute right-6 h-10 w-10 rounded-full bg-white/15 items-center justify-center"
+          style={{ top: insets.top + 12 }}
+        >
+          <CloseIcon size={18} color="#FFFFFF" />
+        </Pressable>
+      ) : null}
 
       <View
         className="flex-1 px-8"

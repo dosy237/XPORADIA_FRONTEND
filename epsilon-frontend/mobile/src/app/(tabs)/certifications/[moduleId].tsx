@@ -141,28 +141,47 @@ export default function PublicModuleDetailScreen() {
       {nextSessions.length > 0 && (
         <View className="gap-3">
           <Text className="text-base font-bold text-xporadia-navy">Prochaines sessions</Text>
-          {nextSessions.map((session) => (
-            <Card
-              key={session.id}
-              onPress={() => handleSessionPress(session)}
-              className={isAuthenticated && isTeacher ? "gap-1" : "gap-1 opacity-60"}
-            >
-              <Text className="text-sm font-semibold text-xporadia-text-primary">
-                {session.city} · {new Date(session.date).toLocaleDateString("fr-FR")}
-              </Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                {session.location} · {session.places_left} places restantes
-              </Text>
-            </Card>
-          ))}
+          {nextSessions.map((session) => {
+            const selected = selectedSession?.id === session.id;
+            return (
+              <Card
+                key={session.id}
+                onPress={() => handleSessionPress(session)}
+                className={
+                  !isAuthenticated || !isTeacher
+                    ? "gap-1 opacity-60"
+                    : selected
+                      ? "gap-1 border-2 border-xporadia-orange"
+                      : "gap-1"
+                }
+              >
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm font-semibold text-xporadia-text-primary">
+                    {session.city} · {new Date(session.date).toLocaleDateString("fr-FR")}
+                  </Text>
+                  {selected ? <Chip label="Sélectionnée" variant="orange" /> : null}
+                </View>
+                <Text className="text-xs text-xporadia-text-secondary">
+                  {session.location} · {session.places_left} places restantes
+                </Text>
+              </Card>
+            );
+          })}
         </View>
       )}
 
-      {selectedSession ? (
+      {isAuthenticated && isTeacher && nextSessions.length > 0 ? (
         <Card className="gap-3">
-          <Text className="text-sm font-bold text-xporadia-navy">
-            Paiement · {selectedSession.city}, {new Date(selectedSession.date).toLocaleDateString("fr-FR")}
-          </Text>
+          <Text className="text-sm font-bold text-xporadia-navy">Paiement et inscription</Text>
+          {!selectedSession ? (
+            <Text className="text-xs text-xporadia-text-secondary">
+              Choisissez une session ci-dessus pour continuer.
+            </Text>
+          ) : (
+            <Text className="text-xs text-xporadia-text-secondary">
+              {selectedSession.city}, {new Date(selectedSession.date).toLocaleDateString("fr-FR")}
+            </Text>
+          )}
           <View className="flex-row gap-2">
             {OPERATORS.map((op) => (
               <Chip
@@ -183,20 +202,13 @@ export default function PublicModuleDetailScreen() {
           {enrollMutation.error ? (
             <Text className="text-xs text-xporadia-red">L'inscription a échoué. Vérifiez le numéro saisi.</Text>
           ) : null}
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <Button label="Annuler" variant="secondary" pill onPress={() => setSelectedSession(null)} />
-            </View>
-            <View className="flex-1">
-              <Button
-                label="Payer et s'inscrire"
-                pill
-                onPress={() => enrollMutation.mutate()}
-                loading={enrollMutation.isPending}
-                disabled={phone.trim().length < 8}
-              />
-            </View>
-          </View>
+          <Button
+            label="Payer et s'inscrire"
+            pill
+            onPress={() => enrollMutation.mutate()}
+            loading={enrollMutation.isPending}
+            disabled={!selectedSession || phone.trim().length < 8}
+          />
         </Card>
       ) : null}
     </ScrollView>

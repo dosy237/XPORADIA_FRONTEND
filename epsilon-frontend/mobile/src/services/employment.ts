@@ -25,7 +25,7 @@ export interface JobListing {
   contract_type: ContractType;
   salary_min: number | null;
   salary_max: number | null;
-  cert_level_required: "bronze" | "silver" | "gold";
+  cert_level_required: "zero" | "bronze" | "silver" | "gold" | "platinum" | "diamond";
   description: string;
   city: string;
   commune: string;
@@ -56,7 +56,7 @@ export const createJobListing = (payload: {
   levels?: string[];
   salary_min?: number;
   salary_max?: number;
-  cert_level_required?: "bronze" | "silver" | "gold";
+  cert_level_required?: "zero" | "bronze" | "silver" | "gold" | "platinum" | "diamond";
   targeted_teacher_emails?: string[];
 }) => api.post<JobListing>("/employment/listings/", payload).then((r) => r.data);
 
@@ -199,7 +199,7 @@ export const payInvoice = (
 ) => api.post<EstablishmentInvoice>(`/employment/invoices/${invoiceId}/pay/`, payload).then((r) => r.data);
 
 export interface SalaryBenchmark {
-  current_level: "bronze" | "silver" | "gold" | null;
+  current_level: "zero" | "bronze" | "silver" | "gold" | "platinum" | "diamond" | null;
   salary_range_min: number | null;
   salary_range_max: number | null;
   current_income: number | null;

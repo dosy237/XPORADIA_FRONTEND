@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { HeartIcon, MoreIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
+import { FullscreenImageViewer } from "@/components/feed/FullscreenImageViewer";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
 import * as feedApi from "@/services/feed";
 import type { Post } from "@/services/feed";
@@ -25,26 +26,34 @@ interface PostCardProps {
 
 const IMAGE_WIDTH = Math.min(Dimensions.get("window").width - 48, 400);
 
-function ImageCarousel({ images }: { images: Post["images"] }) {
+function ImageCarousel({ images, onImagePress }: { images: Post["images"]; onImagePress: (index: number) => void }) {
   if (images.length === 0) return null;
   if (images.length === 1) {
     return (
-      <Image
-        source={{ uri: images[0].image }}
-        style={{ width: "100%", height: 200, borderRadius: 14 }}
-        contentFit="cover"
-      />
+      <Pressable onPress={() => onImagePress(0)} accessibilityRole="button" accessibilityLabel="Agrandir la photo">
+        <Image
+          source={{ uri: images[0].image }}
+          style={{ width: "100%", height: 200, borderRadius: 14 }}
+          contentFit="cover"
+        />
+      </Pressable>
     );
   }
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
-      {images.map((img) => (
-        <Image
+      {images.map((img, index) => (
+        <Pressable
           key={img.id}
-          source={{ uri: img.image }}
-          style={{ width: IMAGE_WIDTH * 0.8, height: 180, borderRadius: 14 }}
-          contentFit="cover"
-        />
+          onPress={() => onImagePress(index)}
+          accessibilityRole="button"
+          accessibilityLabel="Agrandir la photo"
+        >
+          <Image
+            source={{ uri: img.image }}
+            style={{ width: IMAGE_WIDTH * 0.8, height: 180, borderRadius: 14 }}
+            contentFit="cover"
+          />
+        </Pressable>
       ))}
     </ScrollView>
   );
@@ -64,6 +73,7 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
   const [menuOpen, setMenuOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(post.body);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const followMutation = useMutation({
     mutationFn: () => feedApi.toggleFollow(post.author.id),
@@ -169,7 +179,13 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
         </View>
       ) : null}
 
-      <ImageCarousel images={post.images} />
+      <ImageCarousel images={post.images} onImagePress={setViewerIndex} />
+      <FullscreenImageViewer
+        images={post.images}
+        initialIndex={viewerIndex ?? 0}
+        visible={viewerIndex !== null}
+        onClose={() => setViewerIndex(null)}
+      />
 
       {editing ? (
         <View className="gap-2">

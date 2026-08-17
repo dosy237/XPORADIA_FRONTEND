@@ -16,7 +16,7 @@ import type { InternshipOffer } from "@/services/internships";
 
 type CatalogTab = "certifications" | "internships";
 
-const LEVEL_FILTERS: CertificationLevel[] = ["bronze", "silver", "gold"];
+const LEVEL_FILTERS: CertificationLevel[] = ["bronze", "silver", "gold", "platinum", "diamond"];
 
 function ModuleCard({ module }: { module: TrainingModule }) {
   return (

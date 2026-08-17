@@ -1,6 +1,6 @@
 import api from "@/services/api";
 
-export type CertificationLevel = "bronze" | "silver" | "gold";
+export type CertificationLevel = "zero" | "bronze" | "silver" | "gold" | "platinum" | "diamond";
 export type ModuleCategory = "pedagogy" | "didactics" | "management" | "ethics" | "leadership";
 
 export interface TrainingModule {

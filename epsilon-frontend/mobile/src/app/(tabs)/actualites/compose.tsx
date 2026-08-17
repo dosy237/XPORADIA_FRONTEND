@@ -3,11 +3,12 @@ import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
+import { PostCard } from "@/components/feed/PostCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import { CloseIcon, EyeIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as feedApi from "@/services/feed";
@@ -17,12 +18,23 @@ const MAX_LENGTH = 2000;
 const MAX_TITLE_LENGTH = 150;
 const MAX_IMAGES = 6;
 
+const ROLE_LABELS: Record<string, string> = {
+  teacher: "Enseignant",
+  director: "Directeur d'établissement",
+  parent: "Parent d'élève",
+  company: "Entreprise",
+  trainer: "Formateur partenaire",
+  admin: "Administrateur Xporadia",
+  student: "Élève",
+};
+
 export default function ComposeScreen() {
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
+  const [previewing, setPreviewing] = useState(false);
 
   const mutation = useMutation({
     mutationFn: () =>
@@ -57,6 +69,28 @@ export default function ComposeScreen() {
   };
 
   if (!user) return null;
+
+  const previewPost: feedApi.Post = {
+    id: -1,
+    author: {
+      id: user.id,
+      full_name: `${user.first_name} ${user.last_name}`,
+      avatar: user.avatar,
+      primary_role: user.primary_role,
+      role_label: ROLE_LABELS[user.primary_role] ?? user.primary_role,
+      is_followed_by_me: false,
+      followers_count: 0,
+    },
+    title: title.trim(),
+    body: body.trim(),
+    hashtags: Array.from(new Set(Array.from(body.matchAll(/#(\w+)/g), (m) => m[1]))),
+    images: images.map((img, order) => ({ id: order, image: img.uri, order })),
+    visibility: "public",
+    like_count: 0,
+    comment_count: 0,
+    is_liked_by_me: false,
+    created_at: new Date().toISOString(),
+  };
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -118,14 +152,61 @@ export default function ComposeScreen() {
           <Text className="text-xs text-xporadia-text-secondary">{body.length}/{MAX_LENGTH}</Text>
         </View>
 
-        <Button
-          label="Publier"
-          pill
-          onPress={() => mutation.mutate()}
-          loading={mutation.isPending}
-          disabled={body.trim().length === 0}
-        />
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Button
+              label="Prévisualiser"
+              variant="secondary"
+              pill
+              onPress={() => setPreviewing(true)}
+              disabled={body.trim().length === 0}
+            />
+          </View>
+          <View className="flex-1">
+            <Button
+              label="Publier"
+              pill
+              onPress={() => mutation.mutate()}
+              loading={mutation.isPending}
+              disabled={body.trim().length === 0}
+            />
+          </View>
+        </View>
       </ScrollView>
+
+      <Modal visible={previewing} animationType="slide" onRequestClose={() => setPreviewing(false)}>
+        <View className="flex-1 bg-xporadia-bg">
+          <View className="flex-row items-center justify-between px-6 pt-14 pb-4 bg-white border-b border-xporadia-border">
+            <View className="flex-row items-center gap-2">
+              <EyeIcon size={16} color={Colors.textSecondary} />
+              <Text className="text-sm font-semibold text-xporadia-text-secondary">Aperçu — pas encore publié</Text>
+            </View>
+            <Pressable
+              onPress={() => setPreviewing(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Fermer l'aperçu"
+              hitSlop={8}
+            >
+              <CloseIcon size={18} color={Colors.navy} />
+            </Pressable>
+          </View>
+          <ScrollView contentContainerClassName="p-6 gap-4 pb-8">
+            <PostCard post={previewPost} disableNavigation />
+          </ScrollView>
+          <View className="p-6 pt-0 gap-3">
+            <Button
+              label="Publier"
+              pill
+              onPress={() => {
+                setPreviewing(false);
+                mutation.mutate();
+              }}
+              loading={mutation.isPending}
+            />
+            <Button label="Continuer à modifier" variant="secondary" pill onPress={() => setPreviewing(false)} />
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
