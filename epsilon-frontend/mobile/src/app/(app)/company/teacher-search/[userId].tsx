@@ -62,7 +62,7 @@ export default function CompanyTeacherSearchDetailScreen() {
             <StatBox
               icon={<PinIcon color={Colors.navy} size={18} />}
               label="Localisation"
-              value={teacher.location || "—"}
+              value={teacher.location || "Non renseigné"}
             />
             <StatBox
               icon={<MedalIcon color={Colors.navy} size={18} />}

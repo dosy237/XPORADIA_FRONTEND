@@ -50,7 +50,7 @@ export default function CompanyTeacherSearchScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <Text className="text-xs text-xporadia-text-secondary leading-5">
-        Enseignants certifiés Xporadia — utile avant de cibler un profil dans une offre d&apos;emploi.
+        Enseignants certifiés Xporadia, utile avant de cibler un profil dans une offre d&apos;emploi.
       </Text>
       <Input
         placeholder="Rechercher par matière (ex. Maths)"
