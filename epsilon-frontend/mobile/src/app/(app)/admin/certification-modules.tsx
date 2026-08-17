@@ -28,7 +28,7 @@ function ModuleRow({ module }: { module: AdminTrainingModule }) {
         <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 120, borderRadius: 12 }} contentFit="cover" />
       ) : null}
       <View className="flex-row items-center justify-between">
-        <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+        <Text className="text-sm font-semibold text-xporadia-text-primary flex-1">
           {module.title}
         </Text>
         <Chip label={LEVEL_LABELS[module.target_level]} variant="orange" />

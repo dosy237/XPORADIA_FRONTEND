@@ -32,7 +32,7 @@ function ExerciseCard({ childId, exercise }: { childId: number; exercise: ChildE
   return (
     <View className="bg-white rounded-2xl p-4 shadow-soft gap-2">
       <View className="flex-row items-center justify-between">
-        <Text className="text-base font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+        <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
           {exercise.title}
         </Text>
         {submission ? (

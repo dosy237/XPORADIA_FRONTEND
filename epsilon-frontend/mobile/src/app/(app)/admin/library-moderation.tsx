@@ -44,7 +44,7 @@ export default function LibraryModerationScreen() {
           {resources.map((resource) => (
             <View key={resource.id} className="bg-white rounded-2xl p-4 shadow-soft gap-2">
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+                <Text className="text-sm font-semibold text-xporadia-text-primary flex-1">
                   {resource.title}
                 </Text>
                 <Chip label={resource.subject} variant="navy-subtle" />

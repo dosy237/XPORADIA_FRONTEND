@@ -42,7 +42,7 @@ export default function AdminInternshipOffersScreen() {
           {offers.map((offer) => (
             <View key={offer.id} className="bg-white rounded-2xl p-4 shadow-soft gap-2">
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+                <Text className="text-sm font-semibold text-xporadia-text-primary flex-1">
                   {offer.title}
                 </Text>
                 <Chip label={offer.is_active ? "Active" : "Inactive"} variant={offer.is_active ? "navy-subtle" : "neutral"} />

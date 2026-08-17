@@ -47,7 +47,7 @@ export default function MyInternshipApplicationsScreen() {
       {applications.map((application) => (
         <View key={application.id} className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+            <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
               {application.student.first_name} · {application.offer.title}
             </Text>
             <Chip label={STATUS_LABELS[application.status]} variant="navy-subtle" />

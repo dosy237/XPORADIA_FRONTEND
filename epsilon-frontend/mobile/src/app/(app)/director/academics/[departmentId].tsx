@@ -20,7 +20,7 @@ function TrackCard({ track }: { track: Track }) {
     >
       <Text className="text-base font-semibold text-xporadia-text-primary">{track.name}</Text>
       {track.description ? (
-        <Text className="text-xs text-xporadia-text-secondary mt-0.5" numberOfLines={1}>
+        <Text className="text-xs text-xporadia-text-secondary mt-0.5" numberOfLines={2}>
           {track.description}
         </Text>
       ) : null}

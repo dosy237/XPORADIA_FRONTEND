@@ -49,7 +49,7 @@ export default function AdminJobListingsScreen() {
           {listings.map((listing) => (
             <View key={listing.id} className="bg-white rounded-2xl p-4 shadow-soft gap-2">
               <View className="flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+                <Text className="text-sm font-semibold text-xporadia-text-primary flex-1">
                   {listing.title}
                 </Text>
                 <Chip label={STATUS_LABELS[listing.status]} variant={listing.status === "active" ? "navy-subtle" : "neutral"} />

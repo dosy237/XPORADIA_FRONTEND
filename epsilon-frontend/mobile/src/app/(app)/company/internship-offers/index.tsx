@@ -44,7 +44,7 @@ function OfferCard({
         className="gap-2"
       >
         <View className="flex-row items-center justify-between">
-          <Text className="text-base font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+          <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
             {offer.title}
           </Text>
           <Chip label={offer.is_active ? "Active" : "Inactive"} variant="navy-subtle" />

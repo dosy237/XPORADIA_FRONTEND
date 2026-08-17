@@ -40,7 +40,7 @@ function ExerciseCard({
   return (
     <Card className="gap-2">
       <View className="flex-row items-center justify-between gap-2">
-        <Text className="text-base font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+        <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
           {exercise.title}
         </Text>
         <View className="flex-row gap-1.5">

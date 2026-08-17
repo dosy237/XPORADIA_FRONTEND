@@ -99,7 +99,7 @@ function EstablishmentAttachmentBanner() {
       </View>
       <View className="flex-1">
         <Text className="text-sm font-semibold text-xporadia-text-primary">Demande refusée</Text>
-        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={1}>
+        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
           {joinRequest.rejection_reason || "Touchez pour essayer un autre établissement."}
         </Text>
       </View>

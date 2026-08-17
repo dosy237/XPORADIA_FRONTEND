@@ -24,7 +24,7 @@ function DepartmentCard({ department }: { department: Department }) {
       <View className="flex-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">{department.name}</Text>
         {department.description ? (
-          <Text className="text-xs text-xporadia-text-secondary" numberOfLines={1}>
+          <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
             {department.description}
           </Text>
         ) : null}

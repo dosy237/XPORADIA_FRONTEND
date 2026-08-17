@@ -43,7 +43,7 @@ function CertificationRow({
   return (
     <View className="bg-white rounded-2xl p-4 shadow-soft gap-2">
       <View className="flex-row items-center justify-between">
-        <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+        <Text className="text-sm font-semibold text-xporadia-text-primary flex-1">
           {certification.module_title}
         </Text>
         <Chip

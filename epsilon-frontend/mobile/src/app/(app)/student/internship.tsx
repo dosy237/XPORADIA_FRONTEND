@@ -94,7 +94,7 @@ function ConventionCard({ convention }: { convention: InternshipConvention }) {
     <View className="gap-2">
       <Card className="gap-2">
         <View className="flex-row items-center justify-between">
-          <Text className="text-base font-bold text-xporadia-navy flex-1" numberOfLines={1}>
+          <Text className="text-base font-bold text-xporadia-navy flex-1">
             {convention.position_title}
           </Text>
           <Chip
