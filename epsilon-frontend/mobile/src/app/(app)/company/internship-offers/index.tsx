@@ -79,7 +79,7 @@ export default function CompanyInternshipOffersScreen() {
 
   const pickCoverImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       quality: 0.8,
     });
     if (!result.canceled) setCoverImage(result.assets[0]);

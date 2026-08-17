@@ -43,7 +43,7 @@ export function AvatarPicker({ firstName, lastName, imageUri, size = 96 }: Avata
 
   const pickAndUpload = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.85,

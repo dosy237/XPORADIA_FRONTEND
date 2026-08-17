@@ -19,6 +19,10 @@ const MAX_LENGTH = 2000;
 const MAX_TITLE_LENGTH = 150;
 const MAX_IMAGES = 6;
 const MAX_VIDEO_SECONDS = 60;
+// Doit rester cohérent avec MAX_VIDEO_SIZE_BYTES côté backend
+// (apps/feed/serializers.py) — vérifié ici pour prévenir tout de suite
+// plutôt que de laisser échouer un envoi de plusieurs dizaines de Mo.
+const MAX_VIDEO_SIZE_BYTES = 80 * 1024 * 1024;
 
 const ROLE_LABELS: Record<string, string> = {
   teacher: "Enseignant",
@@ -62,13 +66,20 @@ export default function ComposeScreen() {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       router.back();
     },
+    onError: (error: any) => {
+      const detail = error?.response?.data?.video ?? error?.response?.data?.detail;
+      Alert.alert(
+        "Publication impossible",
+        Array.isArray(detail) ? detail.join(" ") : detail ?? "Une erreur est survenue. Réessayez.",
+      );
+    },
   });
 
   const pickImages = async () => {
     const remaining = MAX_IMAGES - images.length;
     if (remaining <= 0) return;
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsMultipleSelection: true,
       selectionLimit: remaining,
       quality: 0.8,
@@ -84,9 +95,12 @@ export default function ComposeScreen() {
 
   const pickVideo = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      mediaTypes: ["videos"],
       videoMaxDuration: MAX_VIDEO_SECONDS,
-      quality: 0.7,
+      // `quality` ne s'applique qu'aux photos (voir doc expo-image-picker) —
+      // c'est `videoQuality` qui compresse la vidéo, iOS uniquement (pas
+      // d'équivalent Android côté sélecteur de galerie).
+      videoQuality: Platform.OS === "ios" ? ImagePicker.UIImagePickerControllerQualityType.Medium : undefined,
     });
     if (result.canceled) return;
     const asset = result.assets[0];
@@ -95,6 +109,13 @@ export default function ComposeScreen() {
       Alert.alert(
         "Vidéo trop longue",
         `Les vidéos sont limitées à ${MAX_VIDEO_SECONDS} secondes. Choisissez un extrait plus court.`,
+      );
+      return;
+    }
+    if (asset.fileSize && asset.fileSize > MAX_VIDEO_SIZE_BYTES) {
+      Alert.alert(
+        "Vidéo trop volumineuse",
+        "Cette vidéo dépasse la taille maximale autorisée (80 Mo). Choisissez un extrait plus court ou moins lourd.",
       );
       return;
     }
