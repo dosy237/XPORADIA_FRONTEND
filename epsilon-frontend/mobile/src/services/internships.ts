@@ -60,8 +60,29 @@ export const createInternshipOffer = (payload: {
   places?: number;
 }) => api.post<InternshipOffer>("/internships/offers/", payload).then((r) => r.data);
 
-export const updateInternshipOffer = (offerId: string, payload: { is_active: boolean }) =>
+export const updateInternshipOffer = (offerId: string, payload: { is_active?: boolean; is_premium?: boolean }) =>
   api.patch<InternshipOffer>(`/internships/offers/${offerId}/`, payload).then((r) => r.data);
+
+export interface InternshipOfferSchoolLink {
+  id: number;
+  offer: InternshipOffer;
+  school: SchoolBasic;
+  status: "sent" | "published";
+  sent_at: string;
+  published_at: string | null;
+}
+
+/** Réservé au staff — voir AdminInternshipOfferSerializer côté backend. */
+export const distributeInternshipOfferToSchools = (offerId: string, schoolIds: number[]) =>
+  api
+    .post<InternshipOfferSchoolLink[]>(`/internships/offers/${offerId}/distribute/`, { school_ids: schoolIds })
+    .then((r) => r.data);
+
+export const fetchOffersDistributedToMySchool = () =>
+  api.get<InternshipOfferSchoolLink[]>("/internships/offer-links/distributed-to-me/").then((r) => r.data);
+
+export const publishOfferForMySchool = (linkId: number) =>
+  api.post<InternshipOfferSchoolLink>(`/internships/offer-links/${linkId}/publish/`).then((r) => r.data);
 
 export const uploadInternshipOfferCoverImage = (
   offerId: string,
