@@ -1,9 +1,17 @@
 import api from "@/services/api";
 
+export interface DelegateBasic {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
 export interface Department {
   id: number;
   name: string;
   description: string;
+  track_delegates: DelegateBasic[];
   created_at: string;
 }
 
@@ -12,6 +20,7 @@ export interface Track {
   department: Department;
   name: string;
   description: string;
+  class_delegates: DelegateBasic[];
   created_at: string;
 }
 
@@ -36,6 +45,9 @@ export interface SchoolClass {
 export const fetchDepartments = () =>
   api.get<Department[]>("/academics/departments/").then((r) => r.data);
 
+export const fetchDepartment = (departmentId: number) =>
+  api.get<Department>(`/academics/departments/${departmentId}/`).then((r) => r.data);
+
 export const createDepartment = (payload: { name: string; description?: string }) =>
   api.post<Department>("/academics/departments/", payload).then((r) => r.data);
 
@@ -43,6 +55,9 @@ export const fetchTracks = (departmentId: number) =>
   api
     .get<Track[]>("/academics/tracks/")
     .then((r) => r.data.filter((t) => t.department.id === departmentId));
+
+export const fetchTrack = (trackId: number) =>
+  api.get<Track>(`/academics/tracks/${trackId}/`).then((r) => r.data);
 
 export const createTrack = (payload: { department_id: number; name: string; description?: string }) =>
   api.post<Track>("/academics/tracks/", payload).then((r) => r.data);
@@ -57,6 +72,11 @@ export const createClass = (payload: {
   homeroom_teacher_email?: string;
   capacity?: number;
 }) => api.post<SchoolClass>("/academics/classes/", payload).then((r) => r.data);
+
+export const updateClass = (
+  classId: number,
+  payload: Partial<{ name: string; school_year: string; homeroom_teacher_email: string; capacity: number }>
+) => api.patch<SchoolClass>(`/academics/classes/${classId}/`, payload).then((r) => r.data);
 
 export const fetchMyHomeroomClasses = () =>
   api.get<SchoolClass[]>("/academics/my-classes/").then((r) => r.data);
@@ -146,3 +166,156 @@ export const transitionEnrollment = (
       payload
     )
     .then((r) => r.data);
+
+export interface BatchTransitionEntry {
+  child_id: number;
+  status: "promoted" | "repeating" | "withdrawn";
+  target_class_id?: number;
+}
+
+export interface BatchTransitionResult {
+  processed: number;
+  failed: number;
+  results: { child_id: number; success: boolean; error?: string }[];
+}
+
+export const batchTransitionRoster = (
+  classId: number,
+  payload: { default_target_class_id?: number; entries: BatchTransitionEntry[] }
+) =>
+  api
+    .post<BatchTransitionResult>(`/academics/classes/${classId}/batch-transition/`, payload)
+    .then((r) => r.data);
+
+export interface YearEndClassStatus {
+  school_class: number;
+  name: string;
+  school_year: string;
+  homeroom_teacher: string | null;
+  students_remaining: number;
+  is_complete: boolean;
+}
+
+export const fetchYearEndReadiness = () =>
+  api.get<YearEndClassStatus[]>("/academics/year-end-readiness/").then((r) => r.data);
+
+export interface LevelMismatch {
+  enrollment: number;
+  child: number;
+  first_name: string;
+  last_name: string;
+  declared_level: string;
+  current_class: string;
+  current_class_id: number;
+}
+
+export const fetchStartOfYearCheck = () =>
+  api
+    .get<{ total_checked: number; mismatches_found: number; mismatches: LevelMismatch[] }>(
+      "/academics/start-of-year-check/"
+    )
+    .then((r) => r.data);
+
+export const correctEnrollmentClass = (enrollmentId: number, schoolClassId: number) =>
+  api
+    .post<Enrollment>(`/academics/roster/${enrollmentId}/correct-class/`, { school_class_id: schoolClassId })
+    .then((r) => r.data);
+
+export interface TimetableSlot {
+  id: number;
+  school_class: number;
+  subject: number;
+  subject_name: string;
+  weekday: number;
+  weekday_label: string;
+  start_time: string;
+  end_time: string;
+  room: string;
+}
+
+export const fetchTimetable = (classId: number) =>
+  api.get<TimetableSlot[]>(`/academics/classes/${classId}/timetable/`).then((r) => r.data);
+
+export const createTimetableSlot = (
+  classId: number,
+  payload: { subject: number; weekday: number; start_time: string; end_time: string; room?: string },
+) => api.post<TimetableSlot>(`/academics/classes/${classId}/timetable/`, payload).then((r) => r.data);
+
+export const deleteTimetableSlot = (slotId: number) =>
+  api.delete(`/academics/timetable-slots/${slotId}/`);
+
+/** Équivalents "résolus automatiquement" pour l'élève connecté — pas
+ * besoin de connaître son classId côté frontend. */
+export const fetchMyTimetable = () =>
+  api.get<TimetableSlot[]>("/academics/my-timetable/").then((r) => r.data);
+
+export interface MyClassmate {
+  id: number;
+  first_name: string;
+  last_name: string;
+}
+
+export interface MyClass {
+  school_class_name: string | null;
+  homeroom_teacher: { first_name: string; last_name: string } | null;
+  classmates: MyClassmate[];
+}
+
+export const fetchMyClass = () => api.get<MyClass>("/academics/my-class/").then((r) => r.data);
+
+export const addDepartmentDelegate = (departmentId: number, email: string) =>
+  api.post<Department>(`/academics/departments/${departmentId}/delegates/`, { email }).then((r) => r.data);
+
+export const removeDepartmentDelegate = (departmentId: number, email: string) =>
+  api
+    .delete<Department>(`/academics/departments/${departmentId}/delegates/`, { data: { email } })
+    .then((r) => r.data);
+
+export const addTrackDelegate = (trackId: number, email: string) =>
+  api.post<Track>(`/academics/tracks/${trackId}/delegates/`, { email }).then((r) => r.data);
+
+export const removeTrackDelegate = (trackId: number, email: string) =>
+  api.delete<Track>(`/academics/tracks/${trackId}/delegates/`, { data: { email } }).then((r) => r.data);
+
+export type DelegatedTask = "timetable";
+
+export interface TaskDelegationInfo {
+  task: DelegatedTask;
+  task_label: string;
+  establishment_name: string;
+}
+
+export interface MyDelegations {
+  departments_for_tracks: Department[];
+  tracks_for_classes: Track[];
+  tasks: TaskDelegationInfo[];
+}
+
+export const fetchMyDelegations = () =>
+  api.get<MyDelegations>("/academics/my-delegations/").then((r) => r.data);
+
+export const fetchMyTimetableDelegationClasses = () =>
+  api.get<SchoolClass[]>("/academics/my-timetable-delegation-classes/").then((r) => r.data);
+
+export interface TaskDelegationEntry {
+  id: number;
+  task: DelegatedTask;
+  task_label: string;
+  teacher: { id: number; first_name: string; last_name: string; email: string };
+}
+
+export const TASK_LABELS: Record<DelegatedTask, string> = {
+  timetable: "Gestion des emplois du temps",
+};
+
+export const fetchTaskDelegations = () =>
+  api.get<TaskDelegationEntry[]>("/academics/task-delegations/").then((r) => r.data);
+
+export const addTaskDelegation = (task: DelegatedTask, email: string) =>
+  api.post<{ id: number; task: DelegatedTask }>("/academics/task-delegations/", { task, email }).then((r) => r.data);
+
+export const removeTaskDelegation = (task: DelegatedTask, email: string) =>
+  api.delete("/academics/task-delegations/", { data: { task, email } });
+
+export const removeFromEstablishment = (childId: number) =>
+  api.post(`/academics/children/${childId}/remove-from-establishment/`);
