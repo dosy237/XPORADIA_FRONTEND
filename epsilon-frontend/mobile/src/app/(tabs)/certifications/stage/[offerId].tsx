@@ -3,10 +3,12 @@ import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 
+import { Avatar } from "@/components/ui/Avatar";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, ClockIcon, PinIcon, UsersIcon } from "@/components/ui/Icon";
 import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
+import { useRelativeTime } from "@/hooks/useRelativeTime";
 import { openInMaps } from "@/lib/openInMaps";
 import * as internshipsApi from "@/services/internships";
 
@@ -25,6 +27,7 @@ export default function InternshipOfferDetailScreen() {
     queryFn: () => internshipsApi.fetchInternshipOffer(offerId),
     enabled: !!offerId,
   });
+  const postedAgo = useRelativeTime(offer?.created_at ?? "");
 
   if (isLoading || !offer) {
     return (
@@ -41,11 +44,17 @@ export default function InternshipOfferDetailScreen() {
       ) : null}
 
       <View className="gap-2">
-        <View className="flex-row items-start justify-between gap-3">
-          <Text className="text-xl font-bold text-xporadia-navy flex-1">{offer.title}</Text>
-          {offer.is_premium && <Chip label="Premium" variant="orange" />}
+        <View className="flex-row items-start gap-3">
+          <Avatar firstName={offer.company.company_name} lastName="" imageUri={offer.company.avatar} size={44} />
+          <View className="flex-1 gap-0.5">
+            <View className="flex-row items-start justify-between gap-3">
+              <Text className="text-xl font-bold text-xporadia-navy flex-1">{offer.title}</Text>
+              {offer.is_premium && <Chip label="Premium" variant="orange" />}
+            </View>
+            <Text className="text-sm text-xporadia-text-secondary">{offer.company.company_name}</Text>
+            <Text className="text-[11px] text-xporadia-text-secondary">Publié {postedAgo}</Text>
+          </View>
         </View>
-        <Text className="text-sm text-xporadia-text-secondary">{offer.company.company_name}</Text>
         <View className="flex-row gap-2">
           <Chip label={LEVEL_LABELS[offer.level] ?? offer.level} variant="navy-subtle" />
           <Chip label={offer.domain} variant="navy-subtle" />

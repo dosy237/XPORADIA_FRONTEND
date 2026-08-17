@@ -8,6 +8,7 @@ export interface CompanyBasic {
   id: number;
   company_name: string;
   address: string;
+  avatar: string | null;
 }
 
 export interface SchoolBasic {

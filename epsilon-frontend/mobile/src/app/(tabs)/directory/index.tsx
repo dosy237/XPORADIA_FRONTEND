@@ -32,7 +32,7 @@ function TeacherCard({ teacher }: { teacher: TeacherDirectoryCard }) {
     <Card
       onPress={() => router.push(`/(tabs)/directory/${teacher.id}`)}
       accessibilityLabel={`Voir le profil de ${teacher.first_name} ${teacher.last_name}`}
-      className="flex-row items-center gap-3"
+      className="flex-row items-center gap-3 border-l-4 border-xporadia-navy"
     >
       <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} size={52} />
       <View className="flex-1 gap-1">
@@ -59,7 +59,7 @@ function EstablishmentCard({ establishment }: { establishment: EstablishmentDire
     <Card
       onPress={() => router.push(`/(tabs)/directory/establishment/${establishment.id}`)}
       accessibilityLabel={`Voir l'établissement ${establishment.school_name}`}
-      className="flex-row items-center gap-3"
+      className="flex-row items-center gap-3 border-l-4 border-xporadia-orange"
     >
       {establishment.avatar ? (
         <View className="h-[52px] w-[52px] rounded-full overflow-hidden bg-xporadia-navy/[0.08]">
@@ -90,7 +90,7 @@ function CompanyCard({ company }: { company: CompanyDirectoryCard }) {
     <Card
       onPress={() => router.push(`/(tabs)/directory/company/${company.id}`)}
       accessibilityLabel={`Voir l'entreprise ${company.company_name}`}
-      className="flex-row items-center gap-3"
+      className="flex-row items-center gap-3 border-l-4 border-xporadia-purple"
     >
       {company.avatar ? (
         <View className="h-[52px] w-[52px] rounded-full overflow-hidden bg-xporadia-navy/[0.08]">
