@@ -1,0 +1,84 @@
+import api from "@/services/api";
+import type { Paginated } from "@/services/teacherDirectory";
+import type { UserRole } from "@/types/user";
+
+export interface PostAuthor {
+  id: number;
+  full_name: string;
+  avatar: string | null;
+  primary_role: UserRole;
+  role_label: string;
+  is_followed_by_me: boolean;
+  followers_count: number;
+}
+
+export interface Post {
+  id: number;
+  author: PostAuthor;
+  body: string;
+  hashtags: string[];
+  images: { id: number; image: string; order: number }[];
+  visibility: "public" | "members";
+  like_count: number;
+  comment_count: number;
+  is_liked_by_me: boolean;
+  created_at: string;
+}
+
+export interface PostComment {
+  id: number;
+  post: number;
+  author: PostAuthor;
+  body: string;
+  created_at: string;
+}
+
+export const fetchPosts = (filters?: { authorId?: number; hashtag?: string }) =>
+  api
+    .get<Paginated<Post>>("/feed/posts/", {
+      params: { author: filters?.authorId, hashtag: filters?.hashtag },
+    })
+    .then((r) => r.data.results);
+
+/** Publication avec photos (0 à 6) — multipart, cohérent avec le seul
+ * autre upload de fichier de l'app (documents personnels élève). */
+export const createPost = (
+  body: string,
+  images: { uri: string; name: string; mimeType?: string | null }[] = [],
+  visibility: "public" | "members" = "public",
+) => {
+  const formData = new FormData();
+  formData.append("body", body);
+  formData.append("visibility", visibility);
+  images.forEach((img) => {
+    formData.append("images", {
+      uri: img.uri,
+      name: img.name,
+      type: img.mimeType ?? "image/jpeg",
+    } as unknown as Blob);
+  });
+  return api
+    .post<Post>("/feed/posts/", formData, { headers: { "Content-Type": "multipart/form-data" } })
+    .then((r) => r.data);
+};
+
+export const deletePost = (postId: number) => api.delete(`/feed/posts/${postId}/`);
+
+export const updatePost = (postId: number, body: string) =>
+  api.patch<Post>(`/feed/posts/${postId}/`, { body }).then((r) => r.data);
+
+export const togglePostLike = (postId: number) =>
+  api.post<{ liked: boolean; like_count: number }>(`/feed/posts/${postId}/like/`).then((r) => r.data);
+
+export const toggleFollow = (userId: number) =>
+  api
+    .post<{ following: boolean; followers_count: number }>(`/feed/users/${userId}/follow/`)
+    .then((r) => r.data);
+
+export const fetchMyFollowing = () => api.get<PostAuthor[]>("/feed/my-following/").then((r) => r.data);
+
+export const fetchPostComments = (postId: number) =>
+  api.get<PostComment[]>(`/feed/posts/${postId}/comments/`).then((r) => r.data);
+
+export const createPostComment = (postId: number, body: string) =>
+  api.post<PostComment>(`/feed/posts/${postId}/comments/`, { body }).then((r) => r.data);

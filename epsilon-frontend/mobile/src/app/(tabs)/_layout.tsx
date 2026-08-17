@@ -2,7 +2,7 @@ import { Tabs, router } from "expo-router";
 import { Pressable, Text } from "react-native";
 
 import { HeaderActions } from "@/components/layout/HeaderActions";
-import { HomeIcon, MedalIcon, UserCircleIcon } from "@/components/ui/Icon";
+import { MedalIcon, NewspaperIcon, UserCircleIcon, UsersIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useAuthStore } from "@/store/authStore";
 
@@ -37,21 +37,29 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="feed"
+        name="actualites"
         options={{
-          // Cet onglet est une Stack imbriquée (feed/_layout.tsx) qui gère
-          // déjà son propre header — sans ça, les deux se superposent.
+          // Stack imbriquée avec son propre header (actualites/_layout.tsx).
           headerShown: false,
-          title: "Fil d'actualité",
-          tabBarLabel: "Fil",
-          tabBarIcon: ({ color, size }) => <HomeIcon color={String(color)} size={size} />,
+          title: "Actualités",
+          tabBarLabel: "Actualités",
+          tabBarIcon: ({ color, size }) => <NewspaperIcon color={String(color)} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="directory"
+        options={{
+          headerShown: false,
+          title: "Annuaire",
+          tabBarLabel: "Annuaire",
+          tabBarIcon: ({ color, size }) => <UsersIcon color={String(color)} size={size} />,
         }}
       />
       <Tabs.Screen
         name="certifications"
         options={{
           headerShown: false,
-          title: "Certifications",
+          title: "Certifications & Stages",
           tabBarLabel: "Certifications",
           tabBarIcon: ({ color, size }) => <MedalIcon color={String(color)} size={size} />,
         }}
@@ -59,8 +67,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="me"
         options={{
-          title: "Espace personnel",
-          tabBarLabel: "Espace personnel",
+          title: "Profil",
+          tabBarLabel: "Profil",
           tabBarIcon: ({ color, size }) => <UserCircleIcon color={String(color)} size={size} />,
         }}
       />
