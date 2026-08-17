@@ -1,5 +1,5 @@
 import { Tabs, router } from "expo-router";
-import { Pressable, Text } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { HeaderActions } from "@/components/layout/HeaderActions";
 import { MedalIcon, NewspaperIcon, UserCircleIcon, UsersIcon } from "@/components/ui/Icon";
@@ -23,6 +23,28 @@ function HeaderRight() {
   );
 }
 
+type IconComponent = (props: { color: string; size: number }) => React.ReactElement;
+
+/** Icône + libellé d'un onglet — quand l'onglet est actif, l'ensemble
+ * prend un fond orange plein et le texte/icône passent en blanc, au lieu
+ * du simple changement de teinte utilisé jusque-là. */
+function makeTabBarIcon(Icon: IconComponent, label: string) {
+  return ({ focused }: { focused: boolean }) => (
+    <View
+      className={`items-center justify-center gap-0.5 px-3 py-1 rounded-2xl ${
+        focused ? "bg-xporadia-orange" : ""
+      }`}
+    >
+      <Icon color={focused ? Colors.white : Colors.textSecondary} size={20} />
+      <Text
+        className={`text-[10px] font-semibold ${focused ? "text-white" : "text-xporadia-text-secondary"}`}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
+
 export default function TabsLayout() {
   return (
     <Tabs
@@ -31,8 +53,7 @@ export default function TabsLayout() {
         headerTintColor: Colors.white,
         headerTitleStyle: { fontWeight: "600" },
         headerRight: () => <HeaderRight />,
-        tabBarActiveTintColor: Colors.navy,
-        tabBarInactiveTintColor: Colors.textSecondary,
+        tabBarShowLabel: false,
         tabBarStyle: { borderTopColor: Colors.border },
       }}
     >
@@ -42,8 +63,7 @@ export default function TabsLayout() {
           // Stack imbriquée avec son propre header (actualites/_layout.tsx).
           headerShown: false,
           title: "Actualités",
-          tabBarLabel: "Actualités",
-          tabBarIcon: ({ color, size }) => <NewspaperIcon color={String(color)} size={size} />,
+          tabBarIcon: makeTabBarIcon(NewspaperIcon, "Actualités"),
         }}
       />
       <Tabs.Screen
@@ -51,8 +71,7 @@ export default function TabsLayout() {
         options={{
           headerShown: false,
           title: "Annuaire",
-          tabBarLabel: "Annuaire",
-          tabBarIcon: ({ color, size }) => <UsersIcon color={String(color)} size={size} />,
+          tabBarIcon: makeTabBarIcon(UsersIcon, "Annuaire"),
         }}
       />
       <Tabs.Screen
@@ -60,16 +79,14 @@ export default function TabsLayout() {
         options={{
           headerShown: false,
           title: "Certifications & Stages",
-          tabBarLabel: "Certifications",
-          tabBarIcon: ({ color, size }) => <MedalIcon color={String(color)} size={size} />,
+          tabBarIcon: makeTabBarIcon(MedalIcon, "Certifications"),
         }}
       />
       <Tabs.Screen
         name="me"
         options={{
           title: "Profil",
-          tabBarLabel: "Profil",
-          tabBarIcon: ({ color, size }) => <UserCircleIcon color={String(color)} size={size} />,
+          tabBarIcon: makeTabBarIcon(UserCircleIcon, "Profil"),
         }}
       />
     </Tabs>
