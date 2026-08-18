@@ -1,5 +1,6 @@
 import axios from "axios";
 
+import { syncServerClock } from "@/lib/serverClock";
 import { useAuthStore } from "@/store/authStore";
 
 export const API_URL =
@@ -17,8 +18,12 @@ api.interceptors.request.use((config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    syncServerClock(response.headers?.date);
+    return response;
+  },
   async (error) => {
+    syncServerClock(error.response?.headers?.date);
     const original = error.config;
     if (error.response?.status === 401 && original && !original._retry) {
       original._retry = true;

@@ -19,6 +19,7 @@ export default function ActualitesStackLayout() {
       <Stack.Screen name="index" options={{ title: "Actualités" }} />
       <Stack.Screen name="compose" options={{ title: "Nouvelle publication", presentation: "modal" }} />
       <Stack.Screen name="[postId]" options={{ title: "Publication" }} />
+      <Stack.Screen name="profile/[userId]" options={{ title: "Profil" }} />
     </Stack>
   );
 }

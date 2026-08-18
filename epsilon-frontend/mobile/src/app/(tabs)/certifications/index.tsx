@@ -11,6 +11,7 @@ import { BriefcaseIcon, ClockIcon, MedalIcon, PinIcon } from "@/components/ui/Ic
 import { CATEGORY_LABELS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
+import { serverNow } from "@/lib/serverClock";
 import * as certificationApi from "@/services/certification";
 import type { CertificationLevel, TrainingModule } from "@/services/certification";
 import * as internshipsApi from "@/services/internships";
@@ -71,7 +72,7 @@ function ModuleCard({ module }: { module: TrainingModule }) {
 // clés (lieu, durée, places) juste en dessous.
 function InternshipOfferCard({ offer }: { offer: InternshipOffer }) {
   const postedAgo = useRelativeTime(offer.created_at);
-  const isNew = Date.now() - new Date(offer.created_at).getTime() < 48 * 60 * 60 * 1000;
+  const isNew = serverNow() - new Date(offer.created_at).getTime() < 48 * 60 * 60 * 1000;
 
   return (
     <Card

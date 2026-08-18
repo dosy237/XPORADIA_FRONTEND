@@ -108,6 +108,26 @@ export const toggleCommentLike = (postId: number, commentId: number) =>
     .post<{ liked: boolean; like_count: number }>(`/feed/posts/${postId}/comments/${commentId}/like/`)
     .then((r) => r.data);
 
+export interface PublicProfile {
+  id: number;
+  full_name: string;
+  avatar: string | null;
+  primary_role: UserRole;
+  role_label: string;
+  subtitle: string;
+  followers_count: number;
+  following_count: number;
+  posts_count: number;
+  is_following: boolean;
+}
+
+/** Fiche de profil minimale valable pour n'importe quel rôle — c'est ce
+ * qu'on ouvre en tapant sur l'auteur d'une publication du fil, quel que
+ * soit son rôle (les annuaires dédiés enseignant/établissement/entreprise
+ * ne couvrent pas parent, élève, formateur, administrateur...). */
+export const fetchPublicProfile = (userId: number) =>
+  api.get<PublicProfile>(`/auth/profile/${userId}/`).then((r) => r.data);
+
 export interface PeopleSearchResult {
   type: "teacher" | "establishment" | "company";
   id: number;

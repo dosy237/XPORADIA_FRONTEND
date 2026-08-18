@@ -38,12 +38,27 @@ function CommentRow({
   const relativeTime = useRelativeTime(comment.created_at);
   return (
     <View className="flex-row items-start gap-3">
-      <Avatar firstName={firstName} lastName={rest.join(" ")} imageUri={comment.author.avatar} size={36} />
+      <Pressable
+        onPress={() => router.push(`/(tabs)/actualites/profile/${comment.author.id}`)}
+        hitSlop={4}
+        accessibilityRole="button"
+        accessibilityLabel={`Voir le profil de ${comment.author.full_name}`}
+      >
+        <Avatar firstName={firstName} lastName={rest.join(" ")} imageUri={comment.author.avatar} size={36} />
+      </Pressable>
       <View className="flex-1 bg-white rounded-2xl px-4 py-3 shadow-soft">
         <View className="flex-row items-center justify-between gap-2">
-          <Text className="text-xs font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
-            {comment.author.full_name}
-          </Text>
+          <Pressable
+            onPress={() => router.push(`/(tabs)/actualites/profile/${comment.author.id}`)}
+            hitSlop={4}
+            accessibilityRole="button"
+            accessibilityLabel={`Voir le profil de ${comment.author.full_name}`}
+            className="flex-1"
+          >
+            <Text className="text-xs font-semibold text-xporadia-text-primary" numberOfLines={1}>
+              {comment.author.full_name}
+            </Text>
+          </Pressable>
           <View className="flex-row items-center gap-2 flex-shrink-0">
             <Text className="text-[10px] text-xporadia-text-secondary">{relativeTime}</Text>
             {canDelete ? (

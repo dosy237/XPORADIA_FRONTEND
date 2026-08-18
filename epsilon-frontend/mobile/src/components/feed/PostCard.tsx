@@ -124,13 +124,24 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
   const content = (
     <View className="gap-3">
       <View className="flex-row items-center gap-3">
-        <Avatar firstName={firstName} lastName={lastName} imageUri={post.author.avatar} size={44} />
-        <View className="flex-1">
-          <Text className="text-sm font-semibold text-xporadia-text-primary">{post.author.full_name}</Text>
-          <Text className="text-xs text-xporadia-text-secondary">
-            {post.author.role_label} · {relativeTime}
-          </Text>
-        </View>
+        <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            router.push(`/(tabs)/actualites/profile/${post.author.id}`);
+          }}
+          hitSlop={4}
+          accessibilityRole="button"
+          accessibilityLabel={`Voir le profil de ${post.author.full_name}`}
+          className="flex-row items-center gap-3 flex-1"
+        >
+          <Avatar firstName={firstName} lastName={lastName} imageUri={post.author.avatar} size={44} />
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-xporadia-text-primary">{post.author.full_name}</Text>
+            <Text className="text-xs text-xporadia-text-secondary">
+              {post.author.role_label} · {relativeTime}
+            </Text>
+          </View>
+        </Pressable>
         {!isOwnPost ? (
           <Pressable
             onPress={handleFollowPress}

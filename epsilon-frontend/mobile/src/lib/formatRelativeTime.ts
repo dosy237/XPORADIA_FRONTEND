@@ -1,8 +1,14 @@
+import { serverNow } from "@/lib/serverClock";
+
 /** Formate une date ISO en "il y a X min/h/j" — évite d'ajouter une
- * dépendance (date-fns/dayjs) pour un besoin aussi ponctuel. */
+ * dépendance (date-fns/dayjs) pour un besoin aussi ponctuel.
+ *
+ * Le temps écoulé est calculé par rapport à l'horloge du SERVEUR (voir
+ * serverClock.ts), pas celle de l'appareil : un téléphone mal réglé ne
+ * doit pas afficher un temps écoulé faux. */
 export function formatRelativeTime(isoDate: string): string {
   const date = new Date(isoDate);
-  const diffMs = Date.now() - date.getTime();
+  const diffMs = serverNow() - date.getTime();
   const diffMinutes = Math.floor(diffMs / 60000);
 
   // Espace insécable entre le nombre et l'unité : évite qu'un retour à la
