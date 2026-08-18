@@ -62,8 +62,19 @@ export default function ComposeScreen() {
             }
           : undefined,
       ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    onSuccess: (newPost) => {
+      // Le fil principal est classé par activité côté backend (voir
+      // _rank_for_feed) et l'app ne récupère que la première page — une
+      // simple invalidation pouvait renvoyer une liste où la publication
+      // qu'on vient de créer (auteur peu actif, encore aucun like/
+      // commentaire) tombe au-delà de cette page et semble "ne pas
+      // s'afficher". On l'insère donc directement en tête du cache local,
+      // comme le fait déjà le websocket pour les publications des autres.
+      queryClient.setQueryData<feedApi.Post[]>(["posts"], (current) => {
+        if (!current) return current;
+        if (current.some((p) => p.id === newPost.id)) return current;
+        return [newPost, ...current];
+      });
       router.back();
     },
     onError: (error: any) => {
