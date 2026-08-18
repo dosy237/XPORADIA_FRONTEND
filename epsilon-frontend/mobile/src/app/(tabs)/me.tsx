@@ -217,6 +217,13 @@ function ProfileScreen() {
           <Button label="Accéder à mon tableau de bord" pill onPress={() => router.push(dashboardPath as never)} />
         ) : null}
 
+        <Button
+          label="Mes publications"
+          variant="secondary"
+          pill
+          onPress={() => router.push("/(app)/my-posts")}
+        />
+
         <View className="gap-2">
           <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase px-1">Mon compte</Text>
           <ActionRow

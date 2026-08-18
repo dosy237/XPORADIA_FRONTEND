@@ -107,6 +107,7 @@ export default function AppLayout() {
       <Stack.Screen name="internship-convention/[conventionId]" options={{ title: "Convention de stage" }} />
       <Stack.Screen name="settings" options={{ title: "Paramètres" }} />
       <Stack.Screen name="notifications" options={{ title: "Notifications" }} />
+      <Stack.Screen name="my-posts" options={{ title: "Mes publications" }} />
     </Stack>
   );
 }
