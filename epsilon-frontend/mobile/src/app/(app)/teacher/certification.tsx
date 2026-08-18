@@ -64,7 +64,7 @@ export default function TeacherCertificationScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-12">
       <View className="px-6 pt-6 gap-5">
-        <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-5 overflow-hidden">
+        <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-5">
           <View className="flex-row items-center gap-4">
             {status.current_level ? (
               <LevelBadge level={status.current_level} />

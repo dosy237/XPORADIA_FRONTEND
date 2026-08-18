@@ -37,15 +37,11 @@ export default function FeedEstablishmentDetailScreen() {
 
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-12">
-      <View className="items-center pt-10 pb-5 overflow-hidden">
-        <View
-          className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]"
-          pointerEvents="none"
-        />
-        <View
-          className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
-          pointerEvents="none"
-        />
+      <View className="items-center pt-10 pb-5">
+        <View className="absolute inset-0 overflow-hidden" pointerEvents="none">
+          <View className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]" />
+          <View className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]" />
+        </View>
         <Avatar firstName={establishment.school_name} lastName="" imageUri={establishment.avatar} />
         <Text className="text-xl font-bold text-xporadia-navy mt-3 text-center px-6">
           {establishment.school_name}

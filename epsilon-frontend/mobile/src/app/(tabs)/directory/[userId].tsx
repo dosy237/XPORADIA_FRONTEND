@@ -63,18 +63,18 @@ export default function FeedTeacherDetailScreen() {
 
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-12">
-      <View className="items-center pt-10 pb-5 overflow-hidden">
-        <View
-          className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]"
-          pointerEvents="none"
-        />
-        <View
-          className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
-          pointerEvents="none"
-        />
+      <View className="items-center pt-10 pb-5">
+        {/* Cercles décoratifs seuls dans leur propre conteneur "overflow-hidden" :
+            s'il fallait ce recadrage sur tout le bloc (avatar + nom + stats),
+            un contenu qui a besoin de plus de hauteur que prévu (police système
+            agrandie, nom long...) se retrouvait rogné, invisible. */}
+        <View className="absolute inset-0 overflow-hidden" pointerEvents="none">
+          <View className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]" />
+          <View className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]" />
+        </View>
         <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} />
         <Text className="text-xl font-bold text-xporadia-navy mt-3">
-          {teacher.first_name} {teacher.last_name}
+          {`${teacher.first_name} ${teacher.last_name}`}
         </Text>
         <View className="mt-2">
           <Chip label="Enseignant" variant="navy-subtle" />

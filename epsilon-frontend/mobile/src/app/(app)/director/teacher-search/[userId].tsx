@@ -31,7 +31,7 @@ export default function DirectorTeacherSearchDetailScreen() {
 
   return (
     <View className="flex-1 bg-xporadia-bg">
-      <View className="items-center pt-10 pb-5 overflow-hidden">
+      <View className="items-center pt-10 pb-5">
         <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} />
         <Text className="text-xl font-bold text-xporadia-navy mt-3">
           {teacher.first_name} {teacher.last_name}

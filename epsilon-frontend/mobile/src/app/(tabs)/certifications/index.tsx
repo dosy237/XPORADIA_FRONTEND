@@ -30,9 +30,15 @@ function ModuleCard({ module }: { module: TrainingModule }) {
     <Card
       onPress={() => router.push(`/(tabs)/certifications/${module.id}`)}
       accessibilityLabel={`Voir le module ${module.title}`}
-      className="gap-0 overflow-hidden p-0"
+      className="gap-0 p-0"
     >
-      <View className="relative">
+      {/* L'arrondi ne s'applique qu'à l'image, pas à toute la carte :
+          sur certains appareils Android (police système agrandie), le
+          texte en dessous a besoin de plus de hauteur que prévu — s'il
+          fallait "overflow-hidden" sur toute la carte pour arrondir
+          l'image, ce texte supplémentaire se retrouvait invisible,
+          rogné net sans qu'on le voie. */}
+      <View className="relative overflow-hidden rounded-t-xl">
         {module.cover_image ? (
           <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 140 }} contentFit="cover" />
         ) : (
@@ -78,10 +84,12 @@ function InternshipOfferCard({ offer }: { offer: InternshipOffer }) {
     <Card
       onPress={() => router.push(`/(tabs)/certifications/stage/${offer.id}`)}
       accessibilityLabel={`Voir l'offre de stage ${offer.title}`}
-      className="gap-0 overflow-hidden p-0"
+      className="gap-0 p-0"
     >
       {offer.cover_image ? (
-        <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 120 }} contentFit="cover" />
+        <View className="overflow-hidden rounded-t-xl">
+          <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 120 }} contentFit="cover" />
+        </View>
       ) : null}
       <View className="p-4 gap-3">
         <View className="flex-row items-start gap-3">
