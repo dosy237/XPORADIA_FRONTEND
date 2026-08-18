@@ -169,7 +169,7 @@ export default function ActualitesScreen() {
         </View>
 
         <Input
-          placeholder="Rechercher un enseignant, un établissement, une entreprise..."
+          placeholder="Rechercher quelqu'un..."
           value={searchQuery}
           onChangeText={setSearchQuery}
           accessibilityLabel="Rechercher une personne ou un compte"

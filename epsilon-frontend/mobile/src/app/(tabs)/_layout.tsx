@@ -1,5 +1,6 @@
 import { Tabs, router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
+import type { GestureResponderEvent, StyleProp, ViewStyle } from "react-native";
 
 import { HeaderActions } from "@/components/layout/HeaderActions";
 import { MedalIcon, NewspaperIcon, UserCircleIcon, UsersIcon } from "@/components/ui/Icon";
@@ -25,24 +26,58 @@ function HeaderRight() {
 
 type IconComponent = (props: { color: string; size: number }) => React.ReactElement;
 
-/** Icône + libellé d'un onglet — quand l'onglet est actif, l'ensemble
- * prend un fond orange plein et le texte/icône passent en blanc, au lieu
- * du simple changement de teinte utilisé jusque-là. */
-function makeTabBarIcon(Icon: IconComponent, label: string) {
-  return ({ focused }: { focused: boolean }) => (
-    <View
-      className={`items-center justify-center gap-0.5 px-3 py-1 rounded-2xl ${
-        focused ? "bg-xporadia-orange" : ""
-      }`}
-    >
-      <Icon color={focused ? Colors.white : Colors.textSecondary} size={20} />
-      <Text
-        className={`text-[10px] font-semibold ${focused ? "text-white" : "text-xporadia-text-secondary"}`}
+// Props réellement passées par expo-router/react-navigation à un
+// tabBarButton personnalisé (le type BottomTabBarButtonProps n'est pas
+// exporté publiquement par le package, donc on ne déclare que ce qu'on
+// utilise plutôt que d'importer un chemin interne fragile).
+interface TabBarButtonProps {
+  onPress?: ((e: GestureResponderEvent) => void) | null;
+  onLongPress?: ((e: GestureResponderEvent) => void) | null;
+  testID?: string;
+  style?: StyleProp<ViewStyle>;
+  "aria-selected"?: boolean;
+  "aria-label"?: string;
+}
+
+/** Bouton d'onglet entièrement personnalisé — icône + libellé, fond
+ * orange plein et texte blanc quand actif.
+ *
+ * Important : on N'UTILISE PAS `tabBarIcon` pour ça. `tabBarIcon` est
+ * enveloppé par la librairie dans une boîte fixe de 31×28dp (taille
+ * pensée pour une icône seule, voir TabBarIcon.js) — y glisser un texte
+ * de plusieurs caractères le forçait à retourner à la ligne lettre par
+ * lettre. `tabBarButton` remplace le bouton d'onglet en entier et hérite
+ * de la largeur normale de l'onglet (flex réparti sur toute la barre),
+ * donc le texte s'affiche enfin sur une seule ligne. */
+function makeTabBarButton(Icon: IconComponent, label: string) {
+  return function TabButton({ onPress, onLongPress, testID, style, ...aria }: TabBarButtonProps) {
+    const focused = Boolean(aria["aria-selected"]);
+    return (
+      <Pressable
+        onPress={onPress}
+        onLongPress={onLongPress}
+        testID={testID}
+        accessibilityRole="tab"
+        accessibilityState={{ selected: focused }}
+        accessibilityLabel={aria["aria-label"] ?? label}
+        style={[style, { alignItems: "center", justifyContent: "center" }]}
       >
-        {label}
-      </Text>
-    </View>
-  );
+        <View
+          className={`items-center justify-center gap-0.5 px-2 py-1 rounded-2xl ${
+            focused ? "bg-xporadia-orange" : ""
+          }`}
+        >
+          <Icon color={focused ? Colors.white : Colors.textSecondary} size={20} />
+          <Text
+            numberOfLines={1}
+            className={`text-[10px] font-semibold ${focused ? "text-white" : "text-xporadia-text-secondary"}`}
+          >
+            {label}
+          </Text>
+        </View>
+      </Pressable>
+    );
+  };
 }
 
 export default function TabsLayout() {
@@ -53,7 +88,6 @@ export default function TabsLayout() {
         headerTintColor: Colors.white,
         headerTitleStyle: { fontWeight: "600" },
         headerRight: () => <HeaderRight />,
-        tabBarShowLabel: false,
         tabBarStyle: { borderTopColor: Colors.border },
       }}
     >
@@ -63,7 +97,7 @@ export default function TabsLayout() {
           // Stack imbriquée avec son propre header (actualites/_layout.tsx).
           headerShown: false,
           title: "Actualités",
-          tabBarIcon: makeTabBarIcon(NewspaperIcon, "Actualités"),
+          tabBarButton: makeTabBarButton(NewspaperIcon, "Actualités"),
         }}
       />
       <Tabs.Screen
@@ -71,7 +105,7 @@ export default function TabsLayout() {
         options={{
           headerShown: false,
           title: "Annuaire",
-          tabBarIcon: makeTabBarIcon(UsersIcon, "Annuaire"),
+          tabBarButton: makeTabBarButton(UsersIcon, "Annuaire"),
         }}
       />
       <Tabs.Screen
@@ -79,14 +113,14 @@ export default function TabsLayout() {
         options={{
           headerShown: false,
           title: "Certifications & Stages",
-          tabBarIcon: makeTabBarIcon(MedalIcon, "Certifications"),
+          tabBarButton: makeTabBarButton(MedalIcon, "Certifications"),
         }}
       />
       <Tabs.Screen
         name="me"
         options={{
           title: "Profil",
-          tabBarIcon: makeTabBarIcon(UserCircleIcon, "Profil"),
+          tabBarButton: makeTabBarButton(UserCircleIcon, "Profil"),
         }}
       />
     </Tabs>

@@ -195,7 +195,7 @@ export default function DirectoryScreen() {
       </View>
 
       <Input
-        placeholder="Rechercher un enseignant par matière (ex. Maths)"
+        placeholder="Rechercher par matière (ex. Maths)"
         value={subject}
         onChangeText={setSubject}
         accessibilityLabel="Rechercher un enseignant par matière"
