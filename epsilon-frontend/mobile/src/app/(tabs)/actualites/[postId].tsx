@@ -20,6 +20,7 @@ import { HeartIcon, TrashIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useFeedSocket } from "@/hooks/useFeedSocket";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
+import { requireAuth } from "@/lib/requireAuth";
 import * as feedApi from "@/services/feed";
 import { useAuthStore } from "@/store/authStore";
 
@@ -28,11 +29,13 @@ function CommentRow({
   canDelete,
   onDelete,
   onToggleLike,
+  isAuthenticated,
 }: {
   comment: feedApi.PostComment;
   canDelete: boolean;
   onDelete: () => void;
   onToggleLike: () => void;
+  isAuthenticated: boolean;
 }) {
   const [firstName, ...rest] = comment.author.full_name.split(" ");
   const relativeTime = useRelativeTime(comment.created_at);
@@ -75,7 +78,7 @@ function CommentRow({
         </View>
         <Text className="text-sm text-xporadia-text-primary mt-1">{comment.body}</Text>
         <Pressable
-          onPress={onToggleLike}
+          onPress={() => requireAuth(isAuthenticated) && onToggleLike()}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={comment.is_liked_by_me ? "Ne plus aimer ce commentaire" : "Aimer ce commentaire"}
@@ -256,6 +259,7 @@ export default function PostDetailScreen() {
                   ])
                 }
                 onToggleLike={() => commentLikeMutation.mutate(c.id)}
+                isAuthenticated={isAuthenticated}
               />
             ))}
           </View>
@@ -283,6 +287,17 @@ export default function PostDetailScreen() {
             disabled={comment.trim().length === 0}
           />
         </View>
+      ) : !isAuthenticated ? (
+        <Pressable
+          onPress={() => router.push("/(auth)/login")}
+          accessibilityRole="button"
+          accessibilityLabel="Se connecter pour commenter"
+          className="px-6 py-3 bg-white border-t border-xporadia-border"
+        >
+          <Text className="text-sm font-semibold text-xporadia-orange-text text-center">
+            {"Connectez-vous pour laisser un commentaire"}
+          </Text>
+        </Pressable>
       ) : null}
     </KeyboardAvoidingView>
   );

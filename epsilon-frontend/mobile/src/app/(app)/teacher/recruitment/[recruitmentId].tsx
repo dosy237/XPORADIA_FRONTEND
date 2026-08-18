@@ -58,7 +58,7 @@ export default function RecruitmentDetailScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <Card className="items-center py-5 gap-1">
-        <Text className="text-2xl font-bold text-xporadia-navy">{monthTotal}h</Text>
+        <Text className="text-2xl font-bold text-xporadia-navy">{`${monthTotal}h`}</Text>
         <Text className="text-xs text-xporadia-text-secondary">Heures validées, tous mois confondus</Text>
       </Card>
 
@@ -95,7 +95,7 @@ export default function RecruitmentDetailScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-sm font-medium text-xporadia-text-primary">
-                  {new Date(entry.date).toLocaleDateString("fr-FR")} — {entry.hours}h
+                  {`${new Date(entry.date).toLocaleDateString("fr-FR")} — ${entry.hours}h`}
                 </Text>
                 {entry.note ? <Text className="text-xs text-xporadia-text-secondary">{entry.note}</Text> : null}
                 {entry.status === "rejected" && entry.rejection_reason ? (

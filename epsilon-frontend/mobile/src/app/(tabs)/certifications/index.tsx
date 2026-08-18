@@ -59,7 +59,7 @@ function ModuleCard({ module }: { module: TrainingModule }) {
         </Text>
         <View className="flex-row items-center gap-1.5 pt-1">
           <ClockIcon size={14} color={Colors.textSecondary} />
-          <Text className="text-xs text-xporadia-text-secondary">{module.duration_hours}h de formation</Text>
+          <Text className="text-xs text-xporadia-text-secondary">{`${module.duration_hours}h de formation`}</Text>
         </View>
       </View>
     </Card>
@@ -108,7 +108,7 @@ function InternshipOfferCard({ offer }: { offer: InternshipOffer }) {
         </View>
 
         <View className="flex-row items-center justify-between pt-1 border-t border-xporadia-border">
-          <Text className="text-[11px] text-xporadia-text-secondary pt-2">Publié {postedAgo}</Text>
+          <Text className="text-[11px] text-xporadia-text-secondary pt-2">{`Publié ${postedAgo}`}</Text>
         </View>
       </View>
     </Card>

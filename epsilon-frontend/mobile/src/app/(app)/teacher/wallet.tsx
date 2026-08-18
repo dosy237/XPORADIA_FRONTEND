@@ -39,11 +39,10 @@ export default function WalletScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-xporadia-text-primary">
-                  {MONTH_LABELS[t.payroll_entry.period_month - 1]} {t.payroll_entry.period_year}
+                  {`${MONTH_LABELS[t.payroll_entry.period_month - 1]} ${t.payroll_entry.period_year}`}
                 </Text>
                 <Text className="text-xs text-xporadia-text-secondary">
-                  {t.payroll_entry.school_name} · {t.payroll_entry.total_hours}h à{" "}
-                  {t.payroll_entry.hourly_rate_teacher.toLocaleString("fr-FR")} FCFA/h
+                  {`${t.payroll_entry.school_name} · ${t.payroll_entry.total_hours}h à ${t.payroll_entry.hourly_rate_teacher.toLocaleString("fr-FR")} FCFA/h`}
                 </Text>
               </View>
               <Text className="text-sm font-bold text-xporadia-navy">

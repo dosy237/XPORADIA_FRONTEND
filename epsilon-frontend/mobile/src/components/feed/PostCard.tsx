@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import { FullscreenImageViewer } from "@/components/feed/FullscreenImageViewer";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
+import { requireAuth } from "@/lib/requireAuth";
 import * as feedApi from "@/services/feed";
 import type { Post } from "@/services/feed";
 import { useAuthStore } from "@/store/authStore";
@@ -60,6 +61,12 @@ function ImageCarousel({ images, onImagePress }: { images: Post["images"]; onIma
   );
 }
 
+// Plus grande et en "contain" (pas "cover") : une vidéo verticale
+// (format TikTok/Reels, le plus fréquent sur le fil) se faisait
+// rogner dans une bande de 220dp de haut — l'essentiel de l'image
+// disparaissait. Une hauteur proche de celle d'un post Facebook laisse
+// la vidéo entière visible, quel que soit son format (letterboxée sur
+// fond noir si besoin plutôt que recadrée).
 function PostVideoPlayer({ uri }: { uri: string }) {
   const player = useVideoPlayer(uri, (p) => {
     p.loop = false;
@@ -67,8 +74,8 @@ function PostVideoPlayer({ uri }: { uri: string }) {
   return (
     <VideoView
       player={player}
-      style={{ width: "100%", height: 220, borderRadius: 14 }}
-      contentFit="cover"
+      style={{ width: "100%", height: 420, borderRadius: 14, backgroundColor: "#000" }}
+      contentFit="contain"
       nativeControls
     />
   );
@@ -138,7 +145,7 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
           <View className="flex-1">
             <Text className="text-sm font-semibold text-xporadia-text-primary">{post.author.full_name}</Text>
             <Text className="text-xs text-xporadia-text-secondary">
-              {post.author.role_label} · {relativeTime}
+              {`${post.author.role_label} · ${relativeTime}`}
             </Text>
           </View>
         </Pressable>
@@ -255,7 +262,7 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
 
       <View className="flex-row items-center gap-5 pt-1">
         <Pressable
-          onPress={onToggleLike}
+          onPress={() => requireAuth(isAuthenticated) && onToggleLike?.()}
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={post.is_liked_by_me ? "Retirer le j'aime" : "Aimer cette publication"}
@@ -272,7 +279,7 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
           className="flex-row items-center gap-1.5"
         >
           <Text className="text-xs font-medium text-xporadia-text-secondary">
-            {post.comment_count} commentaire{post.comment_count !== 1 ? "s" : ""}
+            {`${post.comment_count} commentaire${post.comment_count !== 1 ? "s" : ""}`}
           </Text>
         </Pressable>
       </View>

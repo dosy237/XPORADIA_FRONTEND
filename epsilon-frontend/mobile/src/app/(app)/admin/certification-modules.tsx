@@ -34,7 +34,7 @@ function ModuleRow({ module }: { module: AdminTrainingModule }) {
         <Chip label={LEVEL_LABELS[module.target_level]} variant="orange" />
       </View>
       <Text className="text-xs text-xporadia-text-secondary">
-        {CATEGORY_LABELS[module.category]} · {module.duration_hours}h · {module.price.toLocaleString("fr-FR")} FCFA · {module.points} pts
+        {`${CATEGORY_LABELS[module.category]} · ${module.duration_hours}h · ${module.price.toLocaleString("fr-FR")} FCFA · ${module.points} pts`}
       </Text>
       <Pressable onPress={() => toggleMutation.mutate()} disabled={toggleMutation.isPending}>
         <Chip label={module.is_active ? "Actif" : "Désactivé"} variant={module.is_active ? "navy-subtle" : "neutral"} />

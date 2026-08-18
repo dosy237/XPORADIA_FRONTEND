@@ -205,8 +205,8 @@ export default function ComposeScreen() {
           <View className="relative">
             <VideoView
               player={videoPlayer}
-              style={{ width: "100%", height: 200, borderRadius: 14 }}
-              contentFit="cover"
+              style={{ width: "100%", height: 420, borderRadius: 14, backgroundColor: "#000" }}
+              contentFit="contain"
               nativeControls
             />
             <Pressable

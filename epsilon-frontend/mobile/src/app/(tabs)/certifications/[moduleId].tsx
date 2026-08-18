@@ -114,7 +114,7 @@ export default function PublicModuleDetailScreen() {
         <View className="flex-row items-center gap-4 pt-1">
           <View className="flex-row items-center gap-1.5">
             <ClockIcon size={14} color={Colors.textSecondary} />
-            <Text className="text-xs text-xporadia-text-secondary">{module.duration_hours}h</Text>
+            <Text className="text-xs text-xporadia-text-secondary">{`${module.duration_hours}h`}</Text>
           </View>
           <Text className="text-sm font-semibold text-xporadia-navy">
             {module.price.toLocaleString("fr-FR")} FCFA

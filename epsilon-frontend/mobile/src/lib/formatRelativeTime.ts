@@ -11,15 +11,16 @@ export function formatRelativeTime(isoDate: string): string {
   const diffMs = serverNow() - date.getTime();
   const diffMinutes = Math.floor(diffMs / 60000);
 
-  // Espace insécable entre le nombre et l'unité : évite qu'un retour à la
-  // ligne (notamment avec une taille de police système agrandie) ne
-  // sépare "10" de "min" sur deux lignes et ne donne l'impression que le
-  // texte est tronqué.
+  // Espace normal (pas insécable) entre le nombre et l'unité : l'espace
+  // insécable (U+00A0) fait échouer le rendu du texte sur certains
+  // appareils Android aux petites tailles de police (10-11px, utilisées
+  // pour les commentaires et les offres) — le texte s'arrête net dès ce
+  // caractère au lieu de s'afficher en entier.
   if (diffMinutes < 1) return "à l'instant";
-  if (diffMinutes < 60) return `il y a ${diffMinutes} min`;
+  if (diffMinutes < 60) return `il y a ${diffMinutes} min`;
   const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `il y a ${diffHours} h`;
+  if (diffHours < 24) return `il y a ${diffHours} h`;
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 7) return `il y a ${diffDays} j`;
+  if (diffDays < 7) return `il y a ${diffDays} j`;
   return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
