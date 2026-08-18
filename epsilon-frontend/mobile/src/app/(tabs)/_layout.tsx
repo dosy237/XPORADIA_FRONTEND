@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { Tabs, router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import type { GestureResponderEvent, StyleProp, ViewStyle } from "react-native";
@@ -62,19 +63,30 @@ function makeTabBarButton(Icon: IconComponent, label: string) {
         accessibilityLabel={aria["aria-label"] ?? label}
         style={[style, { alignItems: "center", justifyContent: "center" }]}
       >
-        <View
-          className={`items-center justify-center gap-0.5 px-2 py-1 rounded-2xl ${
-            focused ? "bg-xporadia-orange" : ""
-          }`}
-        >
-          <Icon color={focused ? Colors.white : Colors.textSecondary} size={20} />
-          <Text
-            numberOfLines={1}
-            className={`text-[10px] font-semibold ${focused ? "text-white" : "text-xporadia-text-secondary"}`}
+        {focused ? (
+          // Le dégradé EST le conteneur (comme pour Button.tsx) plutôt qu'une
+          // couche de fond en position absolue : plus fiable, sa taille suit
+          // directement le contenu (icône + texte) au lieu de dépendre d'un
+          // parent auto-dimensionné.
+          <LinearGradient
+            colors={["#FF7A33", "#FB5406"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            className="items-center justify-center gap-0.5 px-2 py-1 rounded-2xl shadow-deep-orange"
           >
-            {label}
-          </Text>
-        </View>
+            <Icon color={Colors.white} size={20} />
+            <Text numberOfLines={1} className="text-[10px] font-semibold text-white">
+              {label}
+            </Text>
+          </LinearGradient>
+        ) : (
+          <View className="items-center justify-center gap-0.5 px-2 py-1">
+            <Icon color={Colors.textSecondary} size={20} />
+            <Text numberOfLines={1} className="text-[10px] font-semibold text-xporadia-text-secondary">
+              {label}
+            </Text>
+          </View>
+        )}
       </Pressable>
     );
   };
