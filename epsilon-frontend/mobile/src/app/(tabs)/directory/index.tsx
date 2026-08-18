@@ -202,7 +202,7 @@ export default function DirectoryScreen() {
         leftIcon={<SearchIcon size={18} color={Colors.textSecondary} />}
       />
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
+      <View className="flex-row flex-wrap gap-2">
         {FILTERS.map((f) => (
           <Chip
             key={f.value}
@@ -211,7 +211,7 @@ export default function DirectoryScreen() {
             onPress={() => setFilter(f.value)}
           />
         ))}
-      </ScrollView>
+      </View>
 
       {isLoading ? (
         <View className="gap-3">
