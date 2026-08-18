@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Share, Text, View } from "react-native";
 
 import { AvatarPicker } from "@/components/ui/AvatarPicker";
@@ -17,6 +17,7 @@ import {
   LayersIcon,
   MedalIcon,
   TrashIcon,
+  UserCircleIcon,
 } from "@/components/ui/Icon";
 import { LEVEL_COLORS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
@@ -301,19 +302,37 @@ function ProfileScreen() {
   );
 }
 
+/** Affiché directement sur l'onglet Profil pour un visiteur non connecté —
+ * plutôt qu'une redirection automatique vers l'authentification (l'ancien
+ * comportement) : un retour arrière depuis l'écran de connexion revenait
+ * sur cet onglet toujours non connecté, qui ne se re-redirigeait pas (son
+ * effet ne se redéclenche pas si l'état n'a pas changé) et restait donc
+ * bloqué sur une page blanche. Un écran réel ici élimine le problème : il
+ * n'y a plus jamais rien de vide à afficher sur cet onglet. */
+function LoggedOutPrompt() {
+  return (
+    <View className="flex-1 bg-xporadia-bg items-center justify-center px-8 gap-6">
+      <View className="h-20 w-20 rounded-full bg-xporadia-navy/[0.08] items-center justify-center">
+        <UserCircleIcon size={40} color={Colors.navy} />
+      </View>
+      <View className="gap-2 items-center">
+        <Text className="text-xl font-bold text-xporadia-navy text-center">Votre profil Xporadia</Text>
+        <Text className="text-sm text-xporadia-text-secondary text-center leading-5">
+          Connectez-vous pour accéder à votre profil, vos publications et votre tableau de bord.
+        </Text>
+      </View>
+      <View className="w-full gap-3">
+        <Button label="Se connecter" pill onPress={() => router.push("/(auth)/login")} />
+        <Button label="Créer un compte" variant="secondary" pill onPress={() => router.push("/(auth)/register")} />
+      </View>
+    </View>
+  );
+}
+
 export default function MeScreen() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-  // Un visiteur non connecté qui touche l'onglet Profil est renvoyé
-  // directement vers l'authentification plutôt que de voir un écran
-  // "connectez-vous" planté dans la barre d'onglets. `push` (pas
-  // `replace`) pour que le retour ramène aux pages publiques au lieu
-  // de bloquer l'utilisateur sur l'écran d'authentification.
-  useEffect(() => {
-    if (!isAuthenticated) router.push("/(auth)/welcome");
-  }, [isAuthenticated]);
-
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) return <LoggedOutPrompt />;
 
   return <ProfileScreen />;
 }

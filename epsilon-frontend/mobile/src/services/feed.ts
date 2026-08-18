@@ -45,6 +45,14 @@ export const fetchPosts = (filters?: { authorId?: number; hashtag?: string; q?: 
     })
     .then((r) => r.data.results);
 
+/** Publication précise, indépendamment de toute liste déjà en cache — le
+ * fil général ("posts") ne contient que les publications les plus
+ * récentes : ouvrir une publication trouvée ailleurs (profil d'un auteur,
+ * recherche...) et la chercher dans ce cache-là échouait silencieusement
+ * dès qu'elle n'y figurait pas, laissant l'écran de détail chargé
+ * indéfiniment. */
+export const fetchPost = (postId: number) => api.get<Post>(`/feed/posts/${postId}/`).then((r) => r.data);
+
 /** Publication avec photos (0 à 6) OU une vidéo (60s max, exclusif des
  * photos) — multipart, cohérent avec le seul autre upload de fichier de
  * l'app (documents personnels élève). */

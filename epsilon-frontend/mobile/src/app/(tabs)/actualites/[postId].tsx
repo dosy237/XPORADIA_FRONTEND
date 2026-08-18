@@ -102,8 +102,19 @@ export default function PostDetailScreen() {
   const isVerified = useAuthStore((s) => s.user?.is_verified);
   const [comment, setComment] = useState("");
 
-  const { data: posts } = useQuery({ queryKey: ["posts"], queryFn: () => feedApi.fetchPosts() });
-  const post = posts?.find((p) => p.id === Number(postId));
+  // Récupérée directement par id, pas cherchée dans le cache du fil
+  // général ("posts") : ce cache ne contient que les publications les
+  // plus récentes, donc une publication ouverte depuis un profil ou une
+  // recherche pouvait ne jamais s'y trouver — l'écran restait alors
+  // chargé indéfiniment. `initialData` réutilise l'entrée du fil quand
+  // elle existe déjà, pour un affichage instantané le cas échéant.
+  const { data: post } = useQuery({
+    queryKey: ["post", postId],
+    queryFn: () => feedApi.fetchPost(Number(postId)),
+    enabled: !!postId,
+    initialData: () =>
+      queryClient.getQueryData<feedApi.Post[]>(["posts"])?.find((p) => p.id === Number(postId)),
+  });
 
   const { data: comments, isLoading: commentsLoading } = useQuery({
     queryKey: ["post-comments", postId],
@@ -120,8 +131,11 @@ export default function PostDetailScreen() {
       });
     },
     onLikeUpdated: (_postId, likeCount) => {
-      queryClient.setQueryData<typeof posts>(["posts"], (current) =>
+      queryClient.setQueryData<feedApi.Post[]>(["posts"], (current) =>
         current?.map((p) => (p.id === Number(postId) ? { ...p, like_count: likeCount } : p)),
+      );
+      queryClient.setQueryData<feedApi.Post>(["post", postId], (current) =>
+        current ? { ...current, like_count: likeCount } : current,
       );
     },
     onCommentDeleted: (commentId) => {
@@ -143,6 +157,7 @@ export default function PostDetailScreen() {
         current?.filter((c) => c.id !== commentId),
       );
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
     onError: () => Alert.alert("Erreur", "Impossible de supprimer ce commentaire."),
   });
@@ -150,10 +165,13 @@ export default function PostDetailScreen() {
   const likeMutation = useMutation({
     mutationFn: () => feedApi.togglePostLike(Number(postId)),
     onSuccess: (result) => {
-      queryClient.setQueryData<typeof posts>(["posts"], (current) =>
+      queryClient.setQueryData<feedApi.Post[]>(["posts"], (current) =>
         current?.map((p) =>
           p.id === Number(postId) ? { ...p, is_liked_by_me: result.liked, like_count: result.like_count } : p,
         ),
+      );
+      queryClient.setQueryData<feedApi.Post>(["post", postId], (current) =>
+        current ? { ...current, is_liked_by_me: result.liked, like_count: result.like_count } : current,
       );
     },
   });
@@ -175,6 +193,7 @@ export default function PostDetailScreen() {
       setComment("");
       queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
   });
 
