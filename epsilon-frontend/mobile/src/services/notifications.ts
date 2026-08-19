@@ -14,6 +14,7 @@ export type NotificationType =
   | "correction_ready"
   | "recruitment"
   | "stage_update"
+  | "report_card_published"
   | "system";
 
 export interface AppNotification {

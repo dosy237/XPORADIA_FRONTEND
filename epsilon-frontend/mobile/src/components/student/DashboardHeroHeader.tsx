@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Text, View } from "react-native";
-import { Circle, Defs, RadialGradient, Stop, Svg } from "react-native-svg";
+import { Circle, Defs, Path, RadialGradient, Stop, Svg } from "react-native-svg";
 
 import { AvatarPicker } from "@/components/ui/AvatarPicker";
 
@@ -17,14 +17,17 @@ interface DashboardHeroHeaderProps {
   facts: HeroFact[];
 }
 
-const CYCLE_MS = 4200;
-const FADE_MS = 260;
+// Cadence lente et respirante, jamais un carrousel énergique — un fait
+// toutes les ~6.5s, avec un fondu long plutôt qu'un cut.
+const CYCLE_MS = 6500;
+const FADE_MS = 480;
 
 /** En-tête "carte d'identité vivante" du dashboard élève — silhouette
- * organique (jamais un rectangle droit) avec halo décoratif, et un fait
- * personnel qui change en fondu toutes les ~4s parmi la liste fournie
- * (classe/établissement, âge, objectif, point fort) plutôt que tout
- * afficher en même temps et surcharger la carte. */
+ * organique (jamais un rectangle droit) avec halo décoratif et silhouette
+ * d'arbre en transparence, et un fait personnel qui change en fondu lent
+ * toutes les ~6.5s parmi la liste fournie (classe/établissement, âge,
+ * objectif, point fort, régularité) plutôt que tout afficher en même
+ * temps et surcharger la carte. */
 export function DashboardHeroHeader({ firstName, lastName, avatarUri, facts }: DashboardHeroHeaderProps) {
   const [index, setIndex] = useState(0);
   const opacity = useRef(new Animated.Value(1)).current;
@@ -49,9 +52,14 @@ export function DashboardHeroHeader({ firstName, lastName, avatarUri, facts }: D
 
   return (
     <LinearGradient
-      colors={["#0F172A", "#1E293B"]}
+      // Lumière qui traverse une matière plutôt qu'un aplat coupé au
+      // cutter : navy profond en haut, glissant vers un ton chaud (brun
+      // ambré, dérivé de l'orange de marque) en bas — jamais un bloc de
+      // couleur franc.
+      colors={["#0F172A", "#1B1522", "#3A2417"]}
+      locations={[0, 0.55, 1]}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      end={{ x: 0, y: 1 }}
       className={`${shapeClasses} px-6 pt-7 pb-8 gap-5`}
     >
       {/* Halos en dégradé radial (opaque au centre → transparent) plutôt que
@@ -72,6 +80,16 @@ export function DashboardHeroHeader({ firstName, lastName, avatarUri, facts }: D
           </Defs>
           <Circle cx="82%" cy="6%" r="60%" fill="url(#heroOrangeGlow)" />
           <Circle cx="2%" cy="102%" r="50%" fill="url(#heroWhiteGlow)" />
+        </Svg>
+        {/* Silhouette d'arbre miniature, en transparence légère, juste
+            derrière l'avatar — symbole compact du profil de compétences
+            (voir le radar plus bas / le futur écran "Mon arbre"). Une
+            invitation discrète à explorer, pas une scène. */}
+        <Svg width="86" height="86" viewBox="0 0 64 64" style={{ position: "absolute", left: 4, top: 2, opacity: 0.16 }}>
+          <Path d="M32 62 V38" stroke="#FFFFFF" strokeWidth={2.5} strokeLinecap="round" />
+          <Circle cx="32" cy="24" r="15" fill="#FFFFFF" />
+          <Circle cx="19" cy="32" r="10" fill="#FFFFFF" />
+          <Circle cx="45" cy="32" r="10" fill="#FFFFFF" />
         </Svg>
       </View>
 
