@@ -98,3 +98,6 @@ export interface ReportCard {
 
 export const fetchChildReportCards = (childId: number) =>
   api.get<ReportCard[]>(`/grading/children/${childId}/report-cards/`).then((r) => r.data);
+
+export const fetchMyReportCards = () =>
+  api.get<ReportCard[]>("/grading/my-report-cards/").then((r) => r.data);

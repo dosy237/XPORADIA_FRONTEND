@@ -259,6 +259,10 @@ export interface MyClass {
   school_class_name: string | null;
   homeroom_teacher: { first_name: string; last_name: string } | null;
   classmates: MyClassmate[];
+  establishment_name: string | null;
+  class_level: string;
+  status: EnrollmentStatus | null;
+  birth_date: string | null;
 }
 
 export const fetchMyClass = () => api.get<MyClass>("/academics/my-class/").then((r) => r.data);
