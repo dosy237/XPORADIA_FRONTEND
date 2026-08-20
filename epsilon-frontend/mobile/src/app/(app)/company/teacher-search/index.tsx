@@ -18,7 +18,7 @@ function TeacherCard({ teacher }: { teacher: TeacherDirectoryCard }) {
       accessibilityLabel={`Voir le profil de ${teacher.first_name} ${teacher.last_name}`}
       className="bg-white rounded-2xl p-4 border border-xporadia-border flex-row items-center gap-3"
     >
-      <Avatar firstName={teacher.first_name} lastName={teacher.last_name} size={52} />
+      <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} size={52} />
       <View className="flex-1 gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">
           {teacher.first_name} {teacher.last_name}

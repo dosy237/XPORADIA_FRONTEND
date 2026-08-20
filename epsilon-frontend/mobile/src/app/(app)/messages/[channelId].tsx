@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
-import { PencilIcon, SendIcon, TrashIcon } from "@/components/ui/Icon";
+import { BriefcaseIcon, BookIcon, PencilIcon, SendIcon, TrashIcon, UsersIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useChannelSocket } from "@/hooks/useChannelSocket";
 import * as messagingApi from "@/services/messaging";
@@ -101,6 +101,14 @@ export default function ChannelDetailScreen() {
     refetchInterval: 25000,
   });
 
+  // Même clé de requête que l'écran de liste : React Query réutilise le
+  // cache déjà chargé plutôt que de refaire un appel, juste pour peupler
+  // l'en-tête (nom et photo du correspondant, ou icône de groupe).
+  const { data: channels } = useQuery({ queryKey: ["channels"], queryFn: messagingApi.fetchChannels });
+  const channel = channels?.find((c) => c.id === id);
+  const [correspondentFirstName, ...correspondentRest] = (channel?.display_name ?? "").split(" ");
+  const CHANNEL_HEADER_ICON = { class: UsersIcon, subject: BookIcon, direct: UsersIcon, internship: BriefcaseIcon };
+
   useChannelSocket(id, {
     onMessageCreated: (message) => {
       queryClient.setQueryData<Message[]>(["channel-messages", id], (current) => {
@@ -174,8 +182,28 @@ export default function ChannelDetailScreen() {
 
   const isPending = sendMutation.isPending || editMutation.isPending;
 
+  const HeaderIcon = channel ? CHANNEL_HEADER_ICON[channel.channel_type] : UsersIcon;
+
   return (
     <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <View className="flex-row items-center gap-2.5">
+              {channel?.channel_type === "direct" ? (
+                <Avatar firstName={correspondentFirstName} lastName={correspondentRest.join(" ")} imageUri={channel.avatar} size={32} />
+              ) : (
+                <View className="h-8 w-8 rounded-full bg-white/15 items-center justify-center">
+                  <HeaderIcon size={16} color={Colors.white} />
+                </View>
+              )}
+              <Text className="text-white font-semibold text-base" numberOfLines={1}>
+                {channel?.display_name ?? "Conversation"}
+              </Text>
+            </View>
+          ),
+        }}
+      />
       <ChatBackground />
 
       <FlatList
@@ -196,7 +224,12 @@ export default function ChannelDetailScreen() {
                 grouped ? (
                   <View style={{ width: 28 }} />
                 ) : (
-                  <Avatar firstName={item.author.full_name.split(" ")[0]} lastName="" size={28} />
+                  <Avatar
+                    firstName={item.author.full_name.split(" ")[0]}
+                    lastName={item.author.full_name.split(" ").slice(1).join(" ")}
+                    imageUri={item.author.avatar}
+                    size={28}
+                  />
                 )
               ) : null}
               <View className={`max-w-[78%] ${isMine ? "items-end" : "items-start"}`}>

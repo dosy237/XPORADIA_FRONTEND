@@ -46,7 +46,7 @@ export default function AccreditationScreen() {
           {users.map((u) => (
             <View key={u.id} className="bg-white rounded-2xl p-4 shadow-soft gap-3">
               <View className="flex-row items-center gap-3">
-                <Avatar firstName={u.first_name} lastName={u.last_name} size={40} />
+                <Avatar firstName={u.first_name} lastName={u.last_name} imageUri={u.avatar} size={40} />
                 <View className="flex-1">
                   <Text className="text-sm font-semibold text-xporadia-text-primary">
                     {u.first_name} {u.last_name}

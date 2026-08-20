@@ -1,7 +1,7 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { Animated, Easing, ScrollView, Text, View } from "react-native";
+import { Animated, Easing, Pressable, ScrollView, Text, View } from "react-native";
 
 import { GradeTrendChart } from "@/components/charts/GradeTrendChart";
 import { SkillsRadarChart } from "@/components/charts/SkillsRadarChart";
@@ -12,6 +12,9 @@ import { Chip } from "@/components/ui/Chip";
 import {
   BookIcon,
   BriefcaseIcon,
+  BuildingIcon,
+  ChildIcon,
+  CheckCircleIcon,
   ClockIcon,
   FileTextIcon,
   GraduationCapIcon,
@@ -19,6 +22,7 @@ import {
   PencilIcon,
   SendIcon,
   StarIcon,
+  TreeIcon,
   UsersIcon,
 } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
@@ -226,16 +230,16 @@ function ViewTreeButton() {
 
   return (
     <View className="items-center gap-1.5">
-      <Text
+      <Pressable
         onPress={() => {
           setHintVisible(true);
           setTimeout(() => setHintVisible(false), 2200);
         }}
-        suppressHighlighting
-        className="text-xs font-bold text-xporadia-navy/40 bg-xporadia-bg rounded-full px-4 py-2"
+        className="flex-row items-center gap-1.5 bg-xporadia-bg rounded-full px-4 py-2"
       >
-        🌳 Voir mon arbre
-      </Text>
+        <TreeIcon size={14} color={Colors.textSecondary} />
+        <Text className="text-xs font-bold text-xporadia-navy/40">Voir mon arbre</Text>
+      </Pressable>
       {hintVisible ? (
         <Text className="text-[11px] font-semibold text-xporadia-orange-text">Bientôt disponible</Text>
       ) : null}
@@ -354,14 +358,14 @@ export default function StudentDashboard() {
 
   const heroFacts: HeroFact[] = [
     myClass?.school_class_name
-      ? { icon: "🏫", text: `${myClass.class_level} · ${myClass.establishment_name ?? "Établissement"}` }
+      ? { icon: BuildingIcon, text: `${myClass.class_level} · ${myClass.establishment_name ?? "Établissement"}` }
       : null,
-    age != null ? { icon: "🎂", text: `${age} ans` } : null,
-    lifeGoal?.description ? { icon: "🎯", text: lifeGoal.description } : null,
+    age != null ? { icon: ChildIcon, text: `${age} ans` } : null,
+    lifeGoal?.description ? { icon: StarIcon, text: lifeGoal.description } : null,
     strongestSubject
-      ? { icon: "⭐", text: `Point fort : ${strongestSubject.subject_name} (${strongestSubject.subject_average}/20)` }
+      ? { icon: MedalIcon, text: `Point fort : ${strongestSubject.subject_name} (${strongestSubject.subject_average}/20)` }
       : null,
-    onTimeStreak >= 2 ? { icon: "🔥", text: `${onTimeStreak} devoirs rendus à temps d'affilée` } : null,
+    onTimeStreak >= 2 ? { icon: CheckCircleIcon, text: `${onTimeStreak} devoirs rendus à temps d'affilée` } : null,
   ].filter((f): f is HeroFact => f !== null);
 
   const recentFollowedPosts = followedPostsQueries

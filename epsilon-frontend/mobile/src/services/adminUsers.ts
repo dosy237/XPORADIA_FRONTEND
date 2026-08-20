@@ -7,6 +7,7 @@ export interface AdminUserListItem {
   email: string;
   first_name: string;
   last_name: string;
+  avatar: string | null;
   primary_role: ManagedRole;
   is_active: boolean;
   created_at: string;

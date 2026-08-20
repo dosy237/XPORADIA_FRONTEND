@@ -17,6 +17,10 @@ export interface Channel {
   subject_id: number | null;
   display_name: string;
   subtitle: string;
+  /** Photo du correspondant — uniquement pour un canal "direct" (une
+   * vraie personne). Toujours nul pour un canal de classe/matière/stage,
+   * qui représente un groupe plutôt qu'une seule personne. */
+  avatar: string | null;
   last_message: { body: string; author_name: string; created_at: string } | null;
   unread_count: number;
   is_archived: boolean;

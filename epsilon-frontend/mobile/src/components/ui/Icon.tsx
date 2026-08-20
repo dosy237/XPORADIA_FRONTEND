@@ -528,6 +528,17 @@ export function CloseIcon({ size = 16, color = "#FFFFFF" }: IconProps) {
   );
 }
 
+export function TreeIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M12 21v-7" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Circle cx="12" cy="9" r="6" stroke={color} strokeWidth={2} />
+      <Circle cx="7" cy="12.5" r="4" stroke={color} strokeWidth={2} />
+      <Circle cx="17" cy="12.5" r="4" stroke={color} strokeWidth={2} />
+    </Svg>
+  );
+}
+
 export function LogoutIcon({ size = 16, color = "#FFFFFF" }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

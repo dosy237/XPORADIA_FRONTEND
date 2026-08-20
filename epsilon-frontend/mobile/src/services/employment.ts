@@ -14,6 +14,7 @@ export interface TeacherBasic {
   id: number;
   first_name: string;
   last_name: string;
+  avatar: string | null;
 }
 
 export interface JobListing {

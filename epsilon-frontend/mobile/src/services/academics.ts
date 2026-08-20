@@ -5,6 +5,7 @@ export interface DelegateBasic {
   first_name: string;
   last_name: string;
   email: string;
+  avatar: string | null;
 }
 
 export interface Department {
@@ -29,6 +30,7 @@ export interface HomeroomTeacher {
   first_name: string;
   last_name: string;
   email: string;
+  avatar: string | null;
 }
 
 export interface SchoolClass {
@@ -257,7 +259,7 @@ export interface MyClassmate {
 
 export interface MyClass {
   school_class_name: string | null;
-  homeroom_teacher: { first_name: string; last_name: string } | null;
+  homeroom_teacher: { first_name: string; last_name: string; avatar: string | null } | null;
   classmates: MyClassmate[];
   establishment_name: string | null;
   class_level: string;
@@ -305,7 +307,7 @@ export interface TaskDelegationEntry {
   id: number;
   task: DelegatedTask;
   task_label: string;
-  teacher: { id: number; first_name: string; last_name: string; email: string };
+  teacher: { id: number; first_name: string; last_name: string; email: string; avatar: string | null };
 }
 
 export const TASK_LABELS: Record<DelegatedTask, string> = {

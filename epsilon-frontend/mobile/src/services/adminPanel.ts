@@ -15,6 +15,7 @@ export interface PendingAccreditationUser {
   email: string;
   first_name: string;
   last_name: string;
+  avatar: string | null;
   primary_role: "teacher" | "director";
   created_at: string;
 }

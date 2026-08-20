@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 
+import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, BookIcon, NewspaperIcon, UserCircleIcon, UsersIcon } from "@/components/ui/Icon";
@@ -27,14 +28,19 @@ function formatTime(iso: string) {
 
 function ChannelRow({ channel }: { channel: Channel }) {
   const Icon = CHANNEL_ICON[channel.channel_type];
+  const [correspondentFirstName, ...correspondentRest] = channel.display_name.split(" ");
   return (
     <Card
       onPress={() => router.push(`/(app)/messages/${channel.id}`)}
       className="flex-row items-center gap-3"
     >
-      <View className="h-12 w-12 rounded-full bg-xporadia-navy/[0.08] items-center justify-center">
-        <Icon size={20} color={Colors.navy} />
-      </View>
+      {channel.channel_type === "direct" ? (
+        <Avatar firstName={correspondentFirstName} lastName={correspondentRest.join(" ")} imageUri={channel.avatar} size={48} />
+      ) : (
+        <View className="h-12 w-12 rounded-full bg-xporadia-navy/[0.08] items-center justify-center">
+          <Icon size={20} color={Colors.navy} />
+        </View>
+      )}
       <View className="flex-1 gap-0.5">
         <View className="flex-row items-center justify-between">
           <Text className="text-sm font-semibold text-xporadia-text-primary" numberOfLines={1}>

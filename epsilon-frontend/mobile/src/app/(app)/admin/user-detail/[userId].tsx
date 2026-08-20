@@ -119,7 +119,7 @@ export default function AdminUserDetailScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-5 pb-12">
       <View className="items-center gap-3">
-        <Avatar firstName={user.first_name} lastName={user.last_name} size={72} />
+        <Avatar firstName={user.first_name} lastName={user.last_name} imageUri={user.avatar} size={72} />
         <View className="items-center gap-1">
           <Text className="text-xl font-bold text-xporadia-navy">
             {user.first_name} {user.last_name}

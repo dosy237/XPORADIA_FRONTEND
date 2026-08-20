@@ -5,8 +5,10 @@ import { Circle, Defs, Path, RadialGradient, Stop, Svg } from "react-native-svg"
 
 import { AvatarPicker } from "@/components/ui/AvatarPicker";
 
+type IconComponent = (props: { color?: string; size?: number }) => React.ReactElement;
+
 export interface HeroFact {
-  icon: string;
+  icon: IconComponent;
   text: string;
 }
 
@@ -108,7 +110,7 @@ export function DashboardHeroHeader({ firstName, lastName, avatarUri, facts }: D
           style={{ opacity }}
           className="flex-row items-center gap-2.5 self-start max-w-full rounded-full bg-white/10 px-4 py-2.5"
         >
-          <Text className="text-base">{current.icon}</Text>
+          <current.icon size={15} color="#FFFFFF" />
           <Text className="flex-1 text-xs font-semibold text-white" numberOfLines={2}>
             {current.text}
           </Text>

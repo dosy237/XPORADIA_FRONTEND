@@ -68,7 +68,10 @@ export default function AppLayout() {
         name="director/my-internship-applications"
         options={{ title: "Mes candidatures de stage" }}
       />
-      <Stack.Screen name="library" options={{ title: "Bibliothèque numérique" }} />
+      <Stack.Screen name="library/index" options={{ title: "Bibliothèque numérique" }} />
+      <Stack.Screen name="library/[resourceId]" options={{ title: "Ressource" }} />
+      <Stack.Screen name="library/publish" options={{ title: "Publier une ressource" }} />
+      <Stack.Screen name="library/pdf-viewer" options={{ title: "Document" }} />
       <Stack.Screen name="class-roster/[classId]" options={{ title: "Effectifs" }} />
       <Stack.Screen name="parent/dashboard" options={{ headerShown: false }} />
       <Stack.Screen name="parent/profile" options={{ title: "Mes enfants" }} />

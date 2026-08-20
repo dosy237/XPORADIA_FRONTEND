@@ -34,12 +34,13 @@ export interface ChildTeacher {
   id: number;
   first_name: string;
   last_name: string;
+  avatar: string | null;
   role_label: string;
 }
 
 export interface ChildClassInfo {
   school_class_name: string | null;
-  homeroom_teacher: { first_name: string; last_name: string } | null;
+  homeroom_teacher: { first_name: string; last_name: string; avatar: string | null } | null;
   teachers: ChildTeacher[];
 }
 

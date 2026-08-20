@@ -41,7 +41,7 @@ export default function WorkedHoursOverviewScreen() {
               accessibilityLabel={`Valider les heures de ${r.teacher.first_name}`}
               className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center gap-3"
             >
-              <Avatar firstName={r.teacher.first_name} lastName={r.teacher.last_name} size={40} />
+              <Avatar firstName={r.teacher.first_name} lastName={r.teacher.last_name} imageUri={r.teacher.avatar} size={40} />
               <View className="flex-1">
                 <Text className="text-sm font-semibold text-xporadia-text-primary">
                   {r.teacher.first_name} {r.teacher.last_name}

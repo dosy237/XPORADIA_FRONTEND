@@ -44,6 +44,7 @@ export default function StudentClassScreen() {
           <Avatar
             firstName={myClass.homeroom_teacher.first_name}
             lastName={myClass.homeroom_teacher.last_name}
+            imageUri={myClass.homeroom_teacher.avatar}
             size={48}
           />
           <View className="flex-1">

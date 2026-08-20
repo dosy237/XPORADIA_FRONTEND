@@ -66,7 +66,7 @@ export default function TaskDelegationsScreen() {
           <View className="gap-2">
             {timetableDelegates.map((d) => (
               <View key={d.id} className="flex-row items-center gap-2.5 bg-xporadia-bg rounded-xl p-2.5">
-                <Avatar firstName={d.teacher.first_name} lastName={d.teacher.last_name} size={30} />
+                <Avatar firstName={d.teacher.first_name} lastName={d.teacher.last_name} imageUri={d.teacher.avatar} size={30} />
                 <View className="flex-1">
                   <Text className="text-xs font-semibold text-xporadia-text-primary">
                     {d.teacher.first_name} {d.teacher.last_name}

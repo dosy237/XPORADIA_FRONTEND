@@ -60,7 +60,7 @@ export function DelegatesManager({
         <View className="gap-2">
           {delegates.map((delegate) => (
             <View key={delegate.id} className="flex-row items-center gap-2.5 bg-xporadia-bg rounded-xl p-2.5">
-              <Avatar firstName={delegate.first_name} lastName={delegate.last_name} size={30} />
+              <Avatar firstName={delegate.first_name} lastName={delegate.last_name} imageUri={delegate.avatar} size={30} />
               <View className="flex-1">
                 <Text className="text-xs font-semibold text-xporadia-text-primary">
                   {delegate.first_name} {delegate.last_name}
