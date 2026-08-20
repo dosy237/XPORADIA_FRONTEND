@@ -197,6 +197,21 @@ export default function ClassSubjectsScreen() {
       <Pressable
         onPress={() =>
           router.push({
+            pathname: "/(app)/teacher/report-cards/[classId]",
+            params: { classId: String(classId) },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel="Générer les bulletins du trimestre"
+        className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center justify-between"
+      >
+        <Text className="text-sm font-semibold text-xporadia-text-primary">Bulletins du trimestre</Text>
+        <Text className="text-xs font-semibold text-xporadia-orange">Gérer →</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() =>
+          router.push({
             pathname: "/(app)/teacher/year-end-promotion/[classId]",
             params: { classId: String(classId), className: className ?? "" },
           })

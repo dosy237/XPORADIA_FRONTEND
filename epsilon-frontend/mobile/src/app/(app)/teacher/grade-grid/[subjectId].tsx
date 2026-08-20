@@ -7,7 +7,7 @@ import { Platform, Pressable, ScrollView, Text, TextInput, View } from "react-na
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { CheckCircleIcon, CloseIcon, GraduationCapIcon, PlusIcon } from "@/components/ui/Icon";
+import { CheckCircleIcon, CloseIcon, FileTextIcon, GraduationCapIcon, PlusIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as gradingApi from "@/services/grading";
@@ -182,6 +182,67 @@ function AddEvaluationSheet({
   );
 }
 
+/** Appréciation courte de l'enseignant dédié pour UN élève dans SA
+ * matière — ouverte en tapant son nom dans la colonne fixe. Brouillon
+ * indépendant des notes, copié dans le bulletin figé à la génération. */
+function AppreciationSheet({
+  student,
+  loading,
+  onClose,
+  onSubmit,
+}: {
+  student: GradeGridStudent | null;
+  loading: boolean;
+  onClose: () => void;
+  onSubmit: (comment: string) => void;
+}) {
+  const [comment, setComment] = useState("");
+
+  useEffect(() => {
+    if (student) setComment(student.appreciation);
+  }, [student]);
+
+  if (!student) return null;
+
+  return (
+    <Pressable
+      className="absolute inset-0 bg-black/30 items-center justify-center px-6"
+      style={{ zIndex: 20 }}
+      onPress={onClose}
+    >
+      <Pressable onPress={(e) => e.stopPropagation()} className="bg-white rounded-3xl w-full p-5 gap-3.5 shadow-deep">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-base font-bold text-xporadia-navy">
+            Appréciation, {student.first_name} {student.last_name}
+          </Text>
+          <Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Fermer" hitSlop={8}>
+            <CloseIcon size={16} color={Colors.textSecondary} />
+          </Pressable>
+        </View>
+
+        <Input
+          value={comment}
+          onChangeText={setComment}
+          placeholder="Élève sérieux, en progrès ce trimestre..."
+          multiline
+          numberOfLines={3}
+          maxLength={300}
+          style={{ height: 90, textAlignVertical: "top" }}
+        />
+
+        <View className="flex-row gap-3 mt-1">
+          <View className="flex-1">
+            <Button label="Annuler" variant="secondary" pill onPress={onClose} />
+          </View>
+          <View className="flex-1">
+            <Button label="Enregistrer" pill loading={loading} onPress={() => onSubmit(comment.trim())} />
+          </View>
+        </View>
+      </Pressable>
+    </Pressable>
+  );
+}
+
 function EvaluationHeaderCell({ evaluation }: { evaluation: Evaluation }) {
   return (
     <View
@@ -303,12 +364,14 @@ function GradeGridTable({
   justSavedCell,
   onActivateCell,
   onSaveCell,
+  onOpenAppreciation,
 }: {
   grid: GradeGrid;
   activeCell: { evaluationId: number; childId: number } | null;
   justSavedCell: { evaluationId: number; childId: number } | null;
   onActivateCell: (cell: { evaluationId: number; childId: number }) => void;
   onSaveCell: (entry: GradeGridEntry) => void;
+  onOpenAppreciation: (student: GradeGridStudent) => void;
 }) {
   const leftScrollRef = useRef<ScrollView>(null);
   const rightScrollRef = useRef<ScrollView>(null);
@@ -346,8 +409,11 @@ function GradeGridTable({
         </View>
         <ScrollView ref={leftScrollRef} scrollEnabled={false} showsVerticalScrollIndicator={false}>
           {grid.students.map((student) => (
-            <View
+            <Pressable
               key={student.child_id}
+              onPress={() => onOpenAppreciation(student)}
+              accessibilityRole="button"
+              accessibilityLabel={`Appréciation de ${student.first_name} ${student.last_name}`}
               style={{ height: ROW_HEIGHT }}
               className="flex-row items-center gap-2 px-3 border-b border-xporadia-border"
             >
@@ -355,7 +421,8 @@ function GradeGridTable({
               <Text numberOfLines={1} className="flex-1 text-xs font-semibold text-xporadia-text-primary">
                 {student.first_name} {student.last_name}
               </Text>
-            </View>
+              {student.appreciation ? <FileTextIcon size={11} color={Colors.orange} /> : null}
+            </Pressable>
           ))}
         </ScrollView>
       </View>
@@ -491,6 +558,25 @@ export default function TeacherGradeGridScreen() {
     },
   });
 
+  const [appreciationTarget, setAppreciationTarget] = useState<GradeGridStudent | null>(null);
+  const saveAppreciationMutation = useMutation({
+    mutationFn: (comment: string) =>
+      gradingApi.saveSubjectAppreciation(subjectId, selectedTermId as number, appreciationTarget!.child_id, comment),
+    onSuccess: (result) => {
+      queryClient.setQueryData<GradeGrid | undefined>(gridQueryKey, (prev) =>
+        prev
+          ? {
+              ...prev,
+              students: prev.students.map((student) =>
+                student.child_id === result.child_id ? { ...student, appreciation: result.comment } : student
+              ),
+            }
+          : prev
+      );
+      setAppreciationTarget(null);
+    },
+  });
+
   return (
     <View className="flex-1 bg-xporadia-bg">
       <Stack.Screen options={{ title: "Tableur de notes" }} />
@@ -538,6 +624,7 @@ export default function TeacherGradeGridScreen() {
             setActiveCell(null);
             saveMutation.mutate(entry);
           }}
+          onOpenAppreciation={setAppreciationTarget}
         />
       ) : (
         <View className="items-center gap-2 py-16">
@@ -551,6 +638,13 @@ export default function TeacherGradeGridScreen() {
         loading={createEvaluationMutation.isPending}
         onClose={() => setAddSheetOpen(false)}
         onSubmit={(payload) => createEvaluationMutation.mutate(payload)}
+      />
+
+      <AppreciationSheet
+        student={appreciationTarget}
+        loading={saveAppreciationMutation.isPending}
+        onClose={() => setAppreciationTarget(null)}
+        onSubmit={(comment) => saveAppreciationMutation.mutate(comment)}
       />
     </View>
   );

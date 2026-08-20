@@ -569,7 +569,7 @@ export default function StudentDashboard() {
                   label="Bulletins"
                   tint={Colors.gold}
                   badge={unreadReportCardCount}
-                  onPress={() => router.push("/(app)/student/grades")}
+                  onPress={() => router.push("/(app)/student/report-cards")}
                 />
                 <QuickAccessCell
                   icon={<SendIcon size={20} color={Colors.red} />}

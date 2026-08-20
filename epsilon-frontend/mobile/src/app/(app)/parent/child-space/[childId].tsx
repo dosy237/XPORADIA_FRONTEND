@@ -3,9 +3,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
+import { ReportCardCard } from "@/components/grading/ReportCardCard";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { BookIcon, ClockIcon, DownloadIcon, UsersIcon } from "@/components/ui/Icon";
+import { BookIcon, ClockIcon, UsersIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as gradingApi from "@/services/grading";
@@ -165,19 +166,11 @@ export default function ChildSpaceScreen() {
       {reportCards && reportCards.length > 0 && (
         <View className="gap-3">
           <SectionTitle title="Bulletins" />
-          {reportCards.map((rc) => (
-            <View key={rc.id} className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center gap-3">
-              <View className="h-10 w-10 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-                <DownloadIcon size={16} color={Colors.navy} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm font-semibold text-xporadia-text-primary">{rc.term_label}</Text>
-                <Text className="text-xs text-xporadia-text-secondary">
-                  Moyenne {rc.general_average}/20 — rang {rc.rank}/{rc.class_size}
-                </Text>
-              </View>
-            </View>
-          ))}
+          {[...reportCards]
+            .sort((a, b) => b.term - a.term)
+            .map((rc) => (
+              <ReportCardCard key={rc.id} reportCard={rc} />
+            ))}
         </View>
       )}
 

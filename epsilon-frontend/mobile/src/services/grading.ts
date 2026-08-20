@@ -160,6 +160,9 @@ export interface GradeGridStudent {
   /** Moyenne de CETTE matière uniquement pour ce trimestre — jamais
    * pondérée par Subject.coefficient, jamais la moyenne générale. */
   subject_average: string | null;
+  /** Brouillon d'appréciation de matière — copié dans le bulletin figé
+   * au moment de la génération, modifiable jusque-là. */
+  appreciation: string;
 }
 
 export interface GradeGrid {
@@ -199,4 +202,61 @@ export interface GradeGridSaveResult {
 export const saveGradeGridEntries = (subjectId: number, termId: number, entries: GradeGridEntry[]) =>
   api
     .post<GradeGridSaveResult>(`/grading/subjects/${subjectId}/terms/${termId}/grade-grid/`, entries)
+    .then((r) => r.data);
+
+/** Sauvegarde le brouillon d'appréciation de matière d'UN élève, depuis
+ * le tableur — un élève à la fois, même geste que la saisie des notes. */
+export const saveSubjectAppreciation = (subjectId: number, termId: number, childId: number, comment: string) =>
+  api
+    .post<{ child_id: number; comment: string }>(
+      `/grading/subjects/${subjectId}/terms/${termId}/students/${childId}/appreciation/`,
+      { comment }
+    )
+    .then((r) => r.data);
+
+/** Trimestre en cours de l'établissement d'une classe — alimente l'écran
+ * "Bulletins du trimestre" sans que le titulaire ait à le choisir
+ * manuellement, quand un trimestre actif existe. */
+export const fetchActiveTerm = (classId: number) =>
+  api.get<Term>(`/grading/classes/${classId}/active-term/`).then((r) => r.data);
+
+/** Tous les trimestres de l'établissement d'une classe — repli quand
+ * aucun trimestre n'est marqué actif (fetchActiveTerm renvoie alors une
+ * 404), pour que le titulaire choisisse manuellement plutôt que de
+ * rester bloqué. */
+export const fetchClassTerms = (classId: number) =>
+  api.get<Term[]>(`/grading/classes/${classId}/terms/`).then((r) => r.data);
+
+export interface ClassReportPreviewEntry {
+  child: number;
+  first_name: string;
+  last_name: string;
+  general_average: string;
+  rank: number;
+  avatar: string | null;
+}
+
+export interface ClassReportPreview {
+  class_average: string | null;
+  ranked: ClassReportPreviewEntry[];
+  without_average: { child: number; first_name: string; last_name: string }[];
+}
+
+/** Aperçu en direct des moyennes — rien n'est encore écrit en base à ce
+ * stade, réutilisé tel quel depuis ClassReportPreviewView. */
+export const fetchClassReportPreview = (classId: number, termId: number) =>
+  api
+    .get<ClassReportPreview>(`/grading/classes/${classId}/terms/${termId}/report-preview/`)
+    .then((r) => r.data);
+
+/** Génère ET publie les bulletins de TOUTE la classe en un seul appel —
+ * réutilise GenerateReportCardsView, jamais élève par élève. Réservé au
+ * titulaire de la classe (ou au directeur en supervision). */
+export const generateReportCards = (
+  classId: number,
+  termId: number,
+  payload: { homeroom_comments: Record<string, string> }
+) =>
+  api
+    .post<ReportCard[]>(`/grading/classes/${classId}/terms/${termId}/generate-report-cards/`, payload)
     .then((r) => r.data);

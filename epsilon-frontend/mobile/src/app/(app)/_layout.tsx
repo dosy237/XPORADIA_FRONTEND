@@ -42,6 +42,7 @@ export default function AppLayout() {
       <Stack.Screen name="teacher/timetable-delegation/index" options={{ title: "Emplois du temps" }} />
       <Stack.Screen name="teacher/timetable-editor/[classId]" options={{ title: "Emploi du temps" }} />
       <Stack.Screen name="teacher/year-end-promotion/[classId]" options={{ title: "Fin d'année" }} />
+      <Stack.Screen name="teacher/report-cards/[classId]" options={{ title: "Bulletins du trimestre" }} />
       <Stack.Screen name="teacher/recruitment/[recruitmentId]" options={{ title: "Heures travaillées" }} />
       <Stack.Screen name="teacher/wallet" options={{ title: "Portefeuille" }} />
       <Stack.Screen name="teacher/job-seeking" options={{ title: "Demande d'emploi" }} />
@@ -83,6 +84,7 @@ export default function AppLayout() {
       <Stack.Screen name="student/timetable" options={{ title: "Emploi du temps" }} />
       <Stack.Screen name="student/goals" options={{ title: "Vie & objectifs" }} />
       <Stack.Screen name="student/grades" options={{ title: "Mes résultats" }} />
+      <Stack.Screen name="student/report-cards" options={{ title: "Bulletins" }} />
       <Stack.Screen name="student/internship" options={{ title: "Mon stage" }} />
       <Stack.Screen name="messages/index" options={{ title: "Messagerie" }} />
       <Stack.Screen name="messages/[channelId]" options={{ title: "Conversation" }} />
