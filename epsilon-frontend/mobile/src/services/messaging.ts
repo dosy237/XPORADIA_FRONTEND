@@ -1,3 +1,4 @@
+import { appendFileAsset } from "@/lib/formDataAsset";
 import api from "@/services/api";
 import type { UserRole } from "@/types/user";
 
@@ -75,14 +76,10 @@ export interface LocalAsset {
   mimeType?: string | null;
 }
 
-function appendAttachments(formData: FormData, attachments?: LocalAsset[]) {
-  (attachments ?? []).forEach((asset) => {
-    formData.append("attachments", {
-      uri: asset.uri,
-      name: asset.name,
-      type: asset.mimeType ?? "application/octet-stream",
-    } as unknown as Blob);
-  });
+async function appendAttachments(formData: FormData, attachments?: LocalAsset[]) {
+  for (const asset of attachments ?? []) {
+    await appendFileAsset(formData, "attachments", asset);
+  }
 }
 
 export const fetchChannels = () => api.get<Channel[]>("/messaging/channels/").then((r) => r.data);
@@ -90,13 +87,13 @@ export const fetchChannels = () => api.get<Channel[]>("/messaging/channels/").th
 export const fetchChannelMessages = (channelId: number) =>
   api.get<Message[]>(`/messaging/channels/${channelId}/messages/`).then((r) => r.data);
 
-export const sendMessage = (
+export const sendMessage = async (
   channelId: number,
   payload: { body: string; attachments?: LocalAsset[] },
 ) => {
   const formData = new FormData();
   formData.append("body", payload.body);
-  appendAttachments(formData, payload.attachments);
+  await appendAttachments(formData, payload.attachments);
   return api
     .post<Message>(`/messaging/channels/${channelId}/messages/`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -130,13 +127,13 @@ export interface PublishExercisePayload {
 /** Publie un devoir/examen directement dans un canal de matière — action
  * "Ajouter un devoir" réservée à l'enseignant dédié. Renvoie le message
  * carte créé (avec sa donnée `exercise` imbriquée), pas l'Exercise brut. */
-export const publishExercise = (channelId: number, payload: PublishExercisePayload) => {
+export const publishExercise = async (channelId: number, payload: PublishExercisePayload) => {
   const formData = new FormData();
   formData.append("title", payload.title);
   formData.append("instructions", payload.instructions);
   formData.append("kind", payload.kind);
   formData.append("deadline", payload.deadline);
-  appendAttachments(formData, payload.attachments);
+  await appendAttachments(formData, payload.attachments);
   return api
     .post<Message>(`/messaging/channels/${channelId}/exercises/`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -153,11 +150,11 @@ export interface SubmitExercisePayload {
 /** Soumet un devoir depuis la DM avec l'enseignant — crée ou met à jour la
  * Submission de l'élève et publie le message correspondant dans ce même
  * fil, exercise_id renseigné pour rester traçable dans l'historique. */
-export const submitExercise = (channelId: number, payload: SubmitExercisePayload) => {
+export const submitExercise = async (channelId: number, payload: SubmitExercisePayload) => {
   const formData = new FormData();
   formData.append("exercise_id", payload.exercise_id);
   formData.append("content", payload.content);
-  appendAttachments(formData, payload.attachments);
+  await appendAttachments(formData, payload.attachments);
   return api
     .post<Message>(`/messaging/channels/${channelId}/submit-exercise/`, formData, {
       headers: { "Content-Type": "multipart/form-data" },

@@ -1,3 +1,4 @@
+import { appendFileAsset } from "@/lib/formDataAsset";
 import api from "@/services/api";
 
 export type ResourceType = "course" | "revision" | "exercise" | "solution" | "exam";
@@ -72,7 +73,7 @@ export interface CreateLibraryResourcePayload {
   coverImage?: { uri: string; name: string; mimeType?: string | null };
 }
 
-function buildResourceFormData(payload: CreateLibraryResourcePayload) {
+async function buildResourceFormData(payload: CreateLibraryResourcePayload) {
   const formData = new FormData();
   formData.append("title", payload.title);
   if (payload.description) formData.append("description", payload.description);
@@ -82,27 +83,27 @@ function buildResourceFormData(payload: CreateLibraryResourcePayload) {
   formData.append("subject", payload.subject);
   if (payload.file_url) formData.append("file_url", payload.file_url);
   if (payload.pdfFile) {
-    formData.append("pdf_file", {
+    await appendFileAsset(formData, "pdf_file", {
       uri: payload.pdfFile.uri,
       name: payload.pdfFile.name,
-      type: payload.pdfFile.mimeType ?? "application/pdf",
-    } as unknown as Blob);
+      mimeType: payload.pdfFile.mimeType ?? "application/pdf",
+    });
   }
   if (payload.coverImage) {
-    formData.append("cover_image", {
+    await appendFileAsset(formData, "cover_image", {
       uri: payload.coverImage.uri,
       name: payload.coverImage.name,
-      type: payload.coverImage.mimeType ?? "image/jpeg",
-    } as unknown as Blob);
+      mimeType: payload.coverImage.mimeType ?? "image/jpeg",
+    });
   }
   return formData;
 }
 
-export const createLibraryResource = (establishmentId: number, payload: CreateLibraryResourcePayload) =>
+export const createLibraryResource = async (establishmentId: number, payload: CreateLibraryResourcePayload) =>
   api
     .post<LibraryResource>(
       `/library/establishments/${establishmentId}/resources/`,
-      buildResourceFormData(payload),
+      await buildResourceFormData(payload),
       { headers: { "Content-Type": "multipart/form-data" } }
     )
     .then((r) => r.data);

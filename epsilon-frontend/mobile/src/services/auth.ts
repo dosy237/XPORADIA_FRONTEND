@@ -1,3 +1,4 @@
+import { appendFileAsset } from "@/lib/formDataAsset";
 import api from "@/services/api";
 import type { User } from "@/types/user";
 
@@ -115,13 +116,9 @@ export interface UpdateMePayload {
 export const updateMe = (payload: UpdateMePayload) =>
   api.patch<User>("/auth/me/", payload).then((r) => r.data);
 
-export const uploadMyAvatar = (asset: { uri: string; name: string; mimeType?: string | null }) => {
+export const uploadMyAvatar = async (asset: { uri: string; name: string; mimeType?: string | null }) => {
   const formData = new FormData();
-  formData.append("avatar", {
-    uri: asset.uri,
-    name: asset.name,
-    type: asset.mimeType ?? "image/jpeg",
-  } as unknown as Blob);
+  await appendFileAsset(formData, "avatar", asset);
   return api
     .post<User>("/auth/me/avatar/", formData, { headers: { "Content-Type": "multipart/form-data" } })
     .then((r) => r.data);

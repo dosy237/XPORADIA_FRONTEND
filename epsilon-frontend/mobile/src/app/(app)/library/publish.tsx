@@ -1,11 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 import { ResourceCover } from "@/components/library/ResourceCover";
+import { WebImageCropper } from "@/components/library/WebImageCropper";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { FileTextIcon, SendIcon } from "@/components/ui/Icon";
@@ -35,6 +37,12 @@ export default function PublishResourceScreen() {
   const [resourceType, setResourceType] = useState<ResourceType>("course");
   const [category, setCategory] = useState<ResourceCategory>("academic");
   const [coverImage, setCoverImage] = useState<{ uri: string; name: string; mimeType?: string | null } | null>(null);
+  // `allowsEditing` (recadrage natif d'expo-image-picker) n'a aucun effet
+  // sur le web — le sélecteur de fichier du navigateur s'ouvre directement
+  // sans étape de recadrage. Sur cette seule plateforme, l'image choisie
+  // est retenue ici en attendant que WebImageCropper produise la version
+  // recadrée, plutôt que d'être utilisée telle quelle.
+  const [webCropSource, setWebCropSource] = useState<string | null>(null);
 
   const [sourceMode, setSourceMode] = useState<SourceMode>("pdf");
   const [pdfFile, setPdfFile] = useState<{ uri: string; name: string; mimeType?: string | null } | null>(null);
@@ -42,11 +50,20 @@ export default function PublishResourceScreen() {
 
   const pickCover = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"], allowsEditing: true, aspect: [3, 4], quality: 0.85,
+      mediaTypes: ["images"], allowsEditing: Platform.OS !== "web", aspect: [3, 4], quality: 0.85,
     });
     if (result.canceled) return;
     const asset = result.assets[0];
+    if (Platform.OS === "web") {
+      setWebCropSource(asset.uri);
+      return;
+    }
     setCoverImage({ uri: asset.uri, name: asset.fileName ?? "couverture.jpg", mimeType: asset.mimeType });
+  };
+
+  const handleWebCropConfirm = (file: File) => {
+    setCoverImage({ uri: URL.createObjectURL(file), name: file.name, mimeType: file.type });
+    setWebCropSource(null);
   };
 
   const pickPdf = async () => {
@@ -88,7 +105,11 @@ export default function PublishResourceScreen() {
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-16">
       <Pressable onPress={pickCover} accessibilityRole="button" accessibilityLabel="Choisir une couverture">
         {coverImage ? (
-          <Image source={{ uri: coverImage.uri }} style={{ width: "100%", height: 160, borderRadius: 16 }} />
+          <Image
+            source={{ uri: coverImage.uri }}
+            style={{ width: "100%", height: 160, borderRadius: 16 }}
+            contentFit="cover"
+          />
         ) : (
           <ResourceCover uri={null} width="100%" height={160} borderRadius={16} />
         )}
@@ -195,6 +216,15 @@ export default function PublishResourceScreen() {
         loading={createMutation.isPending}
         onPress={() => createMutation.mutate()}
       />
+
+      {webCropSource ? (
+        <WebImageCropper
+          imageUri={webCropSource}
+          aspect={[3, 4]}
+          onCancel={() => setWebCropSource(null)}
+          onConfirm={handleWebCropConfirm}
+        />
+      ) : null}
     </ScrollView>
   );
 }

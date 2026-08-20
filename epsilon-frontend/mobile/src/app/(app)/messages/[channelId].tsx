@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
+import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -210,7 +210,7 @@ function PendingAttachmentsRow({ attachments, onRemove }: { attachments: LocalAs
         return (
           <View key={`${asset.uri}-${index}`} className="relative">
             {isImage ? (
-              <Image source={{ uri: asset.uri }} style={{ width: 52, height: 52, borderRadius: 12 }} />
+              <Image source={{ uri: asset.uri }} style={{ width: 52, height: 52, borderRadius: 12 }} contentFit="cover" />
             ) : (
               <View className="h-[52px] w-[52px] rounded-xl bg-xporadia-bg items-center justify-center border border-xporadia-border">
                 <FileTextIcon size={18} color={Colors.orange} />
@@ -558,6 +558,7 @@ export default function ChannelDetailScreen() {
                             key={i}
                             source={{ uri: attachment.url }}
                             style={{ width: 180, height: 130, borderRadius: 12 }}
+                            contentFit="cover"
                           />
                         ) : (
                           <View key={i} className="flex-row items-center gap-2 bg-black/[0.04] rounded-xl px-2.5 py-2">
