@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { useState } from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { CheckCircleIcon, ClockIcon, UsersIcon } from "@/components/ui/Icon";
@@ -72,13 +74,75 @@ function StudentRow({
   );
 }
 
+/** Confirmation avant clôture — un vrai composant plutôt qu'Alert.alert
+ * (react-native-web ne rend RIEN sur web, `Alert.alert` y est un no-op
+ * complet : ce bouton resterait inerte sans ça), même schéma que
+ * MessageActionsSheet/AttachSheet déjà utilisés ailleurs dans l'app. */
+function CloseConfirmSheet({
+  visible,
+  loading,
+  onCancel,
+  onConfirm,
+}: {
+  visible: boolean;
+  loading: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  if (!visible) return null;
+  return (
+    <Pressable
+      className="absolute inset-0 bg-black/30 items-center justify-center px-8"
+      style={{ zIndex: 20 }}
+      onPress={onCancel}
+    >
+      <Pressable onPress={(e) => e.stopPropagation()} className="bg-white rounded-3xl w-full p-5 gap-3 shadow-deep">
+        <Text className="text-base font-bold text-xporadia-navy">Clôturer ce devoir ?</Text>
+        <Text className="text-sm text-xporadia-text-secondary leading-5">
+          Les élèves ne pourront plus soumettre ni modifier leur copie après cette action.
+        </Text>
+        <View className="flex-row gap-3 mt-1">
+          <View className="flex-1">
+            <Button label="Annuler" variant="secondary" pill onPress={onCancel} />
+          </View>
+          <View className="flex-1">
+            <Button label="Clôturer" variant="danger" pill loading={loading} onPress={onConfirm} />
+          </View>
+        </View>
+      </Pressable>
+    </Pressable>
+  );
+}
+
 export default function ExerciseOverviewScreen() {
   const { exerciseId } = useLocalSearchParams<{ exerciseId: string }>();
+  const queryClient = useQueryClient();
 
   const { data: exercise } = useQuery({
     queryKey: ["exercise", exerciseId],
     queryFn: () => virtualClassesApi.fetchExercise(exerciseId),
     enabled: !!exerciseId,
+  });
+
+  // Réutilise le statut CLOSED déjà existant sur Exercise (déjà exposé
+  // depuis l'écran de gestion de la matière sous le nom "Clôturer") —
+  // simplement rendu actionnable depuis cette vue d'ensemble aussi.
+  // Clôturer bloque toute nouvelle soumission ET toute modification
+  // d'une copie déjà rendue (voir SubmissionDetailView/SubmitExerciseMessageView
+  // côté backend, comportement déjà en place, choix assumé : un élève en
+  // retard ne peut plus rendre une fois le devoir marqué corrigé).
+  const [closeSheetVisible, setCloseSheetVisible] = useState(false);
+
+  const closeMutation = useMutation({
+    mutationFn: () => virtualClassesApi.updateExercise(exerciseId, { status: "closed" }),
+    onSuccess: (updated) => {
+      queryClient.setQueryData(["exercise", exerciseId], updated);
+      setCloseSheetVisible(false);
+    },
+    onError: () => {
+      setCloseSheetVisible(false);
+      Alert.alert("Erreur", "Impossible de clôturer ce devoir.");
+    },
   });
 
   const { data: stats } = useQuery({
@@ -94,11 +158,15 @@ export default function ExerciseOverviewScreen() {
   });
 
   return (
-    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
+    <View className="flex-1 bg-xporadia-bg">
+    <ScrollView className="flex-1" contentContainerClassName="p-6 gap-4 pb-12">
       {exercise ? (
         <Card className="gap-2">
           <View className="flex-row items-center gap-2">
             <Chip label={exercise.kind === "exam" ? "Examen" : "Devoir"} variant="orange" />
+            {exercise.status === "closed" ? (
+              <Chip label="Clôturé" variant="navy-subtle" icon={<CheckCircleIcon size={11} color={Colors.navy} />} />
+            ) : null}
             {exercise.deadline ? (
               <View className="flex-row items-center gap-1">
                 <ClockIcon size={12} color={Colors.textSecondary} />
@@ -112,6 +180,14 @@ export default function ExerciseOverviewScreen() {
           </View>
           <Text className="text-base font-bold text-xporadia-navy">{exercise.title}</Text>
           <Text className="text-xs text-xporadia-text-secondary leading-5">{exercise.instructions}</Text>
+          {exercise.status === "published" ? (
+            <Button
+              label="Marquer ce devoir comme corrigé"
+              variant="secondary"
+              pill
+              onPress={() => setCloseSheetVisible(true)}
+            />
+          ) : null}
         </Card>
       ) : null}
 
@@ -157,5 +233,13 @@ export default function ExerciseOverviewScreen() {
         </View>
       )}
     </ScrollView>
+
+      <CloseConfirmSheet
+        visible={closeSheetVisible}
+        loading={closeMutation.isPending}
+        onCancel={() => setCloseSheetVisible(false)}
+        onConfirm={() => closeMutation.mutate()}
+      />
+    </View>
   );
 }

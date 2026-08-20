@@ -35,9 +35,17 @@ export function ExerciseCardMessage({ exercise, onPress }: { exercise: ExerciseC
           <GraduationCapIcon size={17} color={Colors.orange} />
         </View>
         <View className="flex-1">
-          <Text className="text-[10px] font-bold text-xporadia-orange-text uppercase tracking-wide">
-            {exercise.kind === "exam" ? "Examen" : "Devoir"}
-          </Text>
+          <View className="flex-row items-center gap-1.5">
+            <Text className="text-[10px] font-bold text-xporadia-orange-text uppercase tracking-wide">
+              {exercise.kind === "exam" ? "Examen" : "Devoir"}
+            </Text>
+            {exercise.status === "closed" ? (
+              <View className="flex-row items-center gap-0.5 bg-xporadia-navy/10 rounded-full px-1.5 py-0.5">
+                <CheckCircleIcon size={9} color={Colors.navy} />
+                <Text className="text-[9px] font-bold text-xporadia-navy">Clôturé</Text>
+              </View>
+            ) : null}
+          </View>
           <Text className="text-sm font-bold text-xporadia-text-primary" numberOfLines={2}>
             {exercise.title}
           </Text>
