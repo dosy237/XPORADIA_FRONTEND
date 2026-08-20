@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -21,8 +21,11 @@ import { Avatar } from "@/components/ui/Avatar";
 import {
   BriefcaseIcon,
   BookIcon,
+  CheckCircleIcon,
+  ClockIcon,
   CloseIcon,
   FileTextIcon,
+  GraduationCapIcon,
   PaperclipIcon,
   PencilIcon,
   SendIcon,
@@ -34,6 +37,7 @@ import { useChannelSocket } from "@/hooks/useChannelSocket";
 import * as messagingApi from "@/services/messaging";
 import type { ExerciseCard, LocalAsset, Message } from "@/services/messaging";
 import * as virtualClassesApi from "@/services/virtualClasses";
+import type { ChildExercise, Exercise as VCExercise, ExerciseSubmissionStats } from "@/services/virtualClasses";
 import { useAuthStore } from "@/store/authStore";
 
 function formatTime(iso: string) {
@@ -123,7 +127,7 @@ function ExerciseContextBanner({
       <FileTextIcon size={14} color={Colors.orange} />
       <Text className="flex-1 text-xs font-semibold text-xporadia-orange-text" numberOfLines={1}>
         Devoir : {title}
-        {deadline ? ` — à rendre le ${formatDeadline(deadline)}` : ""}
+        {deadline ? `, à rendre le ${formatDeadline(deadline)}` : ""}
       </Text>
       <Pressable onPress={onDismiss} accessibilityRole="button" accessibilityLabel="Quitter le contexte devoir" hitSlop={8}>
         <CloseIcon size={13} color={Colors.orange} />
@@ -228,6 +232,83 @@ function PendingAttachmentsRow({ attachments, onRemove }: { attachments: LocalAs
         );
       })}
     </View>
+  );
+}
+
+function formatShortDeadline(iso: string | null) {
+  if (!iso) return "Pas d'échéance";
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+  });
+}
+
+/** Ligne d'un devoir de cette matière, onglets "Devoirs en cours"/"Devoirs
+ * corrigés" côté élève — mêmes données que l'écran "Mes devoirs"
+ * (my_submission imbriqué dans ChildExercise), simplement filtrées à
+ * cette matière, jamais une requête parallèle. */
+function StudentSubjectExerciseRow({ exercise, onPress }: { exercise: ChildExercise; onPress: () => void }) {
+  const isGraded = exercise.my_submission?.status === "graded";
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" className="bg-white rounded-2xl p-3.5 gap-2 shadow-soft">
+      <View className="flex-row items-center gap-2.5">
+        <View className="h-9 w-9 rounded-xl bg-xporadia-orange/10 items-center justify-center">
+          <GraduationCapIcon size={16} color={Colors.orange} />
+        </View>
+        <Text className="flex-1 text-sm font-bold text-xporadia-text-primary" numberOfLines={2}>
+          {exercise.title}
+        </Text>
+      </View>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-1.5">
+          <ClockIcon size={12} color={Colors.textSecondary} />
+          <Text className="text-[11px] text-xporadia-text-secondary">{formatShortDeadline(exercise.deadline)}</Text>
+        </View>
+        {isGraded && exercise.my_submission?.grade ? (
+          <View className="flex-row items-center gap-1">
+            <CheckCircleIcon size={12} color={Colors.green} />
+            <Text className="text-xs font-bold text-xporadia-green">{exercise.my_submission.grade}/20</Text>
+          </View>
+        ) : null}
+      </View>
+    </Pressable>
+  );
+}
+
+/** Ligne d'un devoir de cette matière, onglets "Devoirs en cours"/"Soumis"
+ * côté enseignant — même liste que l'ancien écran de matière
+ * (fetchExercises) et mêmes statistiques que la vue d'ensemble
+ * (fetchExerciseSubmissionStats), simplement filtrées à cette matière. */
+function TeacherSubjectExerciseRow({
+  exercise,
+  stats,
+  onPress,
+}: {
+  exercise: VCExercise;
+  stats?: ExerciseSubmissionStats;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" className="bg-white rounded-2xl p-3.5 gap-2 shadow-soft">
+      <View className="flex-row items-center gap-2.5">
+        <View className="h-9 w-9 rounded-xl bg-xporadia-orange/10 items-center justify-center">
+          <GraduationCapIcon size={16} color={Colors.orange} />
+        </View>
+        <Text className="flex-1 text-sm font-bold text-xporadia-text-primary" numberOfLines={2}>
+          {exercise.title}
+        </Text>
+      </View>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-1.5">
+          <ClockIcon size={12} color={Colors.textSecondary} />
+          <Text className="text-[11px] text-xporadia-text-secondary">{formatShortDeadline(exercise.deadline)}</Text>
+        </View>
+        {stats ? (
+          <Text className="text-xs font-bold text-xporadia-navy">
+            {stats.submitted_count}/{stats.total_enrolled} ont soumis
+          </Text>
+        ) : null}
+      </View>
+    </Pressable>
   );
 }
 
@@ -419,19 +500,52 @@ export default function ChannelDetailScreen() {
 
   const HeaderIcon = channel ? CHANNEL_HEADER_ICON[channel.channel_type] : UsersIcon;
   const isSubjectChannel = channel?.channel_type === "subject";
-  const isDedicatedTeacherHere = channel?.can_publish_exercise ?? false;
+  const isTeacherRole = user?.primary_role === "teacher";
+  const showDevoirsList = isSubjectChannel && subjectTab !== "messages";
 
-  const visibleMessages =
-    !isSubjectChannel || subjectTab === "messages"
-      ? messages ?? []
-      : (messages ?? []).filter((m) => {
-          if (!m.exercise) return false;
-          if (isDedicatedTeacherHere) {
-            return subjectTab === "devoirs_en_cours" ? m.exercise.status === "published" : m.exercise.status === "closed";
-          }
-          const alreadySubmitted = m.exercise.my_submission_status !== null;
-          return subjectTab === "devoirs_en_cours" ? !alreadySubmitted : alreadySubmitted;
-        });
+  // Élève : même requête (clé + fonction) que l'écran global "Mes devoirs"
+  // (student/my-exercises.tsx) — React Query réutilise le cache déjà
+  // chargé, jamais une nouvelle source de données. Simplement filtrée ici
+  // à la matière de ce canal.
+  const { data: mySubjects, isLoading: isLoadingMySubjects } = useQuery({
+    queryKey: ["my-subjects"],
+    queryFn: virtualClassesApi.fetchMySubjects,
+    enabled: showDevoirsList && !isTeacherRole,
+  });
+  const subjectExercisesForStudent: ChildExercise[] =
+    mySubjects?.find((s) => s.id === channel?.subject_id)?.exercises ?? [];
+  const devoirsEnCoursStudent = subjectExercisesForStudent.filter(
+    (e) => !e.my_submission || e.my_submission.status !== "graded",
+  );
+  const devoirsCorrigesStudent = subjectExercisesForStudent.filter((e) => e.my_submission?.status === "graded");
+
+  // Enseignant : même requête que teacher/subject/[subjectId].tsx pour la
+  // liste (clé "subject-exercises") et que teacher/exercise-overview pour
+  // les statistiques par devoir (clé "exercise-stats") — aucune nouvelle
+  // requête parallèle, juste la même donnée filtrée à ce canal.
+  const { data: subjectExercisesForTeacher, isLoading: isLoadingTeacherExercises } = useQuery({
+    queryKey: ["subject-exercises", String(channel?.subject_id)],
+    queryFn: () => virtualClassesApi.fetchExercises(channel!.subject_id!),
+    enabled: showDevoirsList && isTeacherRole && !!channel?.subject_id,
+  });
+  const statsQueries = useQueries({
+    queries: (subjectExercisesForTeacher ?? []).map((exercise) => ({
+      queryKey: ["exercise-stats", exercise.id],
+      queryFn: () => virtualClassesApi.fetchExerciseSubmissionStats(exercise.id),
+      enabled: showDevoirsList && isTeacherRole,
+    })),
+  });
+  const statsByExerciseId = new Map<string, ExerciseSubmissionStats | undefined>(
+    (subjectExercisesForTeacher ?? []).map((exercise, i) => [exercise.id, statsQueries[i]?.data]),
+  );
+  const devoirsEnCoursTeacher = (subjectExercisesForTeacher ?? []).filter((e) => e.status === "published");
+  const devoirsCorrigesTeacher = (subjectExercisesForTeacher ?? []).filter((e) => e.status === "closed");
+
+  const isLoadingDevoirs = isTeacherRole ? isLoadingTeacherExercises : isLoadingMySubjects;
+  const devoirsListStudent = subjectTab === "devoirs_en_cours" ? devoirsEnCoursStudent : devoirsCorrigesStudent;
+  const devoirsListTeacher = subjectTab === "devoirs_en_cours" ? devoirsEnCoursTeacher : devoirsCorrigesTeacher;
+
+  const visibleMessages = messages ?? [];
 
   return (
     <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -461,7 +575,7 @@ export default function ChannelDetailScreen() {
             [
               ["messages", "Messages"],
               ["devoirs_en_cours", "Devoirs en cours"],
-              ["devoirs_traites", isDedicatedTeacherHere ? "Soumis" : "Devoirs corrigés"],
+              ["devoirs_traites", "Devoirs corrigés"],
             ] as const
           ).map(([key, label]) => (
             <Pressable
@@ -495,6 +609,58 @@ export default function ChannelDetailScreen() {
         />
       ) : null}
 
+      {showDevoirsList ? (
+        isTeacherRole ? (
+          <FlatList
+            data={devoirsListTeacher}
+            keyExtractor={(exercise) => exercise.id}
+            contentContainerStyle={{ padding: 16, gap: 10 }}
+            renderItem={({ item: exercise }) => (
+              <TeacherSubjectExerciseRow
+                exercise={exercise}
+                stats={statsByExerciseId.get(exercise.id)}
+                onPress={() => router.push(`/(app)/teacher/exercise-overview/${exercise.id}`)}
+              />
+            )}
+            ListEmptyComponent={
+              !isLoadingDevoirs ? (
+                <View className="items-center gap-2 py-10">
+                  <GraduationCapIcon size={22} color={Colors.textSecondary} />
+                  <Text className="text-xs text-xporadia-text-secondary">Aucun devoir dans cette catégorie.</Text>
+                </View>
+              ) : null
+            }
+          />
+        ) : (
+          <FlatList
+            data={devoirsListStudent}
+            keyExtractor={(exercise) => exercise.id}
+            contentContainerStyle={{ padding: 16, gap: 10 }}
+            renderItem={({ item: exercise }) => (
+              <StudentSubjectExerciseRow
+                exercise={exercise}
+                onPress={() => {
+                  if (!exercise.my_dm_channel_id) return;
+                  const query = new URLSearchParams({
+                    exerciseId: exercise.id,
+                    exerciseTitle: exercise.title,
+                    exerciseDeadline: exercise.deadline ?? "",
+                  });
+                  router.push(`/(app)/messages/${exercise.my_dm_channel_id}?${query.toString()}`);
+                }}
+              />
+            )}
+            ListEmptyComponent={
+              !isLoadingDevoirs ? (
+                <View className="items-center gap-2 py-10">
+                  <GraduationCapIcon size={22} color={Colors.textSecondary} />
+                  <Text className="text-xs text-xporadia-text-secondary">Aucun devoir dans cette catégorie.</Text>
+                </View>
+              ) : null
+            }
+          />
+        )
+      ) : (
       <FlatList
         ref={listRef}
         data={visibleMessages}
@@ -596,6 +762,7 @@ export default function ChannelDetailScreen() {
         }}
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
       />
+      )}
 
       <MessageActionsSheet
         visible={!!actionsForMessage}

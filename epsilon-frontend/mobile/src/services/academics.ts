@@ -255,6 +255,7 @@ export interface MyClassmate {
   id: number;
   first_name: string;
   last_name: string;
+  avatar: string | null;
   /** Faux si l'élève n'a pas encore activé son compte : pas de conversation possible tant que c'est le cas. */
   can_message: boolean;
 }

@@ -45,7 +45,7 @@ function StudentRow({
       accessibilityRole={canOpenDm ? "button" : undefined}
       className="flex-row items-center gap-3 bg-white rounded-2xl px-4 py-3 shadow-soft"
     >
-      <Avatar firstName={student.first_name} lastName={student.last_name} size={38} />
+      <Avatar firstName={student.first_name} lastName={student.last_name} imageUri={student.avatar} size={38} />
       <View className="flex-1">
         <Text className="text-sm font-semibold text-xporadia-text-primary">
           {student.first_name} {student.last_name}

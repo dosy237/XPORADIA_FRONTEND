@@ -124,6 +124,7 @@ export interface ExerciseStudentStatus {
   child_id: number;
   first_name: string;
   last_name: string;
+  avatar: string | null;
   status: "not_submitted" | SubmissionStatus;
   submission_id: number | null;
   grade: string | null;

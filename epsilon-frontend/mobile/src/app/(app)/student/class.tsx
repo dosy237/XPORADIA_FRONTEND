@@ -115,7 +115,7 @@ export default function StudentClassScreen() {
                 accessibilityRole={c.can_message ? "button" : undefined}
               >
                 <Card variant="flat" className="flex-row items-center gap-3 bg-white">
-                  <Avatar firstName={c.first_name} lastName={c.last_name} size={40} />
+                  <Avatar firstName={c.first_name} lastName={c.last_name} imageUri={c.avatar} size={40} />
                   <Text className="text-sm font-medium text-xporadia-text-primary flex-1">
                     {c.first_name} {c.last_name}
                   </Text>
