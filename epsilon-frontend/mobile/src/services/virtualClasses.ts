@@ -40,6 +40,9 @@ export const updateVirtualClassDescription = (subjectId: number, description: st
 export const fetchExercises = (subjectId: number) =>
   api.get<Exercise[]>(`/virtual-classes/subjects/${subjectId}/exercises/`).then((r) => r.data);
 
+export const fetchExercise = (exerciseId: string) =>
+  api.get<Exercise>(`/virtual-classes/exercises/${exerciseId}/`).then((r) => r.data);
+
 export const createExercise = (
   subjectId: number,
   payload: { title: string; instructions: string; kind?: ExerciseKind; status?: ExerciseStatus; deadline?: string }
@@ -80,6 +83,8 @@ export interface ChildExercise {
   is_overdue: boolean;
   published_at: string | null;
   my_submission: Submission | null;
+  /** DM déjà existante avec l'enseignant dédié, ou null (compte non activé, ou pas encore de DM). */
+  my_dm_channel_id: number | null;
 }
 
 export interface ChildSubject {
@@ -113,6 +118,25 @@ export interface ExerciseSubmissionStats {
 export const fetchExerciseSubmissionStats = (exerciseId: string) =>
   api
     .get<ExerciseSubmissionStats>(`/virtual-classes/exercises/${exerciseId}/submissions/stats/`)
+    .then((r) => r.data);
+
+export interface ExerciseStudentStatus {
+  child_id: number;
+  first_name: string;
+  last_name: string;
+  status: "not_submitted" | SubmissionStatus;
+  submission_id: number | null;
+  grade: string | null;
+  /** DM avec l'enseignant, si elle existe déjà — le tap sur un élève y bascule directement. */
+  channel_id: number | null;
+}
+
+/** Effectif complet de la classe pour ce devoir (contrairement à
+ * fetchExerciseSubmissions, qui ne renvoie que les copies déjà rendues) —
+ * pour la liste "qui a rendu / qui n'a pas rendu" côté enseignant. */
+export const fetchExerciseStudentStatus = (exerciseId: string) =>
+  api
+    .get<ExerciseStudentStatus[]>(`/virtual-classes/exercises/${exerciseId}/student-status/`)
     .then((r) => r.data);
 
 export const submitExercise = (exerciseId: string, payload: { child_id: number; content: string }) =>

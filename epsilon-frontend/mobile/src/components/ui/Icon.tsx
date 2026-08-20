@@ -490,6 +490,22 @@ export function CameraIcon({ size = 16, color = "#FFFFFF" }: IconProps) {
   );
 }
 
+export function ImageIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="3" y="4" width="18" height="16" rx="2.5" stroke={color} strokeWidth={2} />
+      <Circle cx="8.5" cy="9.5" r="1.75" stroke={color} strokeWidth={2} />
+      <Path
+        d="m4.5 17 5-5 3.5 3.5 2.5-2.5 4 4"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 export function EyeIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -535,6 +551,20 @@ export function TreeIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
       <Circle cx="12" cy="9" r="6" stroke={color} strokeWidth={2} />
       <Circle cx="7" cy="12.5" r="4" stroke={color} strokeWidth={2} />
       <Circle cx="17" cy="12.5" r="4" stroke={color} strokeWidth={2} />
+    </Svg>
+  );
+}
+
+export function PaperclipIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M17 7.5 8.5 16a3 3 0 1 1-4.24-4.24L13 3a2 2 0 1 1 2.83 2.83L7.7 13.9a1 1 0 1 1-1.42-1.42l7-7"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Svg>
   );
 }

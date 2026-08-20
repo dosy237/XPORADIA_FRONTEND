@@ -255,12 +255,23 @@ export interface MyClassmate {
   id: number;
   first_name: string;
   last_name: string;
+  /** Faux si l'élève n'a pas encore activé son compte : pas de conversation possible tant que c'est le cas. */
+  can_message: boolean;
+}
+
+export interface MyClassSubject {
+  id: number;
+  name: string;
+  teacher_name: string | null;
+  /** Canal de matière déjà créé par l'enseignant dédié, ou null s'il ne l'a pas encore créé. */
+  channel_id: number | null;
 }
 
 export interface MyClass {
   school_class_name: string | null;
   homeroom_teacher: { first_name: string; last_name: string; avatar: string | null } | null;
   classmates: MyClassmate[];
+  subjects: MyClassSubject[];
   establishment_name: string | null;
   class_level: string;
   status: EnrollmentStatus | null;

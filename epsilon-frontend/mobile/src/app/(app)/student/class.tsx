@@ -1,16 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { UsersIcon } from "@/components/ui/Icon";
+import { BookIcon, UsersIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
+import * as messagingApi from "@/services/messaging";
 
 export default function StudentClassScreen() {
   const { data: myClass, isLoading } = useQuery({ queryKey: ["my-class"], queryFn: academicsApi.fetchMyClass });
+
+  const contactClassmateMutation = useMutation({
+    mutationFn: (classmateId: number) => messagingApi.contactClassmate(classmateId),
+    onSuccess: (channel) => router.push(`/(app)/messages/${channel.id}`),
+  });
 
   if (isLoading) {
     return (
@@ -63,16 +69,61 @@ export default function StudentClassScreen() {
       )}
 
       <View className="gap-3">
+        <Text className="text-base font-bold text-xporadia-navy">Mes matières</Text>
+        {myClass.subjects.length > 0 ? (
+          <View className="gap-2">
+            {myClass.subjects.map((subject) => (
+              <Pressable
+                key={subject.id}
+                disabled={!subject.channel_id}
+                onPress={() => subject.channel_id && router.push(`/(app)/messages/${subject.channel_id}`)}
+                accessibilityRole={subject.channel_id ? "button" : undefined}
+              >
+                <Card variant="flat" className="flex-row items-center gap-3 bg-white">
+                  <View className="h-10 w-10 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
+                    <BookIcon size={16} color={Colors.navy} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-sm font-semibold text-xporadia-text-primary">{subject.name}</Text>
+                    <Text className="text-xs text-xporadia-text-secondary">
+                      {subject.channel_id
+                        ? subject.teacher_name ?? "Canal de discussion"
+                        : "Canal pas encore ouvert par l'enseignant"}
+                    </Text>
+                  </View>
+                </Card>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <View className="items-center gap-2 py-8">
+            <BookIcon size={22} color={Colors.textSecondary} />
+            <Text className="text-xs text-xporadia-text-secondary">Aucune matière pour l'instant.</Text>
+          </View>
+        )}
+      </View>
+
+      <View className="gap-3">
         <Text className="text-base font-bold text-xporadia-navy">Mes camarades</Text>
         {myClass.classmates.length > 0 ? (
           <View className="gap-2">
             {myClass.classmates.map((c) => (
-              <Card key={c.id} variant="flat" className="flex-row items-center gap-3 bg-white">
-                <Avatar firstName={c.first_name} lastName={c.last_name} size={40} />
-                <Text className="text-sm font-medium text-xporadia-text-primary">
-                  {c.first_name} {c.last_name}
-                </Text>
-              </Card>
+              <Pressable
+                key={c.id}
+                disabled={!c.can_message}
+                onPress={() => c.can_message && contactClassmateMutation.mutate(c.id)}
+                accessibilityRole={c.can_message ? "button" : undefined}
+              >
+                <Card variant="flat" className="flex-row items-center gap-3 bg-white">
+                  <Avatar firstName={c.first_name} lastName={c.last_name} size={40} />
+                  <Text className="text-sm font-medium text-xporadia-text-primary flex-1">
+                    {c.first_name} {c.last_name}
+                  </Text>
+                  {!c.can_message ? (
+                    <Text className="text-[10px] text-xporadia-text-secondary">Compte non activé</Text>
+                  ) : null}
+                </Card>
+              </Pressable>
             ))}
           </View>
         ) : (
