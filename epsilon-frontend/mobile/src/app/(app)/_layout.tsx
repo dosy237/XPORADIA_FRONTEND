@@ -88,6 +88,7 @@ export default function AppLayout() {
       <Stack.Screen name="messages/[channelId]" options={{ title: "Conversation" }} />
       <Stack.Screen name="messages/publish-exercise" options={{ title: "Publier un devoir" }} />
       <Stack.Screen name="teacher/exercise-overview/[exerciseId]" options={{ title: "Devoir" }} />
+      <Stack.Screen name="teacher/grade-grid/[subjectId]" options={{ title: "Tableur de notes" }} />
       <Stack.Screen name="student/my-exercises" options={{ title: "Mes devoirs" }} />
       <Stack.Screen name="student/assignments/index" options={{ title: "Mes devoirs" }} />
       <Stack.Screen name="student/assignments/[exerciseId]" options={{ title: "Devoir" }} />

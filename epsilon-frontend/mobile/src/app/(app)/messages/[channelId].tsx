@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
   View,
@@ -570,7 +571,12 @@ export default function ChannelDetailScreen() {
       <ChatBackground />
 
       {isSubjectChannel ? (
-        <View className="flex-row gap-2 px-4 py-2.5 bg-white border-b border-xporadia-border">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="bg-white border-b border-xporadia-border"
+          contentContainerClassName="flex-row gap-2 px-4 py-2.5"
+        >
           {(
             [
               ["messages", "Messages"],
@@ -589,7 +595,19 @@ export default function ChannelDetailScreen() {
               </Text>
             </Pressable>
           ))}
-        </View>
+          {isTeacherRole && channel?.can_publish_exercise && channel?.subject_id ? (
+            <Pressable
+              onPress={() => {
+                if (!channel?.subject_id) return;
+                router.push(`/(app)/teacher/grade-grid/${channel.subject_id}`);
+              }}
+              className="rounded-full px-3 py-1.5 bg-xporadia-bg"
+              accessibilityRole="button"
+            >
+              <Text className="text-xs font-semibold text-xporadia-text-secondary">Notes</Text>
+            </Pressable>
+          ) : null}
+        </ScrollView>
       ) : null}
 
       {exerciseContext ? (
