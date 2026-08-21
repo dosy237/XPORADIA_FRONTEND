@@ -37,7 +37,11 @@ import * as studentLifeApi from "@/services/studentLife";
 import * as virtualClassesApi from "@/services/virtualClasses";
 import { useAuthStore } from "@/store/authStore";
 
-const WEEKDAY_TODAY_INDEX = (new Date().getDay() + 6) % 7; // Lundi = 0, dimanche = 6
+function todayISO() {
+  const d = new Date();
+  const pad = (n: number) => (n < 10 ? `0${n}` : `${n}`);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
 
 function computeAge(birthDate: string | null | undefined): number | null {
   if (!birthDate) return null;
@@ -59,7 +63,7 @@ function describeTrend(points: { label: string; value: number }[]): string | nul
   const delta = points[points.length - 1].value - points[0].value;
   if (Math.abs(delta) < 0.3) return "Résultats stables depuis le début de l'année.";
   if (delta > 0) return `En progression constante depuis ${points[0].label}.`;
-  return `En repli depuis ${points[0].label} — un accompagnement pourrait aider.`;
+  return `En repli depuis ${points[0].label}, un accompagnement pourrait aider.`;
 }
 
 type AssignmentStatus = "en_cours" | "soumis" | "corrige";
@@ -251,7 +255,14 @@ export default function StudentDashboard() {
   const user = useAuthStore((s) => s.user);
 
   const { data: myClass } = useQuery({ queryKey: ["my-class"], queryFn: academicsApi.fetchMyClass });
-  const { data: timetable } = useQuery({ queryKey: ["my-timetable"], queryFn: academicsApi.fetchMyTimetable });
+  // fetchMyAgenda (pas fetchMyTimetable, brut et non scopé) : seule cette
+  // source respecte les vacances/jours fériés — un simple filtre par jour
+  // de semaine sur l'emploi du temps annuel montrerait un cours fantôme un
+  // jour où il n'y en a en réalité aucun.
+  const { data: todayAgenda } = useQuery({
+    queryKey: ["my-agenda", todayISO()],
+    queryFn: () => academicsApi.fetchMyAgenda(todayISO()),
+  });
   const { data: subjects } = useQuery({ queryKey: ["my-subjects"], queryFn: virtualClassesApi.fetchMySubjects });
   const { data: mySubmissions } = useQuery({ queryKey: ["my-submissions"], queryFn: virtualClassesApi.fetchMySubmissions });
   const { data: channels } = useQuery({ queryKey: ["channels"], queryFn: messagingApi.fetchChannels });
@@ -281,9 +292,9 @@ export default function StudentDashboard() {
     })),
   });
 
-  const todaySlots = (timetable ?? [])
-    .filter((slot) => slot.weekday === WEEKDAY_TODAY_INDEX)
-    .sort((a, b) => a.start_time.localeCompare(b.start_time));
+  const todaySlots = [...(todayAgenda?.official_slots ?? [])].sort((a, b) =>
+    a.start_time.localeCompare(b.start_time)
+  );
 
   // Tous les devoirs déjà publiés (le backend ne renvoie jamais de
   // brouillon à l'élève), avec leur statut réel plutôt que seulement les

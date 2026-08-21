@@ -4,7 +4,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 import { ResourceCover } from "@/components/library/ResourceCover";
 import { WebImageCropper } from "@/components/library/WebImageCropper";
@@ -47,6 +47,7 @@ export default function PublishResourceScreen() {
   const [sourceMode, setSourceMode] = useState<SourceMode>("pdf");
   const [pdfFile, setPdfFile] = useState<{ uri: string; name: string; mimeType?: string | null } | null>(null);
   const [fileUrl, setFileUrl] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const pickCover = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -91,10 +92,18 @@ export default function PublishResourceScreen() {
       router.back();
     },
     onError: (error: unknown) => {
-      const message =
-        (error as { response?: { data?: Record<string, string[]> } })?.response?.data;
-      const detail = message ? Object.values(message).flat().join(" ") : null;
-      Alert.alert("Erreur", detail || "Impossible de publier cette ressource.");
+      // Alert.alert() est un no-op sur react-native-web (voir Icon.tsx/
+      // exercise-overview) : sans ce bandeau, tout échec de publication
+      // passait totalement inaperçu sur web, sans aucun message affiché.
+      const response = (error as { response?: { status?: number; data?: Record<string, string[]> } })?.response;
+      if (!response) {
+        setErrorMessage(
+          "Échec de l'envoi. Le fichier est peut-être trop volumineux pour votre connexion, ou celle-ci a été interrompue. Réessayez, si besoin avec un fichier plus léger."
+        );
+        return;
+      }
+      const detail = response.data ? Object.values(response.data).flat().join(" ") : null;
+      setErrorMessage(detail || `Impossible de publier cette ressource (erreur ${response.status ?? ""}).`);
     },
   });
 
@@ -210,11 +219,20 @@ export default function PublishResourceScreen() {
         )}
       </View>
 
+      {errorMessage ? (
+        <View className="bg-xporadia-red/[0.08] border border-xporadia-red/40 rounded-2xl p-4">
+          <Text className="text-xs font-semibold text-xporadia-red">{errorMessage}</Text>
+        </View>
+      ) : null}
+
       <Button
         label="Publier"
         disabled={!canSubmit}
         loading={createMutation.isPending}
-        onPress={() => createMutation.mutate()}
+        onPress={() => {
+          setErrorMessage(null);
+          createMutation.mutate();
+        }}
       />
 
       {webCropSource ? (
