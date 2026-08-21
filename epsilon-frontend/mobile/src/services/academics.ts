@@ -251,6 +251,75 @@ export const deleteTimetableSlot = (slotId: number) =>
 export const fetchMyTimetable = () =>
   api.get<TimetableSlot[]>("/academics/my-timetable/").then((r) => r.data);
 
+export interface AgendaPersonalBlock {
+  block: number;
+  exception: number | null;
+  title: string;
+  subject: number | null;
+  subject_name: string | null;
+  start_time: string;
+  end_time: string;
+}
+
+export interface AgendaDay {
+  date: string;
+  weekday: number;
+  is_school_day: boolean;
+  term: { id: number; number: number; name: string } | null;
+  official_slots: TimetableSlot[];
+  personal_blocks: AgendaPersonalBlock[];
+}
+
+/** Agenda du jour pour l'élève connecté : cours officiels (lecture seule,
+ * vides en vacances) + créneaux personnels, toujours affichés. */
+export const fetchMyAgenda = (date: string) =>
+  api.get<AgendaDay>(`/academics/my-agenda/?date=${date}`).then((r) => r.data);
+
+export interface PersonalScheduleBlock {
+  id: number;
+  weekday: number;
+  weekday_label: string;
+  start_time: string;
+  end_time: string;
+  title: string;
+  subject: number | null;
+  subject_name: string | null;
+  valid_from: string;
+  valid_until: string | null;
+}
+
+export const createPersonalBlock = (payload: {
+  weekday: number;
+  start_time: string;
+  end_time: string;
+  title: string;
+  subject?: number;
+  valid_from: string;
+  valid_until?: string;
+}) => api.post<PersonalScheduleBlock>("/academics/personal-blocks/", payload).then((r) => r.data);
+
+export type OccurrenceScope = "this" | "following";
+
+/** Modifie une occurrence d'un créneau personnel — `scope` doit toujours
+ * être fourni explicitement par l'appelant (jamais de valeur par défaut
+ * assumée côté service). "this" crée une exception ponctuelle pour cette
+ * date ; "following" clôt la règle actuelle et en ouvre une nouvelle à
+ * partir de cette date. */
+export const editPersonalBlockOccurrence = (
+  blockId: number,
+  payload: {
+    scope: OccurrenceScope;
+    date: string;
+    title?: string;
+    subject?: number;
+    start_time?: string;
+    end_time?: string;
+  }
+) => api.patch(`/academics/personal-blocks/${blockId}/occurrence/`, payload).then((r) => r.data);
+
+export const deletePersonalBlockOccurrence = (blockId: number, scope: OccurrenceScope, date: string) =>
+  api.delete(`/academics/personal-blocks/${blockId}/occurrence/`, { params: { scope, date } });
+
 export interface MyClassmate {
   id: number;
   first_name: string;

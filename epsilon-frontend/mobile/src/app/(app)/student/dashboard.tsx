@@ -555,7 +555,7 @@ export default function StudentDashboard() {
               <SectionTitle title="Mon espace" />
               <View className="flex-row flex-wrap gap-3">
                 <QuickAccessCell icon={<UsersIcon size={20} color={Colors.purple} />} label="Ma classe" tint={Colors.purple} onPress={() => router.push("/(app)/student/class")} />
-                <QuickAccessCell icon={<ClockIcon size={20} color={Colors.platinum} />} label="Emploi du temps" tint={Colors.platinum} onPress={() => router.push("/(app)/student/timetable")} />
+                <QuickAccessCell icon={<ClockIcon size={20} color={Colors.platinum} />} label="Agenda" tint={Colors.platinum} onPress={() => router.push("/(app)/student/timetable")} />
                 <QuickAccessCell
                   icon={<FileTextIcon size={20} color={Colors.orange} />}
                   label="Devoirs & exercices"
