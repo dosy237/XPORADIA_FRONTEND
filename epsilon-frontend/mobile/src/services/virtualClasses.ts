@@ -8,7 +8,7 @@ export interface Exercise {
   kind: ExerciseKind;
   title: string;
   instructions: string;
-  attachments: string[];
+  attachments: { name: string; url: string; type: string }[];
   deadline: string | null;
   status: ExerciseStatus;
   is_overdue: boolean;
@@ -62,7 +62,7 @@ export interface Submission {
   exercise_title: string;
   child: { id: number; first_name: string };
   content: string;
-  attachments: string[];
+  attachments: { name: string; url: string; type: string }[];
   status: SubmissionStatus;
   grade: string | null;
   feedback: string;
@@ -77,7 +77,7 @@ export interface ChildExercise {
   kind: ExerciseKind;
   title: string;
   instructions: string;
-  attachments: string[];
+  attachments: { name: string; url: string; type: string }[];
   deadline: string | null;
   status: ExerciseStatus;
   is_overdue: boolean;
@@ -145,8 +145,10 @@ export const submitExercise = (exerciseId: string, payload: { child_id: number; 
 
 /** Modification de sa propre copie avant échéance — distinct de
  * gradeSubmission (réservé au prof). */
-export const editSubmission = (id: number, payload: { content?: string; attachments?: string[] }) =>
-  api.patch<Submission>(`/virtual-classes/submissions/${id}/`, payload).then((r) => r.data);
+export const editSubmission = (
+  id: number,
+  payload: { content?: string; attachments?: { name: string; url: string; type: string }[] }
+) => api.patch<Submission>(`/virtual-classes/submissions/${id}/`, payload).then((r) => r.data);
 
 export const fetchSubmission = (id: number) =>
   api.get<Submission>(`/virtual-classes/submissions/${id}/`).then((r) => r.data);

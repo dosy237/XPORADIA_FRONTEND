@@ -1,13 +1,49 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import { FileTextIcon } from "@/components/ui/Icon";
+import { Colors } from "@/constants/theme";
 import * as virtualClassesApi from "@/services/virtualClasses";
 import { useAuthStore } from "@/store/authStore";
+
+/** Pièces jointes d'une copie déjà rendue — images en aperçu, autres
+ * fichiers (PDF...) en ligne nommée ouvrant le fichier réel au tap. Même
+ * traitement image/non-image que dans la messagerie, pour rester cohérent
+ * avec le reste de l'app. */
+function SubmissionAttachments({ attachments }: { attachments: { name: string; url: string; type: string }[] }) {
+  if (attachments.length === 0) return null;
+  return (
+    <View className="gap-1.5">
+      {attachments.map((attachment, i) =>
+        attachment.type.startsWith("image/") ? (
+          <Image
+            key={i}
+            source={{ uri: attachment.url }}
+            style={{ width: 180, height: 130, borderRadius: 12 }}
+            contentFit="cover"
+          />
+        ) : (
+          <Pressable
+            key={i}
+            onPress={() => Linking.openURL(attachment.url)}
+            className="flex-row items-center gap-2 bg-xporadia-bg rounded-xl px-2.5 py-2"
+          >
+            <FileTextIcon size={14} color={Colors.orange} />
+            <Text className="text-xs flex-1 text-xporadia-text-primary" numberOfLines={1}>
+              {attachment.name}
+            </Text>
+          </Pressable>
+        )
+      )}
+    </View>
+  );
+}
 
 const KIND_LABEL: Record<string, string> = { homework: "Devoir", exam: "Examen" };
 
@@ -96,6 +132,7 @@ export default function AssignmentDetailScreen() {
             ) : (
               <Text className="text-sm text-xporadia-text-primary leading-6">{submission.content}</Text>
             )}
+            <SubmissionAttachments attachments={submission.attachments} />
             <Text className="text-[11px] text-xporadia-text-secondary">
               Rendu le {new Date(submission.submitted_at).toLocaleString("fr-FR")}
               {submission.updated_at !== submission.submitted_at

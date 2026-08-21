@@ -25,7 +25,15 @@ const AnimatedView = Animated.View;
  * en dégradé radial, "éclosion" animée à l'affichage, et un sommet qu'on
  * peut toucher pour voir sa valeur en détail. */
 export function SkillsRadarChart({ axes, max = 20, size = 240, color = "#FB5406" }: SkillsRadarChartProps) {
+  // Marge horizontale ajoutée de part et d'autre du cercle : les libellés
+  // des axes latéraux (ex. "Physique-Chimie") dépassent le rayon du
+  // cercle et étaient rognés quand la toile SVG faisait exactement `size`
+  // de large. Le cercle reste centré (même `center`/`radius`), seule la
+  // toile s'élargit pour laisser respirer le texte.
+  const LABEL_H_PAD = 42;
+  const canvasWidth = size + LABEL_H_PAD * 2;
   const center = size / 2;
+  const offsetX = LABEL_H_PAD;
   const radius = size / 2 - 44;
   const angleStep = (Math.PI * 2) / Math.max(axes.length, 1);
   const RING_LEVELS = [0.25, 0.5, 0.75, 1];
@@ -46,7 +54,7 @@ export function SkillsRadarChart({ axes, max = 20, size = 240, color = "#FB5406"
 
   const pointAt = (index: number, ratio: number) => {
     const angle = angleOf(index);
-    return { x: center + Math.cos(angle) * radius * ratio, y: center + Math.sin(angle) * radius * ratio };
+    return { x: offsetX + center + Math.cos(angle) * radius * ratio, y: center + Math.sin(angle) * radius * ratio };
   };
 
   if (axes.length < 3) {
@@ -62,16 +70,16 @@ export function SkillsRadarChart({ axes, max = 20, size = 240, color = "#FB5406"
   const activePoint = activeIndex != null ? valuePoints[activeIndex] : null;
 
   return (
-    <View style={{ width: size, height: size }}>
+    <View style={{ width: canvasWidth, height: size }}>
       <AnimatedView
         style={{
-          width: size,
+          width: canvasWidth,
           height: size,
           opacity: bloom,
           transform: [{ scale: bloom.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] }) }],
         }}
       >
-        <Svg width={size} height={size}>
+        <Svg width={canvasWidth} height={size}>
           <Defs>
             <RadialGradient id="radarFill" cx="50%" cy="50%" r="55%">
               <Stop offset="0" stopColor={color} stopOpacity={0.4} />
@@ -89,7 +97,7 @@ export function SkillsRadarChart({ axes, max = 20, size = 240, color = "#FB5406"
           ))}
           {axes.map((_, i) => {
             const p = pointAt(i, 1);
-            return <Path key={i} d={`M ${center} ${center} L ${p.x} ${p.y}`} stroke="#E2E8F0" strokeWidth={1} />;
+            return <Path key={i} d={`M ${offsetX + center} ${center} L ${p.x} ${p.y}`} stroke="#E2E8F0" strokeWidth={1} />;
           })}
           <Path d={valuePath} fill="url(#radarFill)" stroke={color} strokeWidth={2.5} strokeLinejoin="round" />
           {valuePoints.map((p, i) => {
@@ -108,7 +116,7 @@ export function SkillsRadarChart({ axes, max = 20, size = 240, color = "#FB5406"
           })}
           {axes.map((axis, i) => {
             const angle = angleOf(i);
-            const lp = { x: center + Math.cos(angle) * (radius + 26), y: center + Math.sin(angle) * (radius + 26) };
+            const lp = { x: offsetX + center + Math.cos(angle) * (radius + 26), y: center + Math.sin(angle) * (radius + 26) };
             return (
               <SvgText key={`label-${i}`} x={lp.x} y={lp.y - 4} fontSize={11} fontWeight="700" fill="#0F172A" textAnchor="middle">
                 {axis.label}
@@ -117,7 +125,7 @@ export function SkillsRadarChart({ axes, max = 20, size = 240, color = "#FB5406"
           })}
           {axes.map((axis, i) => {
             const angle = angleOf(i);
-            const lp = { x: center + Math.cos(angle) * (radius + 26), y: center + Math.sin(angle) * (radius + 26) };
+            const lp = { x: offsetX + center + Math.cos(angle) * (radius + 26), y: center + Math.sin(angle) * (radius + 26) };
             return (
               <SvgText key={`value-${i}`} x={lp.x} y={lp.y + 10} fontSize={10} fontWeight="600" fill="#5A6A8A" textAnchor="middle">
                 {`${axis.value.toFixed(1)}/${max}`}
@@ -148,7 +156,7 @@ export function SkillsRadarChart({ axes, max = 20, size = 240, color = "#FB5406"
           pointerEvents="none"
           style={{
             position: "absolute",
-            left: Math.max(4, Math.min(size - 116, activePoint.x - 58)),
+            left: Math.max(4, Math.min(canvasWidth - 116, activePoint.x - 58)),
             top: Math.max(0, activePoint.y - 48),
             width: 116,
             alignItems: "center",

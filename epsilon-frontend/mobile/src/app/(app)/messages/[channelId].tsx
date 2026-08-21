@@ -574,8 +574,8 @@ export default function ChannelDetailScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="bg-white border-b border-xporadia-border"
-          contentContainerClassName="flex-row gap-2 px-4 py-2.5"
+          className="grow-0 bg-white border-b border-xporadia-border"
+          contentContainerClassName="flex-row items-center gap-2 px-4 py-2.5"
         >
           {(
             [
