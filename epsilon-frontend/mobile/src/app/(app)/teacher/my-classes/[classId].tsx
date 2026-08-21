@@ -212,6 +212,21 @@ export default function ClassSubjectsScreen() {
       <Pressable
         onPress={() =>
           router.push({
+            pathname: "/(app)/teacher/class-events/[classId]",
+            params: { classId: String(classId), className: className ?? "" },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel="Gérer les événements de la classe"
+        className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center justify-between"
+      >
+        <Text className="text-sm font-semibold text-xporadia-text-primary">Événements</Text>
+        <Text className="text-xs font-semibold text-xporadia-orange">Gérer →</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={() =>
+          router.push({
             pathname: "/(app)/teacher/year-end-promotion/[classId]",
             params: { classId: String(classId), className: className ?? "" },
           })

@@ -7,7 +7,7 @@ import { Chip } from "@/components/ui/Chip";
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
-import type { AgendaPersonalBlock, OccurrenceScope, TimetableSlot } from "@/services/academics";
+import type { AgendaPersonalBlock, EstablishmentEvent, OccurrenceScope, TimetableSlot } from "@/services/academics";
 
 const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 const MONTH_LABELS = [
@@ -299,6 +299,11 @@ export default function AgendaScreen() {
 
   const officialSlots: TimetableSlot[] = agenda?.official_slots ?? [];
   const personalBlocks: AgendaPersonalBlock[] = agenda?.personal_blocks ?? [];
+  const schoolEvents: EstablishmentEvent[] = agenda?.school_events ?? [];
+  const untimedEvents = schoolEvents.filter((e) => !e.start_time);
+  const timedEvents = schoolEvents.filter((e) => !!e.start_time);
+  const holidayEvent = untimedEvents.find((e) => e.event_type === "holiday");
+  const otherUntimedEvents = untimedEvents.filter((e) => e.event_type !== "holiday");
 
   const dateObj = new Date(`${selectedDate}T00:00:00`);
   const dateLabel = `${WEEKDAY_LABELS[weekdayOfISO(selectedDate)]} ${dateObj.getDate()} ${MONTH_LABELS[dateObj.getMonth()]}`;
@@ -356,6 +361,10 @@ export default function AgendaScreen() {
           <View className="h-3 w-3 rounded-sm bg-xporadia-orange/[0.15] border border-xporadia-orange" />
           <Text className="text-[11px] text-xporadia-text-secondary">Mes créneaux</Text>
         </View>
+        <View className="flex-row items-center gap-1.5">
+          <View className="h-3 w-3 rounded-sm bg-xporadia-purple/[0.15] border border-xporadia-purple" />
+          <Text className="text-[11px] text-xporadia-text-secondary">Événements</Text>
+        </View>
       </View>
 
       {agenda && !agenda.is_school_day ? (
@@ -366,6 +375,32 @@ export default function AgendaScreen() {
           </Text>
         </View>
       ) : null}
+
+      {holidayEvent ? (
+        <View className="mx-6 mb-2 px-4 py-2.5 rounded-xl bg-xporadia-gold/[0.15] border border-xporadia-gold flex-row items-center gap-2">
+          <CalendarIcon size={14} color={Colors.gold} />
+          <Text className="text-xs font-semibold flex-1" style={{ color: Colors.bronze }}>
+            Jour férié, {holidayEvent.title}. Pas de cours officiel aujourd&apos;hui.
+          </Text>
+        </View>
+      ) : null}
+
+      {otherUntimedEvents.map((event) => (
+        <View
+          key={event.id}
+          className="mx-6 mb-2 px-4 py-2.5 rounded-xl bg-xporadia-purple/[0.08] border border-xporadia-purple/40 flex-row items-center gap-2"
+        >
+          <CalendarIcon size={14} color={Colors.purple} />
+          <View className="flex-1">
+            <Text className="text-xs font-semibold" style={{ color: Colors.purple }}>
+              {event.event_type_label} : {event.title}
+            </Text>
+            {event.description ? (
+              <Text className="text-[11px] text-xporadia-text-secondary mt-0.5">{event.description}</Text>
+            ) : null}
+          </View>
+        </View>
+      ))}
 
       {isLoading ? (
         <Text className="text-sm text-xporadia-text-secondary text-center py-10">Chargement...</Text>
@@ -386,6 +421,21 @@ export default function AgendaScreen() {
                   key={h}
                   style={{ position: "absolute", top: h * HOUR_HEIGHT, left: 0, right: 0, borderTopWidth: 1, borderTopColor: Colors.border }}
                 />
+              ))}
+
+              {timedEvents.map((event) => (
+                <View
+                  key={event.id}
+                  style={{ position: "absolute", top: topFor(event.start_time as string), height: heightFor(event.start_time as string, event.end_time || event.start_time as string), left: 2, right: 2, zIndex: 5 }}
+                  className="bg-xporadia-purple/[0.1] border border-xporadia-purple rounded-lg px-2 py-1"
+                >
+                  <Text numberOfLines={1} className="text-[10px] font-semibold" style={{ color: Colors.purple }}>
+                    {event.event_type_label} : {event.title}
+                  </Text>
+                  <Text className="text-[9px] text-xporadia-text-secondary">
+                    {event.start_time!.slice(0, 5)}{event.end_time ? `-${event.end_time.slice(0, 5)}` : ""}
+                  </Text>
+                </View>
               ))}
 
               <View style={{ flexDirection: "row", height: 24 * HOUR_HEIGHT }}>

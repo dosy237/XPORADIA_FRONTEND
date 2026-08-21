@@ -261,6 +261,23 @@ export interface AgendaPersonalBlock {
   end_time: string;
 }
 
+export type EventType = "report_card_distribution" | "meeting" | "holiday" | "other";
+export type EventAudience = "students" | "parents" | "teachers";
+
+export interface EstablishmentEvent {
+  id: number;
+  school_class: number | null;
+  event_type: EventType;
+  event_type_label: string;
+  title: string;
+  description: string;
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  audience: EventAudience[];
+  created_at: string;
+}
+
 export interface AgendaDay {
   date: string;
   weekday: number;
@@ -268,6 +285,7 @@ export interface AgendaDay {
   term: { id: number; number: number; name: string } | null;
   official_slots: TimetableSlot[];
   personal_blocks: AgendaPersonalBlock[];
+  school_events: EstablishmentEvent[];
 }
 
 /** Agenda du jour pour l'élève connecté : cours officiels (lecture seule,
@@ -319,6 +337,25 @@ export const editPersonalBlockOccurrence = (
 
 export const deletePersonalBlockOccurrence = (blockId: number, scope: OccurrenceScope, date: string) =>
   api.delete(`/academics/personal-blocks/${blockId}/occurrence/`, { params: { scope, date } });
+
+/** Événements d'établissement (remise de bulletins, réunion, jour férié,
+ * autre) de cette classe, plus ceux déclarés pour tout l'établissement. */
+export const fetchClassEvents = (classId: number) =>
+  api.get<EstablishmentEvent[]>(`/academics/classes/${classId}/events/`).then((r) => r.data);
+
+export const createClassEvent = (
+  classId: number,
+  payload: {
+    event_type: EventType;
+    title: string;
+    description?: string;
+    date: string;
+    start_time?: string;
+    end_time?: string;
+    audience: EventAudience[];
+    for_whole_establishment?: boolean;
+  }
+) => api.post<EstablishmentEvent>(`/academics/classes/${classId}/events/`, payload).then((r) => r.data);
 
 export interface MyClassmate {
   id: number;
