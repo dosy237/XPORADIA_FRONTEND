@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { BuildingIcon, LayersIcon, PencilIcon, UsersIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { LogoPicker } from "@/components/ui/LogoPicker";
 import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
 import { openInMaps } from "@/lib/openInMaps";
@@ -106,6 +107,18 @@ export default function DirectorProfileScreen() {
         </View>
 
         <View className="px-6">
+          <View className="bg-white rounded-3xl p-5 mb-5 shadow-deep border border-xporadia-border flex-row items-center gap-4">
+            <LogoPicker imageUri={profile.logo} size={64} />
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                Logo de l'établissement
+              </Text>
+              <Text className="text-sm text-xporadia-text-primary leading-5 mt-1">
+                Affiché en en-tête des bulletins officiels
+              </Text>
+            </View>
+          </View>
+
           {!editing ? (
             <View className="gap-5">
               <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-5">
