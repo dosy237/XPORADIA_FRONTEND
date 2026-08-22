@@ -614,3 +614,13 @@ export function CalendarIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
     </Svg>
   );
 }
+
+export function BarChartIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="4" y="12" width="4" height="8" rx="1" stroke={color} strokeWidth={2} strokeLinejoin="round" />
+      <Rect x="10" y="7" width="4" height="13" rx="1" stroke={color} strokeWidth={2} strokeLinejoin="round" />
+      <Rect x="16" y="3" width="4" height="17" rx="1" stroke={color} strokeWidth={2} strokeLinejoin="round" />
+    </Svg>
+  );
+}

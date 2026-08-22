@@ -1,65 +1,84 @@
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
 import { ScrollView, Text, View } from "react-native";
 
-import { Card } from "@/components/ui/Card";
-import { Chip } from "@/components/ui/Chip";
-import { MedalIcon } from "@/components/ui/Icon";
+import { BarChartIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
-import * as virtualClassesApi from "@/services/virtualClasses";
+import * as gradingApi from "@/services/grading";
 
+const EVAL_TYPE_LABEL: Record<string, string> = {
+  exam: "Composition",
+  quiz: "Interrogation",
+  homework: "Devoir",
+};
+
+/** Toutes les notes chiffrées de l'élève, groupées par matière puis par
+ * trimestre — lecture seule. Distinct de "Bulletins" (documents figés,
+ * publiés par l'enseignant) : ici les notes apparaissent dès leur saisie
+ * dans le tableur, sans attendre une publication. Distinct aussi de "Mes
+ * notes", qui reste dédiée aux notes de cours personnelles de l'élève. */
 export default function GradesScreen() {
-  const { data: submissions, isLoading } = useQuery({
-    queryKey: ["my-submissions"],
-    queryFn: virtualClassesApi.fetchMySubmissions,
+  const { data: subjects, isLoading } = useQuery({
+    queryKey: ["my-grades"],
+    queryFn: gradingApi.fetchMyGrades,
   });
-
-  const graded = (submissions ?? []).filter((s) => s.status === "graded" && s.grade !== null);
-  const average =
-    graded.length > 0
-      ? (graded.reduce((sum, s) => sum + Number(s.grade), 0) / graded.length).toFixed(1)
-      : null;
 
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <View className="gap-1">
         <Text className="text-2xl font-bold text-xporadia-navy">Mes résultats</Text>
-        <Text className="text-sm text-xporadia-text-secondary">Toutes vos copies notées, toutes matières.</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Vos notes saisies par matière, dès qu'elles tombent, sans attendre le bulletin.
+        </Text>
       </View>
 
-      {average ? (
-        <Card className="items-center py-6 gap-1">
-          <Text className="text-3xl font-bold text-xporadia-navy">{average}/20</Text>
-          <Text className="text-xs text-xporadia-text-secondary">Moyenne générale</Text>
-        </Card>
-      ) : null}
-
       {isLoading ? (
-        <Text className="text-xporadia-text-secondary text-center py-8">Chargement...</Text>
-      ) : graded.length > 0 ? (
-        <View className="gap-3">
-          {graded.map((submission) => (
-            <Card
-              key={submission.id}
-              onPress={() => router.push(`/(app)/student/assignments/${submission.exercise}`)}
-              className="flex-row items-center justify-between gap-3"
-            >
-              <View className="flex-1">
-                <Text className="text-sm font-semibold text-xporadia-text-primary">
-                  {submission.exercise_title}
-                </Text>
-                <Text className="text-xs text-xporadia-text-secondary">
-                  Corrigé le {submission.graded_at ? new Date(submission.graded_at).toLocaleDateString("fr-FR") : "Date inconnue"}
-                </Text>
+        <Text className="text-sm text-xporadia-text-secondary text-center py-8">Chargement...</Text>
+      ) : subjects && subjects.length > 0 ? (
+        subjects.map((subject) => (
+          <View key={subject.subject_id} className="bg-white rounded-3xl p-5 shadow-soft gap-4">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-base font-bold text-xporadia-navy flex-1" numberOfLines={2}>
+                {subject.subject_name}
+              </Text>
+              <Text className="text-[11px] text-xporadia-text-secondary">Coef {subject.coefficient}</Text>
+            </View>
+
+            {subject.terms.map((term) => (
+              <View key={term.term_id} className="bg-xporadia-bg rounded-2xl p-3 gap-2">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-xs font-bold text-xporadia-orange-text uppercase tracking-wide flex-1" numberOfLines={1}>
+                    {term.term_label}
+                  </Text>
+                  <Text className="text-sm font-bold text-xporadia-navy">
+                    {term.subject_average != null ? `${term.subject_average}/20` : "Non noté"}
+                  </Text>
+                </View>
+                <View className="gap-1.5">
+                  {term.evaluations.map((ev) => (
+                    <View key={ev.id} className="flex-row items-center justify-between gap-2">
+                      <View className="flex-1 gap-0.5">
+                        <Text className="text-sm text-xporadia-text-primary" numberOfLines={2}>
+                          {ev.title}
+                        </Text>
+                        <Text className="text-[10px] text-xporadia-text-secondary">
+                          {EVAL_TYPE_LABEL[ev.eval_type] ?? ev.eval_type} · coef {ev.coefficient} ·{" "}
+                          {new Date(ev.date).toLocaleDateString("fr-FR")}
+                        </Text>
+                      </View>
+                      <Text className="text-sm font-semibold text-xporadia-text-primary">
+                        {ev.score}/{ev.max_score}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               </View>
-              <Chip label={`${submission.grade}/20`} variant="orange" />
-            </Card>
-          ))}
-        </View>
+            ))}
+          </View>
+        ))
       ) : (
         <View className="items-center gap-2 py-10">
-          <MedalIcon size={24} color={Colors.textSecondary} />
-          <Text className="text-xs text-xporadia-text-secondary">Aucune copie corrigée pour l'instant.</Text>
+          <BarChartIcon size={22} color={Colors.textSecondary} />
+          <Text className="text-xs text-xporadia-text-secondary text-center">Aucune note saisie pour l'instant.</Text>
         </View>
       )}
     </ScrollView>

@@ -17,6 +17,11 @@ export default function NoteDetailScreen() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  // Sans hauteur pilotée par onContentSizeChange, un TextInput multiline
+  // garde sa hauteur figée au premier rendu sur react-native-web : une
+  // note existante plus longue que min-height déborde en silence, coupée
+  // sans ellipsis (même défaut que sur l'objectif de vie).
+  const [contentHeight, setContentHeight] = useState(200);
 
   useEffect(() => {
     if (note) {
@@ -55,10 +60,12 @@ export default function NoteDetailScreen() {
         <TextInput
           value={content}
           onChangeText={setContent}
+          onContentSizeChange={(e) => setContentHeight(Math.max(200, e.nativeEvent.contentSize.height))}
           placeholder="Écrivez votre note ici..."
           placeholderTextColor="#94A3B8"
           multiline
-          className="text-sm text-xporadia-text-primary min-h-[200px] bg-white rounded-xl p-4 shadow-soft"
+          style={{ height: contentHeight }}
+          className="text-sm text-xporadia-text-primary bg-white rounded-xl p-4 shadow-soft"
           textAlignVertical="top"
         />
 

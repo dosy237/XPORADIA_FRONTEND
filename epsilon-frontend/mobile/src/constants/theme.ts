@@ -13,6 +13,7 @@ export const Colors = {
   silver: "#94A3B8",
   purple: "#7B2FFF",
   platinum: "#38BDF8",
+  teal: "#0D9488",
   zeroLevel: "#CBD5E1",
   textPrimary: "#0F172A",
   textSecondary: "#5A6A8A",

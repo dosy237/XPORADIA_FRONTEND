@@ -1,21 +1,41 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FlatList, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import { CalendarIcon, ClockIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
 import type { AgendaPersonalBlock, EstablishmentEvent, OccurrenceScope, TimetableSlot } from "@/services/academics";
 
 const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+const WEEKDAY_SHORT = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
 const MONTH_LABELS = [
   "janvier", "février", "mars", "avril", "mai", "juin",
   "juillet", "août", "septembre", "octobre", "novembre", "décembre",
 ];
+const MONTH_SHORT = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const HOUR_HEIGHT = 56;
+
+// Bande de dates parcourable : suffisamment large pour couvrir une année
+// scolaire (un peu avant, beaucoup après aujourd'hui), jamais régénérée au
+// fil de la sélection pour ne pas faire sauter le scroll.
+const STRIP_DAYS_BEFORE = 30;
+const STRIP_DAYS_AFTER = 240;
+const STRIP_ITEM_WIDTH = 52;
+const STRIP_ITEM_GAP = 8;
+
+/** Mélange une couleur hex avec une opacité — pour des remplissages en
+ * dégradé "matière et lumière" plutôt que des aplats francs. */
+function withAlpha(hex: string, alpha: number) {
+  const a = Math.round(Math.max(0, Math.min(1, alpha)) * 255)
+    .toString(16)
+    .padStart(2, "0");
+  return `${hex}${a}`;
+}
 
 function pad(n: number) {
   return n < 10 ? `0${n}` : `${n}`;
@@ -23,12 +43,6 @@ function pad(n: number) {
 
 function todayISO() {
   const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function addDaysISO(iso: string, delta: number) {
-  const d = new Date(`${iso}T00:00:00`);
-  d.setDate(d.getDate() + delta);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
@@ -228,6 +242,124 @@ function ScopeChoiceSheet({
   );
 }
 
+/** Bande de dates parcourable horizontalement — remplace le sélecteur à
+ * flèches précédent/suivant. Par défaut, aujourd'hui est visible et centré ;
+ * n'importe quelle date de la bande reste sélectionnable en un tap. Le jour
+ * actif reprend le dégradé navy → orange déjà établi pour l'en-tête du
+ * tableau de bord (matière et lumière), jamais un aplat. */
+function DateStrip({ selectedDate, onSelect }: { selectedDate: string; onSelect: (iso: string) => void }) {
+  const listRef = useRef<FlatList<string>>(null);
+  const today = useMemo(() => todayISO(), []);
+  const dates = useMemo(() => {
+    const base = new Date(`${today}T00:00:00`);
+    const arr: string[] = [];
+    for (let i = -STRIP_DAYS_BEFORE; i <= STRIP_DAYS_AFTER; i++) {
+      const d = new Date(base);
+      d.setDate(d.getDate() + i);
+      arr.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
+    }
+    return arr;
+  }, [today]);
+
+  const selectedIndex = dates.indexOf(selectedDate);
+
+  useEffect(() => {
+    if (selectedIndex < 0) return;
+    const timer = setTimeout(() => {
+      listRef.current?.scrollToIndex({ index: selectedIndex, viewPosition: 0.5, animated: true });
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [selectedIndex]);
+
+  return (
+    <FlatList
+      ref={listRef}
+      data={dates}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      keyExtractor={(iso) => iso}
+      contentContainerStyle={{ paddingHorizontal: 24, gap: STRIP_ITEM_GAP, alignItems: "flex-end" }}
+      getItemLayout={(_, index) => ({
+        length: STRIP_ITEM_WIDTH + STRIP_ITEM_GAP,
+        offset: (STRIP_ITEM_WIDTH + STRIP_ITEM_GAP) * index,
+        index,
+      })}
+      onScrollToIndexFailed={({ index }) => {
+        setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: false }), 80);
+      }}
+      renderItem={({ item: iso }) => {
+        const d = new Date(`${iso}T00:00:00`);
+        const active = iso === selectedDate;
+        const isToday = iso === today;
+        const showsMonth = d.getDate() === 1 || iso === dates[0];
+        return (
+          <View style={{ alignItems: "center" }}>
+            <Text
+              style={{
+                fontSize: 9,
+                fontWeight: "700",
+                color: Colors.textSecondary,
+                marginBottom: 2,
+                textTransform: "uppercase",
+                opacity: showsMonth ? 1 : 0,
+              }}
+            >
+              {MONTH_SHORT[d.getMonth()]}
+            </Text>
+            <Pressable
+              onPress={() => onSelect(iso)}
+              accessibilityRole="button"
+              accessibilityLabel={`${WEEKDAY_LABELS[weekdayOfISO(iso)]} ${d.getDate()} ${MONTH_LABELS[d.getMonth()]}`}
+            >
+              {active ? (
+                <LinearGradient
+                  colors={[Colors.navy, Colors.orangeLight]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={{
+                    width: STRIP_ITEM_WIDTH,
+                    height: 64,
+                    borderRadius: 18,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 2,
+                  }}
+                >
+                  <Text style={{ fontSize: 11, fontWeight: "600", color: "rgba(255,255,255,0.75)" }}>
+                    {WEEKDAY_SHORT[weekdayOfISO(iso)]}
+                  </Text>
+                  <Text style={{ fontSize: 17, fontWeight: "800", color: Colors.white }}>{d.getDate()}</Text>
+                </LinearGradient>
+              ) : (
+                <View
+                  style={{
+                    width: STRIP_ITEM_WIDTH,
+                    height: 64,
+                    borderRadius: 18,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 2,
+                    backgroundColor: Colors.white,
+                    borderWidth: isToday ? 1.5 : 1,
+                    borderColor: isToday ? Colors.orange : Colors.border,
+                  }}
+                >
+                  <Text style={{ fontSize: 11, fontWeight: "600", color: Colors.textSecondary }}>
+                    {WEEKDAY_SHORT[weekdayOfISO(iso)]}
+                  </Text>
+                  <Text style={{ fontSize: 17, fontWeight: "700", color: isToday ? Colors.orange : Colors.textPrimary }}>
+                    {d.getDate()}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          </View>
+        );
+      }}
+    />
+  );
+}
+
 export default function AgendaScreen() {
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(todayISO());
@@ -318,77 +450,82 @@ export default function AgendaScreen() {
         </Text>
       </View>
 
-      <View className="px-6 py-3 flex-row items-center justify-between">
-        <Pressable
-          onPress={() => setSelectedDate((d) => addDaysISO(d, -1))}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Jour précédent"
-          className="h-10 w-10 rounded-full bg-white shadow-soft items-center justify-center"
-        >
-          <ChevronLeftIcon size={18} color={Colors.navy} />
-        </Pressable>
+      <View className="pt-2 pb-1">
+        <DateStrip selectedDate={selectedDate} onSelect={setSelectedDate} />
+      </View>
 
-        <Pressable
-          onPress={() => setSelectedDate(todayISO())}
-          className="flex-1 items-center flex-row justify-center gap-2"
-          accessibilityRole="button"
-          accessibilityLabel="Revenir à aujourd'hui"
-        >
+      <View className="px-6 pt-2 pb-2 flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
           <CalendarIcon size={14} color={Colors.textSecondary} />
-          <Text className="text-sm font-semibold text-xporadia-navy text-center" numberOfLines={1}>
+          <Text className="text-sm font-semibold text-xporadia-navy" numberOfLines={1}>
             {isToday ? `Aujourd'hui, ${dateLabel}` : dateLabel}
           </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setSelectedDate((d) => addDaysISO(d, 1))}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Jour suivant"
-          className="h-10 w-10 rounded-full bg-white shadow-soft items-center justify-center"
-        >
-          <ChevronRightIcon size={18} color={Colors.navy} />
-        </Pressable>
+        </View>
+        {!isToday ? (
+          <Pressable
+            onPress={() => setSelectedDate(todayISO())}
+            accessibilityRole="button"
+            accessibilityLabel="Revenir à aujourd'hui"
+            className="px-3 py-1.5 rounded-full bg-xporadia-navy/[0.06]"
+          >
+            <Text className="text-xs font-semibold text-xporadia-navy">Aujourd&apos;hui</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <View className="px-6 pb-2 flex-row items-center gap-4">
         <View className="flex-row items-center gap-1.5">
-          <View className="h-3 w-3 rounded-sm bg-xporadia-navy/[0.15] border border-xporadia-navy/40" />
+          <LinearGradient
+            colors={[withAlpha(Colors.navy, 0.4), withAlpha(Colors.navy, 0.1)]}
+            style={{ height: 12, width: 12, borderRadius: 4 }}
+          />
           <Text className="text-[11px] text-xporadia-text-secondary">Cours officiels</Text>
         </View>
         <View className="flex-row items-center gap-1.5">
-          <View className="h-3 w-3 rounded-sm bg-xporadia-orange/[0.15] border border-xporadia-orange" />
+          <LinearGradient
+            colors={[withAlpha(Colors.orange, 0.55), withAlpha(Colors.orange, 0.15)]}
+            style={{ height: 12, width: 12, borderRadius: 4 }}
+          />
           <Text className="text-[11px] text-xporadia-text-secondary">Mes créneaux</Text>
         </View>
         <View className="flex-row items-center gap-1.5">
-          <View className="h-3 w-3 rounded-sm bg-xporadia-purple/[0.15] border border-xporadia-purple" />
+          <LinearGradient
+            colors={[withAlpha(Colors.purple, 0.45), withAlpha(Colors.purple, 0.12)]}
+            style={{ height: 12, width: 12, borderRadius: 4 }}
+          />
           <Text className="text-[11px] text-xporadia-text-secondary">Événements</Text>
         </View>
       </View>
 
       {agenda && !agenda.is_school_day ? (
-        <View className="mx-6 mb-2 px-4 py-2.5 rounded-xl bg-xporadia-navy/[0.05] flex-row items-center gap-2">
+        <LinearGradient
+          colors={[withAlpha(Colors.navy, 0.07), withAlpha(Colors.navy, 0.02)]}
+          style={{ marginHorizontal: 24, marginBottom: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, flexDirection: "row", alignItems: "center", gap: 8 }}
+        >
           <ClockIcon size={14} color={Colors.textSecondary} />
           <Text className="text-xs text-xporadia-text-secondary flex-1">
             Pas de cours officiel ce jour-là (vacances ou weekend).
           </Text>
-        </View>
+        </LinearGradient>
       ) : null}
 
       {holidayEvent ? (
-        <View className="mx-6 mb-2 px-4 py-2.5 rounded-xl bg-xporadia-gold/[0.15] border border-xporadia-gold flex-row items-center gap-2">
+        <LinearGradient
+          colors={[withAlpha(Colors.gold, 0.28), withAlpha(Colors.gold, 0.08)]}
+          style={{ marginHorizontal: 24, marginBottom: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, borderWidth: 1, borderColor: withAlpha(Colors.gold, 0.55), flexDirection: "row", alignItems: "center", gap: 8 }}
+        >
           <CalendarIcon size={14} color={Colors.gold} />
           <Text className="text-xs font-semibold flex-1" style={{ color: Colors.bronze }}>
             Jour férié, {holidayEvent.title}. Pas de cours officiel aujourd&apos;hui.
           </Text>
-        </View>
+        </LinearGradient>
       ) : null}
 
       {otherUntimedEvents.map((event) => (
-        <View
+        <LinearGradient
           key={event.id}
-          className="mx-6 mb-2 px-4 py-2.5 rounded-xl bg-xporadia-purple/[0.08] border border-xporadia-purple/40 flex-row items-center gap-2"
+          colors={[withAlpha(Colors.purple, 0.16), withAlpha(Colors.purple, 0.04)]}
+          style={{ marginHorizontal: 24, marginBottom: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, borderWidth: 1, borderColor: withAlpha(Colors.purple, 0.4), flexDirection: "row", alignItems: "center", gap: 8 }}
         >
           <CalendarIcon size={14} color={Colors.purple} />
           <View className="flex-1">
@@ -399,7 +536,7 @@ export default function AgendaScreen() {
               <Text className="text-[11px] text-xporadia-text-secondary mt-0.5">{event.description}</Text>
             ) : null}
           </View>
-        </View>
+        </LinearGradient>
       ))}
 
       {isLoading ? (
@@ -426,15 +563,20 @@ export default function AgendaScreen() {
               {timedEvents.map((event) => (
                 <View
                   key={event.id}
-                  style={{ position: "absolute", top: topFor(event.start_time as string), height: heightFor(event.start_time as string, event.end_time || event.start_time as string), left: 2, right: 2, zIndex: 5 }}
-                  className="bg-xporadia-purple/[0.1] border border-xporadia-purple rounded-lg px-2 py-1"
+                  style={{ position: "absolute", top: topFor(event.start_time as string), height: heightFor(event.start_time as string, event.end_time || event.start_time as string), left: 2, right: 2, zIndex: 5, borderRadius: 8, overflow: "hidden", flexDirection: "row" }}
                 >
-                  <Text numberOfLines={1} className="text-[10px] font-semibold" style={{ color: Colors.purple }}>
-                    {event.event_type_label} : {event.title}
-                  </Text>
-                  <Text className="text-[9px] text-xporadia-text-secondary">
-                    {event.start_time!.slice(0, 5)}{event.end_time ? `-${event.end_time.slice(0, 5)}` : ""}
-                  </Text>
+                  <View style={{ width: 3, backgroundColor: Colors.purple }} />
+                  <LinearGradient
+                    colors={[withAlpha(Colors.purple, 0.18), withAlpha(Colors.purple, 0.05)]}
+                    style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                  >
+                    <Text numberOfLines={1} className="text-[10px] font-semibold" style={{ color: Colors.purple }}>
+                      {event.event_type_label} : {event.title}
+                    </Text>
+                    <Text className="text-[9px] text-xporadia-text-secondary">
+                      {event.start_time!.slice(0, 5)}{event.end_time ? `-${event.end_time.slice(0, 5)}` : ""}
+                    </Text>
+                  </LinearGradient>
                 </View>
               ))}
 
@@ -443,15 +585,20 @@ export default function AgendaScreen() {
                   {officialSlots.map((slot) => (
                     <View
                       key={slot.id}
-                      style={{ position: "absolute", top: topFor(slot.start_time), height: heightFor(slot.start_time, slot.end_time), left: 2, right: 4 }}
-                      className="bg-xporadia-navy/[0.1] border border-xporadia-navy/40 rounded-lg px-2 py-1"
+                      style={{ position: "absolute", top: topFor(slot.start_time), height: heightFor(slot.start_time, slot.end_time), left: 2, right: 4, borderRadius: 8, overflow: "hidden", flexDirection: "row" }}
                     >
-                      <Text numberOfLines={1} className="text-[10px] font-semibold text-xporadia-navy">
-                        {slot.subject_name}
-                      </Text>
-                      <Text className="text-[9px] text-xporadia-text-secondary">
-                        {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
-                      </Text>
+                      <View style={{ width: 3, backgroundColor: Colors.navy }} />
+                      <LinearGradient
+                        colors={[withAlpha(Colors.navy, 0.14), withAlpha(Colors.navy, 0.04)]}
+                        style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                      >
+                        <Text numberOfLines={1} className="text-[10px] font-semibold text-xporadia-navy">
+                          {slot.subject_name}
+                        </Text>
+                        <Text className="text-[9px] text-xporadia-text-secondary">
+                          {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
+                        </Text>
+                      </LinearGradient>
                     </View>
                   ))}
                 </View>
@@ -472,8 +619,7 @@ export default function AgendaScreen() {
                   {personalBlocks.map((block) => (
                     <Pressable
                       key={`${block.block}-${block.exception ?? "base"}`}
-                      style={{ position: "absolute", top: topFor(block.start_time), height: heightFor(block.start_time, block.end_time), left: 4, right: 2 }}
-                      className="bg-xporadia-orange/[0.14] border border-xporadia-orange rounded-lg px-2 py-1"
+                      style={{ position: "absolute", top: topFor(block.start_time), height: heightFor(block.start_time, block.end_time), left: 4, right: 2, borderRadius: 8, overflow: "hidden", flexDirection: "row" }}
                       onPress={() => {
                         setEditForm({
                           title: block.title,
@@ -486,12 +632,18 @@ export default function AgendaScreen() {
                       accessibilityRole="button"
                       accessibilityLabel={`Modifier le créneau ${block.title}`}
                     >
-                      <Text numberOfLines={1} className="text-[10px] font-semibold text-xporadia-navy">
-                        {block.title}
-                      </Text>
-                      <Text className="text-[9px] text-xporadia-text-secondary">
-                        {block.start_time.slice(0, 5)}-{block.end_time.slice(0, 5)}
-                      </Text>
+                      <View style={{ width: 3, backgroundColor: Colors.orange }} />
+                      <LinearGradient
+                        colors={[withAlpha(Colors.orange, 0.22), withAlpha(Colors.orange, 0.06)]}
+                        style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                      >
+                        <Text numberOfLines={1} className="text-[10px] font-semibold text-xporadia-navy">
+                          {block.title}
+                        </Text>
+                        <Text className="text-[9px] text-xporadia-text-secondary">
+                          {block.start_time.slice(0, 5)}-{block.end_time.slice(0, 5)}
+                        </Text>
+                      </LinearGradient>
                     </Pressable>
                   ))}
                 </View>

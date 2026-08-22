@@ -571,43 +571,81 @@ export default function ChannelDetailScreen() {
       <ChatBackground />
 
       {isSubjectChannel ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="grow-0 bg-white border-b border-xporadia-border"
-          contentContainerClassName="flex-row items-center gap-2 px-4 py-2.5"
-        >
-          {(
-            [
-              ["messages", "Messages"],
-              ["devoirs_en_cours", "Devoirs en cours"],
-              ["devoirs_traites", "Devoirs corrigés"],
-            ] as const
-          ).map(([key, label]) => (
-            <Pressable
-              key={key}
-              onPress={() => setSubjectTab(key)}
-              className={`rounded-full px-3 py-1.5 ${subjectTab === key ? "bg-xporadia-navy" : "bg-xporadia-bg"}`}
-              accessibilityRole="button"
-            >
-              <Text className={`text-xs font-semibold ${subjectTab === key ? "text-white" : "text-xporadia-text-secondary"}`}>
-                {label}
-              </Text>
-            </Pressable>
-          ))}
-          {isTeacherRole && channel?.can_publish_exercise && channel?.subject_id ? (
-            <Pressable
-              onPress={() => {
-                if (!channel?.subject_id) return;
-                router.push(`/(app)/teacher/grade-grid/${channel.subject_id}`);
-              }}
-              className="rounded-full px-3 py-1.5 bg-xporadia-bg"
-              accessibilityRole="button"
-            >
-              <Text className="text-xs font-semibold text-xporadia-text-secondary">Notes</Text>
-            </Pressable>
-          ) : null}
-        </ScrollView>
+        <View style={{ backgroundColor: Colors.white, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ flexGrow: 0, flexShrink: 0 }}
+            contentContainerStyle={{
+              flexDirection: "row",
+              alignItems: "center",
+              paddingHorizontal: 16,
+              paddingVertical: 10,
+              gap: 8,
+            }}
+          >
+            {(
+              [
+                ["messages", "Messages"],
+                ["devoirs_en_cours", "Devoirs en cours"],
+                ["devoirs_traites", "Devoirs corrigés"],
+              ] as const
+            ).map(([key, label]) => {
+              const active = subjectTab === key;
+              return (
+                <Pressable
+                  key={key}
+                  onPress={() => setSubjectTab(key)}
+                  accessibilityRole="button"
+                  style={{
+                    flexShrink: 0,
+                    flexGrow: 0,
+                    height: 34,
+                    borderRadius: 17,
+                    paddingHorizontal: 14,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: active ? Colors.navy : Colors.bg,
+                  }}
+                >
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "600",
+                      color: active ? Colors.white : Colors.textSecondary,
+                    }}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+            {isTeacherRole && channel?.can_publish_exercise && channel?.subject_id ? (
+              <Pressable
+                onPress={() => {
+                  if (!channel?.subject_id) return;
+                  router.push(`/(app)/teacher/grade-grid/${channel.subject_id}`);
+                }}
+                accessibilityRole="button"
+                style={{
+                  flexShrink: 0,
+                  flexGrow: 0,
+                  height: 34,
+                  borderRadius: 17,
+                  paddingHorizontal: 14,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: Colors.bg,
+                }}
+              >
+                <Text numberOfLines={1} style={{ fontSize: 12, fontWeight: "600", color: Colors.textSecondary }}>
+                  Notes
+                </Text>
+              </Pressable>
+            ) : null}
+          </ScrollView>
+        </View>
       ) : null}
 
       {exerciseContext ? (

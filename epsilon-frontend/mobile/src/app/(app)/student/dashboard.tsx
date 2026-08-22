@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import {
+  BarChartIcon,
   BookIcon,
   BriefcaseIcon,
   BuildingIcon,
@@ -146,7 +147,7 @@ function QuickAccessCell({
           </View>
         ) : null}
       </View>
-      <Text className="text-xs font-semibold text-xporadia-text-primary text-center" numberOfLines={1}>
+      <Text className="text-xs font-semibold text-xporadia-text-primary text-center" numberOfLines={2}>
         {label}
       </Text>
     </Card>
@@ -269,6 +270,7 @@ export default function StudentDashboard() {
   const { data: notifications } = useQuery({ queryKey: ["notifications"], queryFn: notificationsApi.fetchNotifications });
   const { data: lifeGoal } = useQuery({ queryKey: ["my-life-goal"], queryFn: studentLifeApi.fetchLifeGoal });
   const { data: reportCards } = useQuery({ queryKey: ["my-report-cards"], queryFn: gradingApi.fetchMyReportCards });
+  const { data: myGrades } = useQuery({ queryKey: ["my-grades"], queryFn: gradingApi.fetchMyGrades });
   const { data: libraryEstablishments } = useQuery({
     queryKey: ["my-library-establishments"], queryFn: libraryApi.fetchMyLibraryEstablishments,
   });
@@ -336,21 +338,31 @@ export default function StudentDashboard() {
 
   // Radar de compétences — un axe par matière déclarée dans l'objectif de
   // vie de l'élève (LifeGoal.related_subjects), rayon = sa moyenne réelle
-  // sur cette matière au dernier bulletin publié. Rien n'est inventé : une
-  // matière sans moyenne dans le dernier bulletin est simplement absente.
+  // la plus récente pour cette matière. Sourcé depuis fetchMyGrades (notes
+  // "en direct"), jamais depuis un bulletin publié : un bulletin est un
+  // document figé généré par l'enseignant à un moment qu'il choisit, et
+  // rien ne garantit qu'un premier bulletin ait déjà été publié quand
+  // l'élève regarde son tableau de bord — le radar ne doit jamais dépendre
+  // de cette action tierce pour exister. Une matière sans aucune note
+  // saisie reste simplement absente (rien n'est inventé).
+  const latestSubjectAverage = (subjectName: string): number | null => {
+    const subject = myGrades?.find((s) => s.subject_name === subjectName);
+    const mostRecentTerm = subject?.terms[0];
+    return mostRecentTerm?.subject_average != null ? Number(mostRecentTerm.subject_average) : null;
+  };
+
   const relatedSubjects = lifeGoal?.related_subjects ?? [];
   const radarAxes = relatedSubjects
     .map((subjectName) => {
-      const entry = latestReportCard?.subject_entries.find((e) => e.subject_name === subjectName);
-      return entry?.subject_average != null
-        ? { label: subjectName, value: Number(entry.subject_average) }
-        : null;
+      const value = latestSubjectAverage(subjectName);
+      return value != null ? { label: subjectName, value } : null;
     })
     .filter((axis): axis is { label: string; value: number } => axis !== null);
 
-  const strongestSubject = latestReportCard?.subject_entries
-    .filter((e) => e.subject_average != null)
-    .sort((a, b) => Number(b.subject_average) - Number(a.subject_average))[0];
+  const strongestSubject = (myGrades ?? [])
+    .map((s) => ({ subject_name: s.subject_name, subject_average: latestSubjectAverage(s.subject_name) }))
+    .filter((s): s is { subject_name: string; subject_average: number } => s.subject_average != null)
+    .sort((a, b) => b.subject_average - a.subject_average)[0];
 
   const age = computeAge(myClass?.birth_date);
 
@@ -501,7 +513,7 @@ export default function StudentDashboard() {
                     return (
                       <Card key={ex.id} onPress={() => router.push(`/(app)/student/assignments/${ex.id}`)} className="gap-1.5">
                         <View className="flex-row items-center justify-between gap-2">
-                          <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+                          <Text className="text-sm font-semibold text-xporadia-text-primary flex-1" numberOfLines={2}>
                             {ex.title}
                           </Text>
                           <View className="flex-row items-center gap-1.5 rounded-full px-2.5 py-1" style={{ backgroundColor: `${STATUS_COLORS[status]}26` }}>
@@ -575,6 +587,7 @@ export default function StudentDashboard() {
                   onPress={() => router.push("/(app)/student/assignments")}
                 />
                 <QuickAccessCell icon={<PencilIcon size={20} color={Colors.green} />} label="Mes notes" tint={Colors.green} onPress={() => router.push("/(app)/student/notes")} />
+                <QuickAccessCell icon={<BarChartIcon size={20} color={Colors.teal} />} label="Mes résultats" tint={Colors.teal} onPress={() => router.push("/(app)/student/grades")} />
                 <QuickAccessCell
                   icon={<MedalIcon size={20} color={Colors.gold} />}
                   label="Bulletins"

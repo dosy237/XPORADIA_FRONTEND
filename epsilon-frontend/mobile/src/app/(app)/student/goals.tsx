@@ -26,6 +26,12 @@ export default function GoalsScreen() {
   const queryClient = useQueryClient();
   const [goalDraft, setGoalDraft] = useState<string | null>(null);
   const [newItemTitle, setNewItemTitle] = useState("");
+  // Un TextInput multiline avec seulement min-height ne grandit pas avec
+  // son contenu sur react-native-web (le textarea garde la hauteur figée
+  // au premier rendu, le texte au-delà déborde silencieusement, coupé
+  // sans ellipsis) — la hauteur doit être pilotée explicitement via
+  // onContentSizeChange, seul mécanisme fiable sur toutes les plateformes.
+  const [goalInputHeight, setGoalInputHeight] = useState(60);
 
   const { data: goal } = useQuery({ queryKey: ["life-goal"], queryFn: studentLifeApi.fetchLifeGoal });
   const { data: bucketList } = useQuery({ queryKey: ["bucket-list"], queryFn: studentLifeApi.fetchBucketList });
@@ -70,10 +76,12 @@ export default function GoalsScreen() {
           <TextInput
             value={goalDraft ?? goal?.description ?? ""}
             onChangeText={setGoalDraft}
+            onContentSizeChange={(e) => setGoalInputHeight(Math.max(60, e.nativeEvent.contentSize.height))}
             placeholder="Ex. Devenir ingénieure logiciel..."
             placeholderTextColor="#94A3B8"
             multiline
-            className="text-sm text-xporadia-text-primary min-h-[60px] bg-xporadia-bg rounded-xl p-3"
+            style={{ height: goalInputHeight }}
+            className="text-sm text-xporadia-text-primary bg-xporadia-bg rounded-xl p-3"
           />
           {goal?.related_subjects && goal.related_subjects.length > 0 ? (
             <View className="flex-row flex-wrap gap-2">

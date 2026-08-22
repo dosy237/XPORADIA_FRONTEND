@@ -102,6 +102,36 @@ export const fetchChildReportCards = (childId: number) =>
 export const fetchMyReportCards = () =>
   api.get<ReportCard[]>("/grading/my-report-cards/").then((r) => r.data);
 
+export interface MyGradeEvaluation {
+  id: number;
+  title: string;
+  eval_type: string;
+  score: string;
+  max_score: number;
+  coefficient: number;
+  date: string;
+}
+
+export interface MyGradeTermEntry {
+  term_id: number;
+  term_label: string;
+  subject_average: string | null;
+  evaluations: MyGradeEvaluation[];
+}
+
+export interface MyGradeSubject {
+  subject_id: number;
+  subject_name: string;
+  coefficient: number;
+  terms: MyGradeTermEntry[];
+}
+
+/** Notes chiffrées "en direct" de l'élève connecté, groupées par matière
+ * puis par trimestre — jamais liées à la publication d'un bulletin
+ * (contrairement à fetchMyReportCards), pour ne jamais dépendre d'une
+ * action enseignant que l'élève ne contrôle pas. */
+export const fetchMyGrades = () => api.get<MyGradeSubject[]>("/grading/my-grades/").then((r) => r.data);
+
 export interface Term {
   id: number;
   school_year: string;

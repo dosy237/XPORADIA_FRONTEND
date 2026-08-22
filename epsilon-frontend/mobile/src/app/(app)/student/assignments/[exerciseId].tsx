@@ -52,6 +52,11 @@ export default function AssignmentDetailScreen() {
   const queryClient = useQueryClient();
   const childId = useAuthStore((s) => s.user?.child_id);
   const [draft, setDraft] = useState<string | null>(null);
+  // Sans hauteur pilotée par onContentSizeChange, un TextInput multiline
+  // garde sa hauteur figée au premier rendu sur react-native-web : une
+  // copie déjà rendue plus longue que min-height déborde en silence,
+  // coupée sans ellipsis.
+  const [draftHeight, setDraftHeight] = useState(100);
 
   const { data: subjects } = useQuery({ queryKey: ["my-subjects"], queryFn: virtualClassesApi.fetchMySubjects });
   const exercise = subjects
@@ -126,8 +131,10 @@ export default function AssignmentDetailScreen() {
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
+                onContentSizeChange={(e) => setDraftHeight(Math.max(100, e.nativeEvent.contentSize.height))}
                 multiline
-                className="text-sm text-xporadia-text-primary min-h-[100px] bg-xporadia-bg rounded-xl p-3"
+                style={{ height: draftHeight }}
+                className="text-sm text-xporadia-text-primary bg-xporadia-bg rounded-xl p-3"
               />
             ) : (
               <Text className="text-sm text-xporadia-text-primary leading-6">{submission.content}</Text>
@@ -179,10 +186,12 @@ export default function AssignmentDetailScreen() {
             <TextInput
               value={draft ?? ""}
               onChangeText={setDraft}
+              onContentSizeChange={(e) => setDraftHeight(Math.max(120, e.nativeEvent.contentSize.height))}
               placeholder="Rédigez votre réponse ici..."
               placeholderTextColor="#94A3B8"
               multiline
-              className="text-sm text-xporadia-text-primary min-h-[120px] bg-xporadia-bg rounded-xl p-3"
+              style={{ height: Math.max(120, draftHeight) }}
+              className="text-sm text-xporadia-text-primary bg-xporadia-bg rounded-xl p-3"
             />
             {error ? <Text className="text-xs text-xporadia-red">Une erreur est survenue.</Text> : null}
             <Button
