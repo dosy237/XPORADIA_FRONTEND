@@ -6,7 +6,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
-import { NewspaperIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import { NewspaperIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as messagingApi from "@/services/messaging";
@@ -200,6 +200,23 @@ export default function SubjectVirtualClassScreen() {
               {virtualClass.description}
             </Text>
           ) : null}
+        </Card>
+      ) : null}
+
+      {editable && subjectId ? (
+        <Card
+          onPress={() => router.push(`/(app)/teacher/grade-grid/${subjectId}`)}
+          className="flex-row items-center gap-3"
+        >
+          <View className="h-10 w-10 rounded-full bg-xporadia-teal/10 items-center justify-center">
+            <PencilIcon size={16} color={Colors.teal} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-xporadia-text-primary">Saisir les notes</Text>
+            <Text className="text-xs text-xporadia-text-secondary">
+              Tableur des évaluations et des notes de cette matière, trimestre par trimestre.
+            </Text>
+          </View>
         </Card>
       ) : null}
 

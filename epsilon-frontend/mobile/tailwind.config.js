@@ -19,6 +19,7 @@ module.exports = {
           bronze: "#B45309",
           silver: "#94A3B8",
           purple: "#7B2FFF",
+          teal: "#0D9488",
           "text-primary": "#0F172A",
           "text-secondary": "#5A6A8A",
           "navy-light": "#1E293B",

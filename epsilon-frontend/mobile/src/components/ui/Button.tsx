@@ -1,6 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
+import { Colors } from "@/constants/theme";
+
 type Variant = "primary" | "secondary" | "navy" | "danger";
 
 interface ButtonProps {
@@ -37,11 +39,20 @@ const VARIANT_TEXT_CLASSES: Record<Variant, string> = {
   danger: "text-white",
 };
 
-const VARIANT_SHADOW_CLASSES: Record<Variant, string> = {
-  primary: "shadow-deep-orange",
-  secondary: "shadow-soft",
-  navy: "shadow-card",
-  danger: "shadow-card",
+// Équivalents RN natifs des utilitaires `shadow-*` (voir tailwind.config.js,
+// boxShadow) — appliqués via `style`, jamais via une classe NativeWind
+// conditionnelle sur ce Pressable. Bug amont connu : une className
+// construite par template literal avec un fragment shadow-*/opacity-*
+// conditionnel sur Pressable/TouchableOpacity casse le contexte de
+// navigation d'Expo Router sur Android (voir nativewind/nativewind#1557,
+// #1712) — jamais reproductible sur web, ce qui l'a longtemps caché.
+// Solution : className toujours statique sur ce composant, ombre et
+// opacité pilotées en JS.
+const VARIANT_SHADOW_STYLE: Record<Variant, { shadowColor: string; shadowOffset: { width: number; height: number }; shadowOpacity: number; shadowRadius: number; elevation: number }> = {
+  primary: { shadowColor: "#FB5406", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.35, shadowRadius: 28, elevation: 10 },
+  secondary: { shadowColor: "#0F172A", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 12, elevation: 2 },
+  navy: { shadowColor: "#1B2A4A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 4 },
+  danger: { shadowColor: "#1B2A4A", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 4 },
 };
 
 /** Reflet du haut — un dégradé blanc→transparent plaqué sur le tiers
@@ -69,7 +80,7 @@ export function Button({
   accessibilityLabel,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
-  const shape = pill ? "rounded-full" : "rounded-xl";
+  const borderRadius = pill ? 9999 : 24;
 
   const content = loading ? (
     <ActivityIndicator color={variant === "secondary" ? "#0F172A" : "#FFFFFF"} />
@@ -86,14 +97,18 @@ export function Button({
     hitSlop: 4,
   };
 
+  // className reste toujours une chaîne littérale, jamais interpolée avec
+  // un fragment conditionnel (shape/ombre/opacité) : voir le commentaire
+  // sur VARIANT_SHADOW_STYLE ci-dessus.
+  const dynamicStyle = {
+    borderRadius,
+    opacity: isDisabled ? 0.5 : 1,
+    ...(isDisabled ? {} : VARIANT_SHADOW_STYLE[variant]),
+  };
+
   if (variant === "primary") {
     return (
-      <Pressable
-        {...sharedProps}
-        className={`${shape} overflow-hidden active:opacity-90 ${
-          isDisabled ? "opacity-50" : VARIANT_SHADOW_CLASSES.primary
-        }`}
-      >
+      <Pressable {...sharedProps} className="overflow-hidden active:opacity-90" style={dynamicStyle}>
         <LinearGradient colors={PRIMARY_GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
           <View className="items-center justify-center py-4 px-5">{content}</View>
         </LinearGradient>
@@ -105,10 +120,12 @@ export function Button({
   return (
     <Pressable
       {...sharedProps}
-      className={`${shape} overflow-hidden items-center justify-center py-4 px-5 active:opacity-80 ${
-        variant === "secondary" ? "border border-xporadia-border" : ""
-      } ${isDisabled ? "opacity-50" : VARIANT_SHADOW_CLASSES[variant]}`}
-      style={{ backgroundColor: FLAT_BG[variant] }}
+      className="overflow-hidden items-center justify-center py-4 px-5 active:opacity-80"
+      style={{
+        ...dynamicStyle,
+        backgroundColor: FLAT_BG[variant],
+        ...(variant === "secondary" ? { borderWidth: 1, borderColor: Colors.border } : null),
+      }}
     >
       {content}
       {!isDisabled ? <TopGloss /> : null}
