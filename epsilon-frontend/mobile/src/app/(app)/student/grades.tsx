@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { ScrollView, Text, View } from "react-native";
+import { useState } from "react";
+import { Alert, ScrollView, Text, View } from "react-native";
 
+import { Button } from "@/components/ui/Button";
 import { BarChartIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as gradingApi from "@/services/grading";
+import { downloadPdf, viewPdf } from "@/utils/pdf";
 
 const EVAL_TYPE_LABEL: Record<string, string> = {
   exam: "Composition",
@@ -21,6 +24,30 @@ export default function GradesScreen() {
     queryKey: ["my-grades"],
     queryFn: gradingApi.fetchMyGrades,
   });
+  const [viewing, setViewing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleView = async () => {
+    setViewing(true);
+    try {
+      await viewPdf("/grading/my-grades/pdf/", "Mes résultats", { authenticated: true, filename: "mes_resultats.pdf" });
+    } catch {
+      Alert.alert("Erreur", "Impossible d'ouvrir le PDF pour l'instant, réessayez plus tard.");
+    } finally {
+      setViewing(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await downloadPdf("/grading/my-grades/pdf/", "mes_resultats.pdf", { authenticated: true });
+    } catch {
+      Alert.alert("Erreur", "Impossible de télécharger le PDF pour l'instant, réessayez plus tard.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
@@ -30,6 +57,17 @@ export default function GradesScreen() {
           Vos notes saisies par matière, dès qu'elles tombent, sans attendre le bulletin.
         </Text>
       </View>
+
+      {!isLoading && subjects && subjects.length > 0 ? (
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Button label="Voir le PDF" variant="secondary" pill loading={viewing} onPress={handleView} />
+          </View>
+          <View className="flex-1">
+            <Button label="Télécharger" variant="secondary" pill loading={downloading} onPress={handleDownload} />
+          </View>
+        </View>
+      ) : null}
 
       {isLoading ? (
         <Text className="text-sm text-xporadia-text-secondary text-center py-8">Chargement...</Text>

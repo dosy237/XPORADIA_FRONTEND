@@ -1,9 +1,11 @@
 import { router } from "expo-router";
-import { Text, View } from "react-native";
+import { useState } from "react";
+import { Alert, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import type { ReportCard } from "@/services/grading";
+import { downloadPdf } from "@/utils/pdf";
 
 /** Un bulletin publié, présenté de façon lisible directement dans
  * l'application — pas un simple lien de téléchargement froid. Moyenne
@@ -14,6 +16,20 @@ import type { ReportCard } from "@/services/grading";
  * côté élève et côté parent — un bulletin publié ne change jamais selon
  * qui le consulte. */
 export function ReportCardCard({ reportCard }: { reportCard: ReportCard }) {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async () => {
+    if (!reportCard.document) return;
+    setDownloading(true);
+    try {
+      await downloadPdf(reportCard.document, `bulletin_${reportCard.term_label.replace(/\s+/g, "_")}.pdf`);
+    } catch {
+      Alert.alert("Erreur", "Impossible de télécharger le PDF pour l'instant, réessayez plus tard.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <View className="bg-white rounded-3xl p-5 shadow-soft gap-4">
       <Text className="text-xs font-bold text-xporadia-orange-text uppercase tracking-wide">
@@ -68,16 +84,23 @@ export function ReportCardCard({ reportCard }: { reportCard: ReportCard }) {
       ) : null}
 
       {reportCard.document ? (
-        <Button
-          label="Voir le PDF du bulletin"
-          variant="secondary"
-          pill
-          onPress={() =>
-            router.push(
-              `/(app)/library/pdf-viewer?url=${encodeURIComponent(reportCard.document as string)}&title=${encodeURIComponent(`Bulletin ${reportCard.term_label}`)}`
-            )
-          }
-        />
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <Button
+              label="Voir le PDF"
+              variant="secondary"
+              pill
+              onPress={() =>
+                router.push(
+                  `/(app)/library/pdf-viewer?url=${encodeURIComponent(reportCard.document as string)}&title=${encodeURIComponent(`Bulletin ${reportCard.term_label}`)}`
+                )
+              }
+            />
+          </View>
+          <View className="flex-1">
+            <Button label="Télécharger" variant="secondary" pill loading={downloading} onPress={handleDownload} />
+          </View>
+        </View>
       ) : null}
     </View>
   );
