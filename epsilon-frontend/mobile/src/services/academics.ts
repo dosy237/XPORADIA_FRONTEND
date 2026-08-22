@@ -88,10 +88,18 @@ export const fetchMyHomeroomClasses = () =>
 export const fetchAllMyClasses = () =>
   api.get<SchoolClass[]>("/academics/classes/").then((r) => r.data);
 
+// "letters" | "sciences" | "other" — groupe utilisé pour les sous-totaux
+// ("Bilan LETTRES/SCIENCES/AUTRES") du bulletin officiel. Classé par
+// l'enseignant titulaire de la classe, au même titre que le reste de la
+// gestion des matières (voir SubjectCard dans my-classes/[classId].tsx).
+export type SubjectCategory = "letters" | "sciences" | "other";
+
 export interface Subject {
   id: number;
   school_class: SchoolClass;
   name: string;
+  category: SubjectCategory;
+  category_label: string;
   teacher: HomeroomTeacher | null;
   pending_invitation_email: string | null;
   pending_invitation_token: string | null;
@@ -108,6 +116,9 @@ export const updateSubjectTeacher = (subjectId: number, teacherEmail: string | n
   api
     .patch<Subject>(`/academics/subjects/${subjectId}/`, { teacher_email: teacherEmail })
     .then((r) => r.data);
+
+export const updateSubjectCategory = (subjectId: number, category: SubjectCategory) =>
+  api.patch<Subject>(`/academics/subjects/${subjectId}/`, { category }).then((r) => r.data);
 
 export const deleteSubject = (subjectId: number) => api.delete(`/academics/subjects/${subjectId}/`);
 

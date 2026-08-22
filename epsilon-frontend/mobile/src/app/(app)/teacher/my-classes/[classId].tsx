@@ -9,7 +9,7 @@ import { Chip } from "@/components/ui/Chip";
 import { PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import * as academicsApi from "@/services/academics";
-import type { Subject } from "@/services/academics";
+import type { Subject, SubjectCategory } from "@/services/academics";
 
 function shareInvitation(token: string, email: string) {
   const link = Linking.createURL(`/invite/${token}`);
@@ -18,15 +18,23 @@ function shareInvitation(token: string, email: string) {
   });
 }
 
+const CATEGORY_OPTIONS: { value: SubjectCategory; label: string }[] = [
+  { value: "letters", label: "Littéraire" },
+  { value: "sciences", label: "Scientifique" },
+  { value: "other", label: "Autre" },
+];
+
 function SubjectCard({
   subject,
   onReassign,
   onDelete,
+  onCategoryChange,
   isMutating,
 }: {
   subject: Subject;
   onReassign: (subjectId: number, email: string) => void;
   onDelete: (subjectId: number) => void;
+  onCategoryChange: (subjectId: number, category: SubjectCategory) => void;
   isMutating: boolean;
 }) {
   const [email, setEmail] = useState("");
@@ -43,6 +51,22 @@ function SubjectCard({
         >
           <TrashIcon size={16} />
         </Pressable>
+      </View>
+
+      <View className="gap-1.5">
+        <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+          Groupe (bulletin)
+        </Text>
+        <View className="flex-row flex-wrap gap-2">
+          {CATEGORY_OPTIONS.map((option) => (
+            <Chip
+              key={option.value}
+              label={option.label}
+              variant={subject.category === option.value ? "navy" : "neutral"}
+              onPress={() => onCategoryChange(subject.id, option.value)}
+            />
+          ))}
+        </View>
       </View>
 
       {subject.teacher ? (
@@ -162,6 +186,19 @@ export default function ClassSubjectsScreen() {
     },
   });
 
+  const categoryMutation = useMutation({
+    mutationFn: ({ subjectId, category }: { subjectId: number; category: SubjectCategory }) =>
+      academicsApi.updateSubjectCategory(subjectId, category),
+    onSuccess: (subject) => {
+      queryClient.setQueryData<Subject[] | undefined>(queryKey, (prev) =>
+        prev ? prev.map((s) => (s.id === subject.id ? subject : s)) : prev
+      );
+    },
+    onError: () => {
+      Alert.alert("Erreur", "Impossible de modifier le groupe de cette matière.");
+    },
+  });
+
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <Pressable
@@ -240,7 +277,8 @@ export default function ClassSubjectsScreen() {
       </Pressable>
 
       <Text className="text-xs text-xporadia-text-secondary leading-5">
-        Matières de cette classe. Ajoutez un enseignant dédié par matière : s&apos;il a déjà un compte
+        Matières de cette classe. Classez chacune dans un groupe (Littéraire, Scientifique ou Autre)
+        pour les sous-totaux du bulletin, et ajoutez un enseignant dédié : s&apos;il a déjà un compte
         Xporadia, il est notifié immédiatement ; sinon il reçoit une invitation par email pour créer
         son compte.
       </Text>
@@ -259,6 +297,7 @@ export default function ClassSubjectsScreen() {
             isMutating={reassignMutation.isPending}
             onReassign={(subjectId, email) => reassignMutation.mutate({ subjectId, email })}
             onDelete={(subjectId) => deleteMutation.mutate(subjectId)}
+            onCategoryChange={(subjectId, category) => categoryMutation.mutate({ subjectId, category })}
           />
         ))
       )}
