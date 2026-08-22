@@ -54,7 +54,7 @@ export default function NoteDetailScreen() {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerClassName="p-6 gap-4 pb-12">
         <Input value={title} onChangeText={setTitle} placeholder="Titre de la note" />
         <TextInput

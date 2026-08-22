@@ -48,7 +48,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10 flex-grow">
         <AuthHeader title="Ravi de vous revoir" subtitle="Connectez-vous pour retrouver votre espace" showBack />

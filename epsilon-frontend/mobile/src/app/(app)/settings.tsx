@@ -124,7 +124,7 @@ export default function AccountSettingsScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="p-6 gap-5 pb-12">
         <SettingsSection title="Informations personnelles">

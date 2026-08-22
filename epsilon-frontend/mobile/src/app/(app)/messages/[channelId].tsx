@@ -549,7 +549,7 @@ export default function ChannelDetailScreen() {
   const visibleMessages = messages ?? [];
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <Stack.Screen
         options={{
           headerTitle: () => (

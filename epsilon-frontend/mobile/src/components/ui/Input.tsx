@@ -1,6 +1,8 @@
 import { forwardRef, useState } from "react";
 import { Text, TextInput, TextInputProps, View } from "react-native";
 
+import { Colors } from "@/constants/theme";
+
 interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
@@ -8,15 +10,21 @@ interface InputProps extends TextInputProps {
   leftIcon?: React.ReactNode;
 }
 
+// La couleur de bordure (erreur / focus / neutre) passe par `style`, jamais
+// par un fragment conditionnel dans la className : même précaution que sur
+// Button/Card/Chip (voir Card.tsx) — évite tout risque lié au bug amont
+// NativeWind sur Android avec une className interpolée conditionnellement.
+const BORDER_COLOR = {
+  error: Colors.red,
+  focused: Colors.navy,
+  idle: "transparent",
+};
+
 export const Input = forwardRef<TextInput, InputProps>(
   ({ label, error, leftIcon, className, onFocus, onBlur, style, ...props }, ref) => {
     const [focused, setFocused] = useState(false);
 
-    const borderClass = error
-      ? "border-xporadia-red"
-      : focused
-        ? "border-xporadia-navy"
-        : "border-transparent";
+    const borderColor = error ? BORDER_COLOR.error : focused ? BORDER_COLOR.focused : BORDER_COLOR.idle;
 
     return (
       <View className="gap-1.5">
@@ -34,8 +42,8 @@ export const Input = forwardRef<TextInput, InputProps>(
               setFocused(false);
               onBlur?.(e);
             }}
-            style={leftIcon ? [{ paddingLeft: 44 }, style] : style}
-            className={`rounded-xl border-2 bg-xporadia-bg px-4 py-3.5 text-base text-xporadia-text-primary ${borderClass} ${className ?? ""}`}
+            style={[{ borderColor }, leftIcon ? { paddingLeft: 44 } : null, style]}
+            className={`rounded-xl border-2 bg-xporadia-bg px-4 py-3.5 text-base text-xporadia-text-primary ${className ?? ""}`}
             {...props}
           />
         </View>

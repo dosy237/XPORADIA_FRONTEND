@@ -220,7 +220,7 @@ export default function PostDetailScreen() {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerClassName="p-6 gap-4 pb-6">
         <PostCard post={post} onToggleLike={() => likeMutation.mutate()} disableNavigation />
 

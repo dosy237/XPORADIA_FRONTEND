@@ -59,7 +59,7 @@ export default function GoalsScreen() {
   });
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView contentContainerClassName="p-6 gap-5 pb-12">
         <View className="gap-1">
           <Text className="text-2xl font-bold text-xporadia-navy">Vie & objectifs</Text>

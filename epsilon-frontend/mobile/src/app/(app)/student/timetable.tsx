@@ -1,7 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -108,9 +108,14 @@ function BlockFormSheet({
     timeToMinutes(form.startTime) < timeToMinutes(form.endTime);
 
   return (
-    <Pressable className="absolute inset-0 bg-black/30 items-center justify-center px-6" style={{ zIndex: 30 }} onPress={onCancel}>
-      <Pressable onPress={(e) => e.stopPropagation()} className="bg-white rounded-3xl w-full p-5 gap-3" style={{ maxWidth: 400 }}>
-        <Text className="text-base font-bold text-xporadia-navy">{heading}</Text>
+    <KeyboardAvoidingView
+      className="absolute inset-0"
+      style={{ zIndex: 30 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <Pressable className="flex-1 bg-black/30 items-center justify-center px-6" onPress={onCancel}>
+        <Pressable onPress={(e) => e.stopPropagation()} className="bg-white rounded-3xl w-full p-5 gap-3" style={{ maxWidth: 400 }}>
+          <Text className="text-base font-bold text-xporadia-navy">{heading}</Text>
 
         <View className="gap-1">
           <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Titre</Text>
@@ -185,8 +190,9 @@ function BlockFormSheet({
             <Button label={submitLabel} pill disabled={!canSubmit} loading={loading} onPress={onSubmit} />
           </View>
         </View>
+        </Pressable>
       </Pressable>
-    </Pressable>
+    </KeyboardAvoidingView>
   );
 }
 

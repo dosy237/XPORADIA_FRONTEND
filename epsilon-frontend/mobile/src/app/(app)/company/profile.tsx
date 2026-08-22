@@ -112,7 +112,7 @@ export default function CompanyProfileScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-12">
         <View className="items-center pt-10 pb-5">

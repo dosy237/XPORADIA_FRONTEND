@@ -199,7 +199,7 @@ function ProfileScreen() {
   const dashboardPath = ROLE_DASHBOARD_PATH[currentRole ?? user.primary_role];
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="p-6 gap-5 pb-12">
         <View className="items-center gap-3 pt-2">
           <AvatarPicker firstName={user.first_name} lastName={user.last_name} imageUri={user.avatar} size={88} />
