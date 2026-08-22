@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { Tabs, router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 import type { GestureResponderEvent, StyleProp, ViewStyle } from "react-native";
@@ -64,21 +63,16 @@ function makeTabBarButton(Icon: IconComponent, label: string) {
         style={[style, { alignItems: "center", justifyContent: "center" }]}
       >
         {focused ? (
-          // Le dégradé EST le conteneur (comme pour Button.tsx) plutôt qu'une
-          // couche de fond en position absolue : plus fiable, sa taille suit
-          // directement le contenu (icône + texte) au lieu de dépendre d'un
-          // parent auto-dimensionné.
-          <LinearGradient
-            colors={["#FF7A33", "#FB5406"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="items-center justify-center gap-0.5 px-2 py-1 rounded-2xl shadow-deep-orange"
-          >
-            <Icon color={Colors.white} size={20} />
-            <Text numberOfLines={1} className="text-[10px] font-semibold text-white">
+          // Accent léger — icône/texte teintés orange et fine pilule
+          // d'accentuation sous le libellé, plutôt qu'un aplat rectangulaire
+          // massif qui alourdissait la barre de navigation.
+          <View className="items-center justify-center gap-1 px-2 py-1">
+            <Icon color={Colors.orange} size={20} />
+            <Text numberOfLines={1} className="text-[10px] font-bold text-xporadia-orange-text">
               {label}
             </Text>
-          </LinearGradient>
+            <View className="h-[3px] w-5 rounded-full bg-xporadia-orange" />
+          </View>
         ) : (
           <View className="items-center justify-center gap-0.5 px-2 py-1">
             <Icon color={Colors.textSecondary} size={20} />

@@ -5,7 +5,7 @@ import { Animated, Easing, Pressable, ScrollView, Text, View } from "react-nativ
 
 import { GradeTrendChart } from "@/components/charts/GradeTrendChart";
 import { SkillsRadarChart } from "@/components/charts/SkillsRadarChart";
-import { DashboardHeroHeader, HeroFact } from "@/components/student/DashboardHeroHeader";
+import { DashboardFixedHeader, DashboardHeroHeader, HeroFact } from "@/components/student/DashboardHeroHeader";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -133,6 +133,7 @@ function QuickAccessCell({
     <Card
       onPress={onPress}
       className="items-center gap-2 flex-1 min-w-[30%] py-5 rounded-tl-[28px] rounded-tr-xl rounded-br-[28px] rounded-bl-xl"
+      style={{ shadowOpacity: 0.03, shadowRadius: 6, shadowOffset: { width: 0, height: 1 }, elevation: 1 }}
     >
       <View className="relative">
         <View className="h-12 w-12 rounded-full items-center justify-center" style={{ backgroundColor: `${tint}33` }}>
@@ -401,6 +402,7 @@ export default function StudentDashboard() {
 
   return (
     <View className="flex-1 bg-xporadia-bg">
+      <DashboardFixedHeader firstName={user?.first_name} lastName={user?.last_name} avatarUri={user?.avatar} />
       <ScrollView contentContainerClassName="gap-5 pb-12">
         <DashboardHeroHeader
           firstName={user?.first_name}

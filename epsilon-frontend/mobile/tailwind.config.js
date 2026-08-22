@@ -21,7 +21,10 @@ module.exports = {
           purple: "#7B2FFF",
           teal: "#0D9488",
           "text-primary": "#0F172A",
-          "text-secondary": "#5A6A8A",
+          // #5A6A8A tenait déjà ~5.4:1 sur fond blanc (limite WCAG AA pour
+          // texte normal) mais sans marge une fois affiché en petite taille
+          // sur un écran réel — #4A5B78 tient ~6.9:1, une marge confortable.
+          "text-secondary": "#4A5B78",
           "navy-light": "#1E293B",
           "orange-light": "#FF7A33",
           // Orange de marque en texte sur fond clair : #FB5406 ne tient qu'à

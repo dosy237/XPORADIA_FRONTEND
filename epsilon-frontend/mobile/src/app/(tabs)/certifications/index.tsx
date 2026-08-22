@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -46,12 +47,26 @@ function ModuleCard({ module }: { module: TrainingModule }) {
             <MedalIcon size={22} color={Colors.navy} />
           </View>
         )}
-        <View className="absolute bottom-2 right-2 bg-white rounded-full px-3 py-1.5 shadow-card">
+        {/* Voile dégradé discret aux deux coins porteurs de badge — garantit
+            leur lisibilité et une marge respirante par rapport à la
+            couverture quel que soit son contenu, plutôt qu'un badge posé
+            au ras du visuel. */}
+        <LinearGradient
+          colors={["rgba(15,23,42,0.35)", "transparent"]}
+          className="absolute top-0 left-0 right-0 h-14"
+          pointerEvents="none"
+        />
+        <LinearGradient
+          colors={["transparent", "rgba(15,23,42,0.35)"]}
+          className="absolute bottom-0 left-0 right-0 h-14"
+          pointerEvents="none"
+        />
+        <View className="absolute bottom-3 right-3 bg-white rounded-full px-3 py-1.5 shadow-card">
           <Text className="text-xs font-bold text-xporadia-navy">
             {module.price.toLocaleString("fr-FR")} FCFA
           </Text>
         </View>
-        <View className="absolute top-2 left-2">
+        <View className="absolute top-3 left-3">
           <Chip label={LEVEL_LABELS[module.target_level]} variant="navy" />
         </View>
       </View>
@@ -116,7 +131,7 @@ function InternshipOfferCard({ offer }: { offer: InternshipOffer }) {
         </View>
 
         <View className="flex-row items-center justify-between pt-1 border-t border-xporadia-border">
-          <Text className="text-[11px] text-xporadia-text-secondary pt-2">{`Publié ${postedAgo}`}</Text>
+          <Text className="text-xs text-xporadia-text-secondary pt-2">{`Publié ${postedAgo}`}</Text>
         </View>
       </View>
     </Card>

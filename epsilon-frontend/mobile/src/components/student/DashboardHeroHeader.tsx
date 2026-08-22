@@ -1,9 +1,12 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useEffect, useRef, useState } from "react";
 import { Animated, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Circle, Defs, Path, RadialGradient, Stop, Svg } from "react-native-svg";
 
+import { Avatar } from "@/components/ui/Avatar";
 import { AvatarPicker } from "@/components/ui/AvatarPicker";
+import { HeaderActions } from "@/components/layout/HeaderActions";
 
 type IconComponent = (props: { color?: string; size?: number }) => React.ReactElement;
 
@@ -17,6 +20,25 @@ interface DashboardHeroHeaderProps {
   lastName?: string;
   avatarUri?: string | null;
   facts: HeroFact[];
+}
+
+/** Bande d'identité fine, hors ScrollView (comme `DashboardHeader` pour les
+ * autres rôles) : photo + prénom restent visibles pendant tout le défilement
+ * du tableau de bord, la grande carte "vivante" ci-dessous continuant elle
+ * de défiler normalement avec le reste du contenu. */
+export function DashboardFixedHeader({ firstName, lastName, avatarUri }: Pick<DashboardHeroHeaderProps, "firstName" | "lastName" | "avatarUri">) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View className="bg-xporadia-navy" style={{ paddingTop: insets.top }}>
+      <View className="flex-row items-center px-4 py-2.5 gap-3">
+        <Avatar firstName={firstName} lastName={lastName} imageUri={avatarUri} size={34} />
+        <Text className="flex-1 text-white font-bold text-sm" numberOfLines={1}>
+          {[firstName, lastName].filter(Boolean).join(" ")}
+        </Text>
+        <HeaderActions />
+      </View>
+    </View>
+  );
 }
 
 // Cadence lente et respirante, jamais un carrousel énergique — un fait

@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, BuildingIcon, SearchIcon, UsersIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
-import { LEVEL_LABELS } from "@/constants/certificationLevels";
+import { LEVEL_COLORS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
 import * as companyApi from "@/services/companyDirectory";
 import type { CompanyDirectoryCard } from "@/services/companyDirectory";
@@ -27,6 +27,35 @@ const FILTERS: { value: DirectoryFilter; label: string }[] = [
   { value: "company", label: "Entreprises" },
 ];
 
+// Hauteur réservée pour la ligne de sous-titre (2 lignes à text-xs, 16px de
+// hauteur de ligne) et pour la ligne de badges : sans ça, une carte au
+// sous-titre court ou sans second badge ("Partenaire") est visiblement plus
+// basse que ses voisines dans la liste — un défilement irrégulier au lieu
+// d'une grille bien réglée.
+const SUBTITLE_MIN_HEIGHT = 32;
+const BADGE_ROW_MIN_HEIGHT = 30;
+
+/** Pilule de niveau de certification teintée de la couleur réelle du
+ * palier (Bronze/Argent/Or/Platine/Diamant, voir LEVEL_COLORS) plutôt que
+ * le chip générique "navy-subtle" — la couleur du badge doit se reconnaître
+ * au même coup d'œil que sur la fiche du professeur elle-même. */
+function LevelChip({ level }: { level: TeacherDirectoryCard["current_level"] }) {
+  if (!level) {
+    return <Chip label="Non certifié" variant="neutral" />;
+  }
+  const color = LEVEL_COLORS[level];
+  return (
+    <View
+      className="flex-row items-center rounded-full px-3 py-1.5"
+      style={{ borderWidth: 1, backgroundColor: `${color}1F`, borderColor: `${color}40` }}
+    >
+      <Text className="text-xs font-semibold" style={{ color }}>
+        {LEVEL_LABELS[level]}
+      </Text>
+    </View>
+  );
+}
+
 function TeacherCard({ teacher }: { teacher: TeacherDirectoryCard }) {
   return (
     <Card
@@ -39,15 +68,12 @@ function TeacherCard({ teacher }: { teacher: TeacherDirectoryCard }) {
         <Text className="text-base font-semibold text-xporadia-text-primary">
           {teacher.first_name} {teacher.last_name}
         </Text>
-        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
+        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2} style={{ minHeight: SUBTITLE_MIN_HEIGHT }}>
           {teacher.subjects.join(", ") || "Matières non renseignées"}
           {teacher.location ? ` · ${teacher.location}` : ""}
         </Text>
-        <View className="flex-row gap-1.5 mt-1">
-          <Chip
-            label={teacher.current_level ? LEVEL_LABELS[teacher.current_level] : "Non certifié"}
-            variant="navy-subtle"
-          />
+        <View className="flex-row gap-1.5 mt-1" style={{ minHeight: BADGE_ROW_MIN_HEIGHT }}>
+          <LevelChip level={teacher.current_level} />
         </View>
       </View>
     </Card>
@@ -72,11 +98,11 @@ function EstablishmentCard({ establishment }: { establishment: EstablishmentDire
       )}
       <View className="flex-1 gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">{establishment.school_name}</Text>
-        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
+        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2} style={{ minHeight: SUBTITLE_MIN_HEIGHT }}>
           {establishment.address || "Établissement"}
           {establishment.student_count ? ` · ${establishment.student_count} élèves` : ""}
         </Text>
-        <View className="flex-row gap-1.5 mt-1">
+        <View className="flex-row gap-1.5 mt-1" style={{ minHeight: BADGE_ROW_MIN_HEIGHT }}>
           <Chip label="Établissement" variant="navy-subtle" />
           {establishment.is_partner && <Chip label="Partenaire" variant="orange" />}
         </View>
@@ -103,11 +129,11 @@ function CompanyCard({ company }: { company: CompanyDirectoryCard }) {
       )}
       <View className="flex-1 gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">{company.company_name}</Text>
-        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2}>
+        <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2} style={{ minHeight: SUBTITLE_MIN_HEIGHT }}>
           {company.sector || "Entreprise"}
           {company.address ? ` · ${company.address}` : ""}
         </Text>
-        <View className="flex-row gap-1.5 mt-1">
+        <View className="flex-row gap-1.5 mt-1" style={{ minHeight: BADGE_ROW_MIN_HEIGHT }}>
           <Chip label="Entreprise" variant="navy-subtle" />
           {company.is_partner && <Chip label="Partenaire" variant="orange" />}
         </View>

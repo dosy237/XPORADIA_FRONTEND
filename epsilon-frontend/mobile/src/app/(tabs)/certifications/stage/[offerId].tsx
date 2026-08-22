@@ -52,7 +52,7 @@ export default function InternshipOfferDetailScreen() {
               {offer.is_premium && <Chip label="Premium" variant="orange" />}
             </View>
             <Text className="text-sm text-xporadia-text-secondary">{offer.company.company_name}</Text>
-            <Text className="text-[11px] text-xporadia-text-secondary">{`Publié ${postedAgo}`}</Text>
+            <Text className="text-xs text-xporadia-text-secondary">{`Publié ${postedAgo}`}</Text>
           </View>
         </View>
         <View className="flex-row gap-2">

@@ -16,7 +16,7 @@ export const Colors = {
   teal: "#0D9488",
   zeroLevel: "#CBD5E1",
   textPrimary: "#0F172A",
-  textSecondary: "#5A6A8A",
+  textSecondary: "#4A5B78",
   navyLight: "#1E293B",
   orangeLight: "#FF7A33",
   border: "#E2E8F0",

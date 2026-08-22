@@ -160,7 +160,11 @@ export default function ActualitesScreen() {
 
   return (
     <View className="flex-1 bg-xporadia-bg">
-      <ScrollView contentContainerClassName="p-6 gap-4 pb-24">
+      {/* pb-32 (128px), pas pb-24 : le bouton flottant occupe jusqu'à 80px
+          depuis le bas de l'écran (bottom-6 + h-14) — une marge plus large
+          garantit que les boutons d'interaction de la dernière publication
+          ne se retrouvent jamais masqués une fois le fil défilé jusqu'en bas. */}
+      <ScrollView contentContainerClassName="p-6 gap-4 pb-32">
         <View className="gap-1">
           <Text className="text-2xl font-bold text-xporadia-navy">Actualités</Text>
           <Text className="text-sm text-xporadia-text-secondary">
