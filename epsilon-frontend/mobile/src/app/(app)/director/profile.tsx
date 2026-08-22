@@ -34,6 +34,10 @@ export default function DirectorProfileScreen() {
   const [address, setAddress] = useState("");
   const [levelsTaught, setLevelsTaught] = useState("");
   const [studentCount, setStudentCount] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [establishmentCode, setEstablishmentCode] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
     if (!profile) return;
@@ -41,6 +45,10 @@ export default function DirectorProfileScreen() {
     setAddress(profile.address);
     setLevelsTaught(profile.levels_taught.join(", "));
     setStudentCount(profile.student_count != null ? String(profile.student_count) : "");
+    setPhone(profile.phone);
+    setContactEmail(profile.contact_email);
+    setEstablishmentCode(profile.establishment_code);
+    setIsPublic(profile.is_public);
   }, [profile]);
 
   const mutation = useMutation({
@@ -50,6 +58,10 @@ export default function DirectorProfileScreen() {
         address,
         levels_taught: levelsTaught.split(",").map((s) => s.trim()).filter(Boolean),
         student_count: studentCount ? Number(studentCount) : null,
+        phone,
+        contact_email: contactEmail,
+        establishment_code: establishmentCode,
+        is_public: isPublic,
       }),
     onSuccess: (data) => {
       queryClient.setQueryData(["director-profile"], data);
@@ -174,6 +186,40 @@ export default function DirectorProfileScreen() {
                 keyboardType="numeric"
                 placeholder="120"
               />
+
+              <View className="gap-1">
+                <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                  Coordonnées affichées sur les bulletins officiels
+                </Text>
+              </View>
+              <Input
+                label="Téléphone de l'établissement"
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                placeholder="22443517"
+              />
+              <Input
+                label="Email de contact de l'établissement"
+                value={contactEmail}
+                onChangeText={setContactEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholder="contact@monetablissement.ci"
+              />
+              <Input
+                label="Code établissement"
+                value={establishmentCode}
+                onChangeText={setEstablishmentCode}
+                placeholder="000395"
+              />
+              <View className="gap-2">
+                <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Statut</Text>
+                <View className="flex-row gap-2">
+                  <Chip label="Public" variant={isPublic ? "navy" : "neutral"} onPress={() => setIsPublic(true)} />
+                  <Chip label="Privé" variant={!isPublic ? "navy" : "neutral"} onPress={() => setIsPublic(false)} />
+                </View>
+              </View>
 
               <View className="flex-row gap-3 mt-2">
                 <View className="flex-1">

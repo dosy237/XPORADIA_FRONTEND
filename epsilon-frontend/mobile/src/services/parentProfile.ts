@@ -5,6 +5,14 @@ export interface Child {
   first_name: string;
   class_level: string;
   target_subjects: string[];
+  // État civil affiché sur le bulletin officiel (voir apps.grading.pdf
+  // côté backend) — optionnels, jamais requis à l'ajout de l'enfant,
+  // complétés plus tard.
+  matricule?: string;
+  sex?: "M" | "F" | "";
+  nationality?: string;
+  birth_date?: string | null;
+  birth_place?: string;
 }
 
 export interface ParentProfile {

@@ -77,7 +77,14 @@ export interface SubjectReportEntry {
   subject_average: string | null;
   coefficient: number;
   teacher_comment: string;
+  teacher_name: string;
+  category: "letters" | "sciences" | "other";
 }
+
+export type ReportCardDistinction =
+  | "none" | "honor_roll" | "honor_roll_encouragement" | "honor_roll_congratulations" | "refused";
+export type ReportCardSanction =
+  | "none" | "work_warning" | "work_reprimand" | "conduct_warning" | "conduct_reprimand";
 
 export interface ReportCard {
   id: number;
@@ -88,9 +95,17 @@ export interface ReportCard {
   term_label: string;
   general_average: string;
   class_average: string;
+  highest_average: string | null;
+  lowest_average: string | null;
   rank: number;
   class_size: number;
   homeroom_comment: string;
+  justified_absence_hours: string;
+  unjustified_absence_hours: string;
+  distinction: ReportCardDistinction;
+  distinction_label: string;
+  sanction: ReportCardSanction;
+  sanction_label: string;
   document: string | null;
   subject_entries: SubjectReportEntry[];
   published_at: string;
@@ -279,14 +294,20 @@ export const fetchClassReportPreview = (classId: number, termId: number) =>
     .get<ClassReportPreview>(`/grading/classes/${classId}/terms/${termId}/report-preview/`)
     .then((r) => r.data);
 
+export interface GenerateReportCardsPayload {
+  homeroom_comments: Record<string, string>;
+  // Toutes optionnelles : absences/distinction/sanction non renseignées ->
+  // 0 heure, distinction suggérée automatiquement (voir
+  // services.suggest_distinction côté backend), aucune sanction.
+  absences?: Record<string, { justified?: number; unjustified?: number }>;
+  distinctions?: Record<string, ReportCardDistinction>;
+  sanctions?: Record<string, ReportCardSanction>;
+}
+
 /** Génère ET publie les bulletins de TOUTE la classe en un seul appel —
  * réutilise GenerateReportCardsView, jamais élève par élève. Réservé au
  * titulaire de la classe (ou au directeur en supervision). */
-export const generateReportCards = (
-  classId: number,
-  termId: number,
-  payload: { homeroom_comments: Record<string, string> }
-) =>
+export const generateReportCards = (classId: number, termId: number, payload: GenerateReportCardsPayload) =>
   api
     .post<ReportCard[]>(`/grading/classes/${classId}/terms/${termId}/generate-report-cards/`, payload)
     .then((r) => r.data);

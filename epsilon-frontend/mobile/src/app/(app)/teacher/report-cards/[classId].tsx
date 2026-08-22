@@ -10,16 +10,45 @@ import { CheckCircleIcon, MedalIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as gradingApi from "@/services/grading";
-import type { ClassReportPreviewEntry } from "@/services/grading";
+import type { ClassReportPreviewEntry, ReportCardDistinction, ReportCardSanction } from "@/services/grading";
+
+export interface StudentReportDecisions {
+  comment: string;
+  distinction: ReportCardDistinction | ""; // "" = suggestion automatique du serveur, jamais forcée
+  sanction: ReportCardSanction;
+  justifiedAbsences: string;
+  unjustifiedAbsences: string;
+}
+
+const EMPTY_DECISIONS: StudentReportDecisions = {
+  comment: "", distinction: "", sanction: "none", justifiedAbsences: "", unjustifiedAbsences: "",
+};
+
+const DISTINCTION_OPTIONS: { value: ReportCardDistinction | ""; label: string }[] = [
+  { value: "", label: "Auto" },
+  { value: "none", label: "Aucune" },
+  { value: "honor_roll", label: "Tableau d'honneur" },
+  { value: "honor_roll_encouragement", label: "+ Encouragements" },
+  { value: "honor_roll_congratulations", label: "+ Félicitations" },
+  { value: "refused", label: "Refusé(e)" },
+];
+
+const SANCTION_OPTIONS: { value: ReportCardSanction; label: string }[] = [
+  { value: "none", label: "Aucune" },
+  { value: "work_warning", label: "Avert. travail" },
+  { value: "work_reprimand", label: "Blâme travail" },
+  { value: "conduct_warning", label: "Avert. conduite" },
+  { value: "conduct_reprimand", label: "Blâme conduite" },
+];
 
 function StudentPreviewRow({
   entry,
-  comment,
-  onChangeComment,
+  decisions,
+  onChange,
 }: {
   entry: ClassReportPreviewEntry;
-  comment: string;
-  onChangeComment: (value: string) => void;
+  decisions: StudentReportDecisions;
+  onChange: (decisions: StudentReportDecisions) => void;
 }) {
   return (
     <View className="bg-white rounded-2xl p-4 shadow-soft gap-3">
@@ -37,13 +66,62 @@ function StudentPreviewRow({
         </View>
       </View>
       <Input
-        value={comment}
-        onChangeText={onChangeComment}
+        value={decisions.comment}
+        onChangeText={(comment) => onChange({ ...decisions, comment })}
         placeholder="Appréciation générale du titulaire (optionnel)"
         multiline
         numberOfLines={2}
         style={{ height: 58, textAlignVertical: "top" }}
       />
+
+      <View className="gap-1.5">
+        <Text className="text-[10px] font-semibold text-xporadia-text-secondary uppercase">Distinction</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-1.5">
+          {DISTINCTION_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value || "auto"}
+              label={opt.label}
+              variant={decisions.distinction === opt.value ? "navy" : "neutral"}
+              onPress={() => onChange({ ...decisions, distinction: opt.value })}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      <View className="gap-1.5">
+        <Text className="text-[10px] font-semibold text-xporadia-text-secondary uppercase">Sanction</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-1.5">
+          {SANCTION_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              label={opt.label}
+              variant={decisions.sanction === opt.value ? "navy" : "neutral"}
+              onPress={() => onChange({ ...decisions, sanction: opt.value })}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      <View className="flex-row gap-2">
+        <View className="flex-1">
+          <Input
+            label="Absences just. (h)"
+            value={decisions.justifiedAbsences}
+            onChangeText={(justifiedAbsences) => onChange({ ...decisions, justifiedAbsences })}
+            keyboardType="numeric"
+            placeholder="0"
+          />
+        </View>
+        <View className="flex-1">
+          <Input
+            label="Absences non just. (h)"
+            value={decisions.unjustifiedAbsences}
+            onChangeText={(unjustifiedAbsences) => onChange({ ...decisions, unjustifiedAbsences })}
+            keyboardType="numeric"
+            placeholder="0"
+          />
+        </View>
+      </View>
     </View>
   );
 }
@@ -116,15 +194,28 @@ export default function TeacherReportCardsScreen() {
     enabled: !!classId && !!selectedTermId,
   });
 
-  const [comments, setComments] = useState<Record<number, string>>({});
+  const [decisions, setDecisions] = useState<Record<number, StudentReportDecisions>>({});
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [published, setPublished] = useState<number | null>(null);
 
   const generateMutation = useMutation({
-    mutationFn: () =>
-      gradingApi.generateReportCards(classId, selectedTermId as number, {
-        homeroom_comments: Object.fromEntries(Object.entries(comments).map(([k, v]) => [k, v])),
-      }),
+    mutationFn: () => {
+      const homeroom_comments: Record<string, string> = {};
+      const distinctions: Record<string, ReportCardDistinction> = {};
+      const sanctions: Record<string, ReportCardSanction> = {};
+      const absences: Record<string, { justified?: number; unjustified?: number }> = {};
+      for (const [childId, d] of Object.entries(decisions)) {
+        homeroom_comments[childId] = d.comment;
+        if (d.distinction) distinctions[childId] = d.distinction;
+        if (d.sanction !== "none") sanctions[childId] = d.sanction;
+        const justified = d.justifiedAbsences ? Number(d.justifiedAbsences) : 0;
+        const unjustified = d.unjustifiedAbsences ? Number(d.unjustifiedAbsences) : 0;
+        if (justified || unjustified) absences[childId] = { justified, unjustified };
+      }
+      return gradingApi.generateReportCards(classId, selectedTermId as number, {
+        homeroom_comments, distinctions, sanctions, absences,
+      });
+    },
     onSuccess: (created) => {
       setConfirmVisible(false);
       setPublished(created.length);
@@ -192,8 +283,8 @@ export default function TeacherReportCardsScreen() {
               <StudentPreviewRow
                 key={entry.child}
                 entry={entry}
-                comment={comments[entry.child] ?? ""}
-                onChangeComment={(value) => setComments((prev) => ({ ...prev, [entry.child]: value }))}
+                decisions={decisions[entry.child] ?? EMPTY_DECISIONS}
+                onChange={(value) => setDecisions((prev) => ({ ...prev, [entry.child]: value }))}
               />
             ))}
           </View>
