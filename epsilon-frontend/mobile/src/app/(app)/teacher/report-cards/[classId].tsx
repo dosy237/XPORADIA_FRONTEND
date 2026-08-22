@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { CheckCircleIcon, MedalIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { ReportCardCard } from "@/components/grading/ReportCardCard";
 import { Colors } from "@/constants/theme";
 import * as gradingApi from "@/services/grading";
 import type { ClassReportPreviewEntry, ReportCardDistinction, ReportCardSanction } from "@/services/grading";
@@ -192,6 +193,18 @@ export default function TeacherReportCardsScreen() {
     queryKey: ["class-report-preview", classId, selectedTermId],
     queryFn: () => gradingApi.fetchClassReportPreview(classId, selectedTermId as number),
     enabled: !!classId && !!selectedTermId,
+    // L'aperçu de génération est réservé au titulaire/directeur — un
+    // enseignant dédié qui vient uniquement CONSULTER les bulletins déjà
+    // publiés n'y a pas droit (403 attendu) : on n'affiche alors que la
+    // section "Bulletins déjà publiés" ci-dessous, sans faire planter l'écran.
+    retry: false,
+  });
+
+  const queryClient = useQueryClient();
+  const { data: publishedReportCards, isLoading: isLoadingPublished } = useQuery({
+    queryKey: ["class-report-cards", classId, selectedTermId],
+    queryFn: () => gradingApi.fetchClassReportCards(classId, selectedTermId as number),
+    enabled: !!classId && !!selectedTermId,
   });
 
   const [decisions, setDecisions] = useState<Record<number, StudentReportDecisions>>({});
@@ -219,6 +232,7 @@ export default function TeacherReportCardsScreen() {
     onSuccess: (created) => {
       setConfirmVisible(false);
       setPublished(created.length);
+      queryClient.invalidateQueries({ queryKey: ["class-report-cards", classId, selectedTermId] });
     },
   });
 
@@ -309,6 +323,26 @@ export default function TeacherReportCardsScreen() {
             ))}
           </View>
         ) : null}
+
+        <View className="gap-3 mt-2">
+          <Text className="text-lg font-bold text-xporadia-navy">Bulletins déjà publiés</Text>
+          {isLoadingPublished ? (
+            <Text className="text-sm text-xporadia-text-secondary text-center py-4">Chargement...</Text>
+          ) : publishedReportCards && publishedReportCards.length > 0 ? (
+            publishedReportCards.map((reportCard) => (
+              <View key={reportCard.id} className="gap-1">
+                <Text className="text-sm font-semibold text-xporadia-text-primary px-1">
+                  {reportCard.child_first_name} {reportCard.child_last_name}
+                </Text>
+                <ReportCardCard reportCard={reportCard} />
+              </View>
+            ))
+          ) : (
+            <Text className="text-xs text-xporadia-text-secondary text-center py-4">
+              Aucun bulletin publié pour ce trimestre.
+            </Text>
+          )}
+        </View>
       </ScrollView>
 
       {preview && preview.ranked.length > 0 ? (

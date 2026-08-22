@@ -311,3 +311,10 @@ export const generateReportCards = (classId: number, termId: number, payload: Ge
   api
     .post<ReportCard[]>(`/grading/classes/${classId}/terms/${termId}/generate-report-cards/`, payload)
     .then((r) => r.data);
+
+// Bulletins déjà publiés d'une classe pour un trimestre — accessible au
+// titulaire, à tout enseignant dédié d'une matière de cette classe, et au
+// directeur (voir ClassReportCardsView côté backend). Distinct de
+// fetchClassReportPreview : ici on ne lit que des bulletins déjà figés.
+export const fetchClassReportCards = (classId: number, termId: number) =>
+  api.get<ReportCard[]>(`/grading/classes/${classId}/terms/${termId}/report-cards/`).then((r) => r.data);

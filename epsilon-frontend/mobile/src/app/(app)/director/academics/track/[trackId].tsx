@@ -100,16 +100,32 @@ function ClassCard({ schoolClass, trackId }: { schoolClass: SchoolClass; trackId
         ) : null}
         <Text className="text-xs font-semibold text-xporadia-orange">Gérer les effectifs →</Text>
       </Pressable>
-      <Pressable
-        onPress={() => setEditing(true)}
-        accessibilityRole="button"
-        accessibilityLabel={`Changer le titulaire de ${schoolClass.name}`}
-        className="flex-row items-center gap-1.5 self-start"
-        hitSlop={8}
-      >
-        <PencilIcon size={12} color={Colors.navy} />
-        <Text className="text-[11px] font-medium text-xporadia-navy">Changer de titulaire</Text>
-      </Pressable>
+      <View className="flex-row items-center gap-4">
+        <Pressable
+          onPress={() => setEditing(true)}
+          accessibilityRole="button"
+          accessibilityLabel={`Changer le titulaire de ${schoolClass.name}`}
+          className="flex-row items-center gap-1.5 self-start"
+          hitSlop={8}
+        >
+          <PencilIcon size={12} color={Colors.navy} />
+          <Text className="text-[11px] font-medium text-xporadia-navy">Changer de titulaire</Text>
+        </Pressable>
+        <Pressable
+          onPress={() =>
+            router.push({
+              pathname: "/(app)/teacher/report-cards/[classId]",
+              params: { classId: String(schoolClass.id) },
+            })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={`Voir les bulletins de ${schoolClass.name}`}
+          className="self-start"
+          hitSlop={8}
+        >
+          <Text className="text-[11px] font-medium text-xporadia-orange">Voir les bulletins</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }

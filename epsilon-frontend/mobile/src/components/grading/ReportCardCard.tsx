@@ -1,11 +1,10 @@
-import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import type { ReportCard } from "@/services/grading";
-import { downloadPdf } from "@/utils/pdf";
+import { downloadPdf, viewPdf } from "@/utils/pdf";
 
 /** Un bulletin publié, présenté de façon lisible directement dans
  * l'application — pas un simple lien de téléchargement froid. Moyenne
@@ -16,13 +15,34 @@ import { downloadPdf } from "@/utils/pdf";
  * côté élève et côté parent — un bulletin publié ne change jamais selon
  * qui le consulte. */
 export function ReportCardCard({ reportCard }: { reportCard: ReportCard }) {
+  const [viewing, setViewing] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const filename = `bulletin_${reportCard.term_label.replace(/\s+/g, "_")}.pdf`;
+
+  // "document" pointe vers un endpoint protégé (régénéré à la demande côté
+  // serveur, jamais un fichier statique) : il faut y joindre le jeton
+  // d'authentification, ce qu'un <iframe src>/WebView ne peut pas faire
+  // lui-même — d'où authenticated: true, comme pour "Mes résultats".
+  const handleView = async () => {
+    if (!reportCard.document) return;
+    setViewing(true);
+    try {
+      await viewPdf(reportCard.document, `Bulletin ${reportCard.term_label}`, {
+        authenticated: true,
+        filename,
+      });
+    } catch {
+      Alert.alert("Erreur", "Impossible d'ouvrir le PDF pour l'instant, réessayez plus tard.");
+    } finally {
+      setViewing(false);
+    }
+  };
 
   const handleDownload = async () => {
     if (!reportCard.document) return;
     setDownloading(true);
     try {
-      await downloadPdf(reportCard.document, `bulletin_${reportCard.term_label.replace(/\s+/g, "_")}.pdf`);
+      await downloadPdf(reportCard.document, filename, { authenticated: true });
     } catch {
       Alert.alert("Erreur", "Impossible de télécharger le PDF pour l'instant, réessayez plus tard.");
     } finally {
@@ -86,16 +106,7 @@ export function ReportCardCard({ reportCard }: { reportCard: ReportCard }) {
       {reportCard.document ? (
         <View className="flex-row gap-3">
           <View className="flex-1">
-            <Button
-              label="Voir le PDF"
-              variant="secondary"
-              pill
-              onPress={() =>
-                router.push(
-                  `/(app)/library/pdf-viewer?url=${encodeURIComponent(reportCard.document as string)}&title=${encodeURIComponent(`Bulletin ${reportCard.term_label}`)}`
-                )
-              }
-            />
+            <Button label="Voir le PDF" variant="secondary" pill loading={viewing} onPress={handleView} />
           </View>
           <View className="flex-1">
             <Button label="Télécharger" variant="secondary" pill loading={downloading} onPress={handleDownload} />
