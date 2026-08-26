@@ -14,7 +14,7 @@ function resolveUrl(source: string) {
   return source.startsWith("http") ? source : `${API_URL}${source}`;
 }
 
-function authHeaders(): Record<string, string> {
+export function authHeaders(): Record<string, string> {
   const { accessToken } = useAuthStore.getState();
   return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
 }
@@ -59,25 +59,35 @@ async function fetchToLocalUri(source: string, filename: string, authenticated: 
 
 /** Ouvre un PDF dans le visualisateur in-app existant (`/library/pdf-
  * viewer`). `authenticated: true` pour un endpoint API protege (ex. mes
- * resultats, regenere a la demande) ; `false` pour une URL de media deja
- * publique (ex. bulletin deja genere et stocke), chargee directement sans
- * etape de recuperation intermediaire. */
+ * resultats, bulletin, regenere a la demande) ; `false` pour une URL de
+ * media deja publique, chargee directement.
+ *
+ * Sur natif, un fichier telecharge localement (file:// ou meme content://
+ * apres conversion) reste refuse par la WebView Android avec
+ * ERR_ACCESS_DENIED (restriction sur les fichiers prives de l'app, y
+ * compris via FileProvider dans ce contexte) — constate en conditions
+ * reelles. On charge donc directement l'URL distante dans la WebView, en
+ * lui transmettant l'en-tete d'authentification via `source.headers`
+ * (supporte nativement par react-native-webview), exactement comme le
+ * ferait un navigateur : plus de fichier local, plus de probleme de
+ * permission fichier. Sur web, `<iframe src>` ne peut pas fixer d'en-tete
+ * HTTP, d'ou le detour par blob: (fetchToLocalUri) qui reste necessaire
+ * uniquement sur cette plateforme. */
 export async function viewPdf(
   source: string,
   title: string,
   options: { authenticated?: boolean; filename?: string } = {}
 ) {
-  let uri = options.authenticated
+  if (options.authenticated && Platform.OS !== "web") {
+    const url = resolveUrl(source);
+    router.push(
+      `/(app)/library/pdf-viewer?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&authenticated=1`
+    );
+    return;
+  }
+  const uri = options.authenticated
     ? await fetchToLocalUri(source, options.filename ?? "document.pdf", true)
     : resolveUrl(source);
-  // Sur Android, la WebView refuse de charger un file:// pointant vers le
-  // cache privé de l'app (ERR_ACCESS_DENIED) — il faut le faire passer par
-  // le ContentResolver du système (content://) pour qu'elle y ait accès.
-  // Sans effet sur un file:// distant/web, uniquement pertinent après un
-  // téléchargement local (authenticated: true).
-  if (options.authenticated && Platform.OS === "android") {
-    uri = await FileSystem.getContentUriAsync(uri);
-  }
   router.push(`/(app)/library/pdf-viewer?url=${encodeURIComponent(uri)}&title=${encodeURIComponent(title)}`);
 }
 
