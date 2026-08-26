@@ -31,7 +31,8 @@ export function ReportCardCard({ reportCard }: { reportCard: ReportCard }) {
         authenticated: true,
         filename,
       });
-    } catch {
+    } catch (e) {
+      console.error("[ReportCardCard] Échec de l'ouverture du PDF :", e);
       Alert.alert("Erreur", "Impossible d'ouvrir le PDF pour l'instant, réessayez plus tard.");
     } finally {
       setViewing(false);
@@ -43,7 +44,8 @@ export function ReportCardCard({ reportCard }: { reportCard: ReportCard }) {
     setDownloading(true);
     try {
       await downloadPdf(reportCard.document, filename, { authenticated: true });
-    } catch {
+    } catch (e) {
+      console.error("[ReportCardCard] Échec du téléchargement du PDF :", e);
       Alert.alert("Erreur", "Impossible de télécharger le PDF pour l'instant, réessayez plus tard.");
     } finally {
       setDownloading(false);
