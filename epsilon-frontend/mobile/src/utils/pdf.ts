@@ -61,9 +61,17 @@ export async function viewPdf(
   title: string,
   options: { authenticated?: boolean; filename?: string } = {}
 ) {
-  const uri = options.authenticated
+  let uri = options.authenticated
     ? await fetchToLocalUri(source, options.filename ?? "document.pdf", true)
     : resolveUrl(source);
+  // Sur Android, la WebView refuse de charger un file:// pointant vers le
+  // cache privé de l'app (ERR_ACCESS_DENIED) — il faut le faire passer par
+  // le ContentResolver du système (content://) pour qu'elle y ait accès.
+  // Sans effet sur un file:// distant/web, uniquement pertinent après un
+  // téléchargement local (authenticated: true).
+  if (options.authenticated && Platform.OS === "android") {
+    uri = await FileSystem.getContentUriAsync(uri);
+  }
   router.push(`/(app)/library/pdf-viewer?url=${encodeURIComponent(uri)}&title=${encodeURIComponent(title)}`);
 }
 
