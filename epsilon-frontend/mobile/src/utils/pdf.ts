@@ -44,6 +44,12 @@ async function fetchToLocalUri(source: string, filename: string, authenticated: 
     const blob = await response.blob();
     return URL.createObjectURL(blob);
   }
+  // `downloadAsync` ne cree jamais le dossier de destination lui-meme : si
+  // le cache de l'app a ete vide par le systeme (ou n'existe pas encore
+  // sur une install fraiche), l'appel echoue avec une IOException plutot
+  // que de le recreer — on s'assure donc qu'il existe avant chaque appel,
+  // idempotent (`intermediates: true` ne leve pas d'erreur s'il existe deja).
+  await FileSystem.makeDirectoryAsync(FileSystem.cacheDirectory!, { intermediates: true });
   const localUri = `${FileSystem.cacheDirectory}${sanitizeFilename(filename)}`;
   const { uri } = await FileSystem.downloadAsync(url, localUri, {
     headers: authenticated ? authHeaders() : {},
