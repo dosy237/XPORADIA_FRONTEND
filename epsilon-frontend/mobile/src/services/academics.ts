@@ -272,7 +272,7 @@ export interface AgendaPersonalBlock {
   end_time: string;
 }
 
-export type EventType = "report_card_distribution" | "meeting" | "holiday" | "other";
+export type EventType = "report_card_distribution" | "meeting" | "holiday" | "cancelled_class" | "other";
 export type EventAudience = "students" | "parents" | "teachers";
 
 export interface EstablishmentEvent {
@@ -337,6 +337,8 @@ export interface SlotAttendance {
   taken: boolean;
   taken_by: string | null;
   taken_at: string | null;
+  cancelled: boolean;
+  cancelled_reason: string;
   roster: AttendanceRosterEntry[];
 }
 
@@ -361,7 +363,25 @@ export const saveSlotAttendance = (slotId: number, date: string, exceptions: Att
 export interface TeacherAttendanceSlot extends TeacherTimetableSlot {
   attendance_taken: boolean;
   attendance_exceptions_count: number;
+  cancelled: boolean;
 }
+
+/** Déclare qu'un créneau précis ne sera pas tenu à cette date — notifie
+ * titulaire, directeur, élèves et parents, et empêche toute déclaration
+ * d'heures travaillées ce jour-là (voir apps.employment.views côté
+ * backend). Réservé à l'enseignant dédié de la matière du créneau. */
+export const declareTeacherAbsence = (slotId: number, date: string, reason: string) =>
+  api
+    .post<{ id: number; date: string; reason: string }>(`/academics/timetable-slots/${slotId}/absence/`, {
+      date,
+      reason,
+    })
+    .then((r) => r.data);
+
+/** Annule une déclaration d'absence : l'enseignant peut finalement
+ * assurer le cours. */
+export const revokeTeacherAbsence = (slotId: number, date: string) =>
+  api.delete(`/academics/timetable-slots/${slotId}/absence/?date=${date}`);
 
 export interface TeacherAttendanceOverview {
   date: string;

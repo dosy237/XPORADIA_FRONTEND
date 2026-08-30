@@ -299,9 +299,20 @@ export default function AgendaScreen() {
   const personalBlocks: AgendaPersonalBlock[] = agenda?.personal_blocks ?? [];
   const schoolEvents: EstablishmentEvent[] = agenda?.school_events ?? [];
   const untimedEvents = schoolEvents.filter((e) => !e.start_time);
-  const timedEvents = schoolEvents.filter((e) => !!e.start_time);
+  // Un cours annulé partage exactement l'horaire du créneau officiel qu'il
+  // annule (voir apps.academics.views.TeacherAbsenceDeclarationView) — le
+  // signaler à part plutôt que comme un événement de plus au même endroit
+  // évite que les deux blocs se superposent visuellement.
+  const cancelledClassEvents = schoolEvents.filter((e) => e.event_type === "cancelled_class");
+  const timedEvents = schoolEvents.filter((e) => !!e.start_time && e.event_type !== "cancelled_class");
   const holidayEvent = untimedEvents.find((e) => e.event_type === "holiday");
   const otherUntimedEvents = untimedEvents.filter((e) => e.event_type !== "holiday");
+
+  function cancelledReasonFor(slot: TimetableSlot) {
+    return cancelledClassEvents.find(
+      (e) => e.title === slot.subject_name && e.start_time === slot.start_time && e.end_time === slot.end_time,
+    );
+  }
 
   const dateObj = new Date(`${selectedDate}T00:00:00`);
   const dateLabel = `${WEEKDAY_LABELS[weekdayOfISO(selectedDate)]} ${dateObj.getDate()} ${MONTH_LABELS[dateObj.getMonth()]}`;
@@ -448,25 +459,52 @@ export default function AgendaScreen() {
 
               <View style={{ flexDirection: "row", height: 24 * HOUR_HEIGHT }}>
                 <View style={{ flex: 1, position: "relative" }}>
-                  {officialSlots.map((slot) => (
-                    <View
-                      key={slot.id}
-                      style={{ position: "absolute", top: topFor(slot.start_time), height: heightFor(slot.start_time, slot.end_time), left: 2, right: 4, borderRadius: 8, overflow: "hidden", flexDirection: "row" }}
-                    >
-                      <View style={{ width: 3, backgroundColor: Colors.navy }} />
-                      <LinearGradient
-                        colors={[withAlpha(Colors.navy, 0.14), withAlpha(Colors.navy, 0.04)]}
-                        style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                  {officialSlots.map((slot) => {
+                    const cancelledEvent = cancelledReasonFor(slot);
+                    return (
+                      <View
+                        key={slot.id}
+                        style={{
+                          position: "absolute",
+                          top: topFor(slot.start_time),
+                          height: heightFor(slot.start_time, slot.end_time),
+                          left: 2,
+                          right: 4,
+                          borderRadius: 8,
+                          overflow: "hidden",
+                          flexDirection: "row",
+                          opacity: cancelledEvent ? 0.6 : 1,
+                        }}
                       >
-                        <Text numberOfLines={1} className="text-[10px] font-semibold text-xporadia-navy">
-                          {slot.subject_name}
-                        </Text>
-                        <Text className="text-[9px] text-xporadia-text-secondary">
-                          {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
-                        </Text>
-                      </LinearGradient>
-                    </View>
-                  ))}
+                        <View style={{ width: 3, backgroundColor: cancelledEvent ? Colors.red : Colors.navy }} />
+                        <LinearGradient
+                          colors={
+                            cancelledEvent
+                              ? [withAlpha(Colors.red, 0.1), withAlpha(Colors.red, 0.02)]
+                              : [withAlpha(Colors.navy, 0.14), withAlpha(Colors.navy, 0.04)]
+                          }
+                          style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                        >
+                          <Text
+                            numberOfLines={1}
+                            className="text-[10px] font-semibold text-xporadia-navy"
+                            style={cancelledEvent ? { textDecorationLine: "line-through" } : undefined}
+                          >
+                            {slot.subject_name}
+                          </Text>
+                          {cancelledEvent ? (
+                            <Text className="text-[9px] font-semibold" style={{ color: Colors.red }} numberOfLines={1}>
+                              Cours annulé
+                            </Text>
+                          ) : (
+                            <Text className="text-[9px] text-xporadia-text-secondary">
+                              {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
+                            </Text>
+                          )}
+                        </LinearGradient>
+                      </View>
+                    );
+                  })}
                 </View>
 
                 <View style={{ flex: 1, position: "relative" }}>

@@ -615,6 +615,16 @@ export function CalendarIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
   );
 }
 
+export function CalendarXIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke={color} strokeWidth={2} />
+      <Path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Path d="m9.5 13.5 5 5m0-5-5 5" stroke={color} strokeWidth={2} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
 export function BarChartIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

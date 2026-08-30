@@ -6,7 +6,7 @@ import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-nativ
 import { todayISO } from "@/components/academics/DateStrip";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { CheckCircleIcon, ClockIcon, CloseIcon, ShieldCheckIcon } from "@/components/ui/Icon";
+import { CalendarXIcon, CheckCircleIcon, ClockIcon, CloseIcon, ShieldCheckIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
 import type { AttendanceExceptionInput, AttendanceStatus } from "@/services/academics";
@@ -111,6 +111,8 @@ export default function SlotAttendanceScreen() {
   });
 
   const [rows, setRows] = useState<Record<number, RowState>>({});
+  const [declaring, setDeclaring] = useState(false);
+  const [absenceReason, setAbsenceReason] = useState("");
 
   useEffect(() => {
     if (!data) return;
@@ -140,6 +142,27 @@ export default function SlotAttendanceScreen() {
     onError: () => Alert.alert("Erreur", "Impossible d'enregistrer l'appel pour le moment."),
   });
 
+  const invalidateAfterAbsenceChange = () => {
+    queryClient.invalidateQueries({ queryKey: ["slot-attendance", numericSlotId, date] });
+    queryClient.invalidateQueries({ queryKey: ["my-attendance-overview"] });
+  };
+
+  const declareAbsenceMutation = useMutation({
+    mutationFn: () => academicsApi.declareTeacherAbsence(numericSlotId, date, absenceReason.trim()),
+    onSuccess: () => {
+      setDeclaring(false);
+      setAbsenceReason("");
+      invalidateAfterAbsenceChange();
+    },
+    onError: () => Alert.alert("Erreur", "Impossible de déclarer cette absence pour le moment."),
+  });
+
+  const revokeAbsenceMutation = useMutation({
+    mutationFn: () => academicsApi.revokeTeacherAbsence(numericSlotId, date),
+    onSuccess: invalidateAfterAbsenceChange,
+    onError: () => Alert.alert("Erreur", "Impossible d'annuler cette déclaration pour le moment."),
+  });
+
   const roster = data?.roster ?? [];
   const absentCount = Object.values(rows).filter((r) => r.status === "absent").length;
   const lateCount = Object.values(rows).filter((r) => r.status === "late").length;
@@ -156,14 +179,99 @@ export default function SlotAttendanceScreen() {
           {className ? `${className} · ` : ""}
           {date}
         </Text>
-        {data?.taken ? (
+        {data?.taken && !data?.cancelled ? (
           <Text className="text-xs text-xporadia-text-secondary mt-1">
             Appel déjà fait par {data.taken_by}.
           </Text>
         ) : null}
       </View>
 
-      {!isLoading && roster.length > 0 ? (
+      {!isLoading && data?.cancelled ? (
+        <View className="px-6 pb-4 gap-3">
+          <View
+            className="rounded-2xl p-4 gap-2"
+            style={{ backgroundColor: withAlpha(Colors.red, 0.08), borderWidth: 1, borderColor: withAlpha(Colors.red, 0.25) }}
+          >
+            <View className="flex-row items-center gap-2">
+              <CalendarXIcon size={16} color={Colors.red} />
+              <Text className="text-sm font-bold" style={{ color: Colors.red }}>
+                Cours annulé
+              </Text>
+            </View>
+            <Text className="text-xs text-xporadia-text-secondary">
+              Vous avez déclaré ne pas tenir ce cours à cette date. Les élèves, leurs parents, le titulaire et la
+              direction ont été prévenus.
+            </Text>
+            {data.cancelled_reason ? (
+              <Text className="text-xs text-xporadia-text-primary">Motif : {data.cancelled_reason}</Text>
+            ) : null}
+          </View>
+          <Button
+            label="Finalement, j'assure ce cours"
+            variant="secondary"
+            pill
+            loading={revokeAbsenceMutation.isPending}
+            onPress={() => revokeAbsenceMutation.mutate()}
+          />
+        </View>
+      ) : null}
+
+      {!isLoading && !data?.cancelled ? (
+        <View className="px-6 pb-3 gap-3">
+          {!declaring ? (
+            <Pressable
+              onPress={() => setDeclaring(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Déclarer que vous ne tiendrez pas ce cours"
+              className="flex-row items-center gap-2 self-start"
+              hitSlop={4}
+            >
+              <CalendarXIcon size={13} color={Colors.textSecondary} />
+              <Text className="text-xs font-semibold text-xporadia-text-secondary">
+                Je n&apos;assurerai pas ce cours
+              </Text>
+            </Pressable>
+          ) : (
+            <View
+              className="rounded-2xl p-4 gap-2.5"
+              style={{ backgroundColor: withAlpha(Colors.navy, 0.04), borderWidth: 1, borderColor: Colors.border }}
+            >
+              <Text className="text-xs font-semibold text-xporadia-navy">
+                Déclarer une absence pour ce cours, le {date}
+              </Text>
+              <TextInput
+                value={absenceReason}
+                onChangeText={setAbsenceReason}
+                placeholder="Motif (optionnel)"
+                className="bg-white rounded-xl px-3 py-2 text-xs text-xporadia-text-primary"
+              />
+              <View className="flex-row gap-2">
+                <View className="flex-1">
+                  <Button
+                    label="Confirmer l'absence"
+                    pill
+                    loading={declareAbsenceMutation.isPending}
+                    onPress={() => declareAbsenceMutation.mutate()}
+                  />
+                </View>
+                <View className="flex-1">
+                  <Button
+                    label="Annuler"
+                    variant="secondary"
+                    pill
+                    onPress={() => {
+                      setDeclaring(false);
+                      setAbsenceReason("");
+                    }}
+                  />
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
+      ) : null}
+
+      {!isLoading && !data?.cancelled && roster.length > 0 ? (
         <View className="px-6 pb-3 flex-row items-center gap-3">
           <Text className="text-xs font-semibold" style={{ color: Colors.red }}>
             {absentCount} absent{absentCount > 1 ? "s" : ""}
@@ -179,7 +287,7 @@ export default function SlotAttendanceScreen() {
 
       {isLoading ? (
         <Text className="text-sm text-xporadia-text-secondary text-center py-10">Chargement...</Text>
-      ) : (
+      ) : data?.cancelled ? null : (
         <ScrollView className="flex-1" contentContainerClassName="px-6 gap-2 pb-28">
           {roster.map((entry) => (
             <StudentRow
@@ -195,14 +303,16 @@ export default function SlotAttendanceScreen() {
         </ScrollView>
       )}
 
-      <View className="absolute bottom-0 left-0 right-0 bg-xporadia-bg px-6 pt-3 pb-6 border-t border-xporadia-border">
-        <Button
-          label="Enregistrer l'appel"
-          pill
-          loading={mutation.isPending}
-          onPress={() => mutation.mutate()}
-        />
-      </View>
+      {!data?.cancelled ? (
+        <View className="absolute bottom-0 left-0 right-0 bg-xporadia-bg px-6 pt-3 pb-6 border-t border-xporadia-border">
+          <Button
+            label="Enregistrer l'appel"
+            pill
+            loading={mutation.isPending}
+            onPress={() => mutation.mutate()}
+          />
+        </View>
+      ) : null}
     </View>
   );
 }

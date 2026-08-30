@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { DateStrip, MONTH_LABELS, WEEKDAY_LABELS, todayISO, weekdayOfISO } from "@/components/academics/DateStrip";
-import { CalendarIcon, CheckCircleIcon, ClockIcon, PinIcon } from "@/components/ui/Icon";
+import { CalendarIcon, CalendarXIcon, CheckCircleIcon, ClockIcon, PinIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
 import type { TeacherAttendanceSlot } from "@/services/academics";
@@ -126,6 +126,7 @@ function SlotCard({
   const color = colorForClass(slot.school_class);
   const widthPercent = 100 / columnCount;
   const attendanceTaken = slot.attendance_taken ?? false;
+  const cancelled = slot.cancelled ?? false;
   return (
     <View
       style={{
@@ -145,19 +146,27 @@ function SlotCard({
           })
         }
         accessibilityRole="button"
-        accessibilityLabel={`${slot.subject_name}, ${slot.school_class_name}, de ${slot.start_time.slice(0, 5)} à ${slot.end_time.slice(0, 5)}`}
-        style={{ flex: 1, borderRadius: 14, overflow: "hidden", flexDirection: "row" }}
+        accessibilityLabel={`${slot.subject_name}, ${slot.school_class_name}, de ${slot.start_time.slice(0, 5)} à ${slot.end_time.slice(0, 5)}${cancelled ? ", cours annulé" : ""}`}
+        style={{ flex: 1, borderRadius: 14, overflow: "hidden", flexDirection: "row", opacity: cancelled ? 0.55 : 1 }}
       >
-        <View style={{ width: 4, backgroundColor: color }} />
+        <View style={{ width: 4, backgroundColor: cancelled ? Colors.red : color }} />
         <LinearGradient
-          colors={[withAlpha(color, 0.14), withAlpha(color, 0.03)]}
+          colors={
+            cancelled
+              ? [withAlpha(Colors.red, 0.1), withAlpha(Colors.red, 0.02)]
+              : [withAlpha(color, 0.14), withAlpha(color, 0.03)]
+          }
           style={{ flex: 1, paddingHorizontal: 10, paddingVertical: 8, justifyContent: "center", gap: 2 }}
         >
-          <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={2}>
+          <Text
+            className="text-sm font-bold text-xporadia-navy"
+            numberOfLines={2}
+            style={cancelled ? { textDecorationLine: "line-through" } : undefined}
+          >
             {slot.subject_name}
           </Text>
-          <Text className="text-xs font-semibold" style={{ color }}>
-            {slot.school_class_name}
+          <Text className="text-xs font-semibold" style={{ color: cancelled ? Colors.red : color }}>
+            {cancelled ? "Cours annulé" : slot.school_class_name}
           </Text>
           <View className="flex-row items-center flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
             <View className="flex-row items-center gap-1">
@@ -190,7 +199,7 @@ function SlotCard({
           })
         }
         accessibilityRole="button"
-        accessibilityLabel={attendanceTaken ? "Appel déjà fait, voir/modifier" : "Faire l'appel"}
+        accessibilityLabel={cancelled ? "Cours annulé, voir la déclaration" : attendanceTaken ? "Appel déjà fait, voir/modifier" : "Faire l'appel"}
         hitSlop={4}
         style={{
           position: "absolute",
@@ -201,10 +210,18 @@ function SlotCard({
           borderRadius: 11,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: attendanceTaken ? withAlpha(Colors.green, 0.16) : withAlpha(Colors.navy, 0.08),
+          backgroundColor: cancelled
+            ? withAlpha(Colors.red, 0.16)
+            : attendanceTaken
+              ? withAlpha(Colors.green, 0.16)
+              : withAlpha(Colors.navy, 0.08),
         }}
       >
-        <CheckCircleIcon size={13} color={attendanceTaken ? Colors.green : Colors.textSecondary} />
+        {cancelled ? (
+          <CalendarXIcon size={13} color={Colors.red} />
+        ) : (
+          <CheckCircleIcon size={13} color={attendanceTaken ? Colors.green : Colors.textSecondary} />
+        )}
       </Pressable>
     </View>
   );
