@@ -1,4 +1,5 @@
 import api from "@/services/api";
+import type { SchoolClass } from "@/services/academics";
 
 export type JoinRequestStatus = "pending" | "approved" | "rejected";
 
@@ -33,6 +34,12 @@ export const reviewJoinRequest = (
   id: number,
   payload: { approve: boolean; rejection_reason?: string; class_id?: number }
 ) => api.post<JoinRequest>(`/grading/join-requests/${id}/review/`, payload).then((r) => r.data);
+
+/** Classes pour le placement lors du traitement d'une demande de
+ * rattachement — accessible au directeur ou à l'enseignant délégué pour
+ * les rattachements, jamais à un enseignant ordinaire. */
+export const fetchClassesForJoinRequestPlacement = () =>
+  api.get<SchoolClass[]>("/grading/classes-for-join-requests/").then((r) => r.data);
 
 export interface AdmissionReportProposal {
   extracted_name: string;

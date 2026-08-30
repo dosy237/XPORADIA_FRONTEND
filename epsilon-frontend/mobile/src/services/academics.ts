@@ -429,7 +429,7 @@ export const addTrackDelegate = (trackId: number, email: string) =>
 export const removeTrackDelegate = (trackId: number, email: string) =>
   api.delete<Track>(`/academics/tracks/${trackId}/delegates/`, { data: { email } }).then((r) => r.data);
 
-export type DelegatedTask = "timetable";
+export type DelegatedTask = "timetable" | "join_requests";
 
 export interface TaskDelegationInfo {
   task: DelegatedTask;
@@ -458,6 +458,7 @@ export interface TaskDelegationEntry {
 
 export const TASK_LABELS: Record<DelegatedTask, string> = {
   timetable: "Gestion des emplois du temps",
+  join_requests: "Gestion des demandes de rattachement",
 };
 
 export const fetchTaskDelegations = () =>

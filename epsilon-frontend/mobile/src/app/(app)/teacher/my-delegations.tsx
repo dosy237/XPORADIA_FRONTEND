@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
+import type { ComponentType } from "react";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
-import { ClockIcon, UserPlusIcon, LayersIcon, UsersIcon } from "@/components/ui/Icon";
+import { ClockIcon, GraduationCapIcon, UserPlusIcon, LayersIcon, UsersIcon } from "@/components/ui/Icon";
+import type { IconProps } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
@@ -12,6 +14,12 @@ import type { Department, Track } from "@/services/academics";
 
 const TASK_ROUTES: Record<string, string> = {
   timetable: "/(app)/teacher/timetable-delegation",
+  join_requests: "/(app)/director/join-requests",
+};
+
+const TASK_ICONS: Record<string, ComponentType<IconProps>> = {
+  timetable: ClockIcon,
+  join_requests: GraduationCapIcon,
 };
 
 function CreateTrackForm({ department, onDone }: { department: Department; onDone: () => void }) {
@@ -122,6 +130,7 @@ export default function MyDelegationsScreen() {
               {data.tasks.map((t) => {
                 const route = TASK_ROUTES[t.task];
                 if (!route) return null; // tâche future non encore câblée côté écran — jamais un bouton mort
+                const TaskIcon = TASK_ICONS[t.task] ?? ClockIcon;
                 return (
                   <Pressable
                     key={t.task}
@@ -131,7 +140,7 @@ export default function MyDelegationsScreen() {
                     className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center gap-3"
                   >
                     <View className="h-10 w-10 rounded-full bg-xporadia-orange/10 items-center justify-center">
-                      <ClockIcon size={16} color={Colors.orange} />
+                      <TaskIcon size={16} color={Colors.orange} />
                     </View>
                     <View className="flex-1">
                       <Text className="text-sm font-semibold text-xporadia-text-primary">{t.task_label}</Text>

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { CheckCircleIcon, UploadIcon, WarningIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
-import * as academicsApi from "@/services/academics";
 import * as gradingApi from "@/services/grading";
 import type { AdmissionReportProposal } from "@/services/grading";
 
@@ -24,8 +23,8 @@ function MatchedLineRow({
   onChange: (decision: LineDecision) => void;
 }) {
   const { data: classes } = useQuery({
-    queryKey: ["all-my-classes"],
-    queryFn: academicsApi.fetchAllMyClasses,
+    queryKey: ["classes-for-join-requests"],
+    queryFn: gradingApi.fetchClassesForJoinRequestPlacement,
     enabled: decision.approve,
   });
 

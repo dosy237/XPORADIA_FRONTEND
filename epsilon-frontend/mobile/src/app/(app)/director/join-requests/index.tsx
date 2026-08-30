@@ -8,7 +8,6 @@ import { Chip } from "@/components/ui/Chip";
 import { GraduationCapIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
-import * as academicsApi from "@/services/academics";
 import * as gradingApi from "@/services/grading";
 import type { JoinRequest } from "@/services/grading";
 
@@ -25,8 +24,8 @@ function JoinRequestCard({ request }: { request: JoinRequest }) {
   const [reason, setReason] = useState("");
 
   const { data: classes } = useQuery({
-    queryKey: ["all-my-classes"],
-    queryFn: academicsApi.fetchAllMyClasses,
+    queryKey: ["classes-for-join-requests"],
+    queryFn: gradingApi.fetchClassesForJoinRequestPlacement,
     enabled: placing,
   });
 
