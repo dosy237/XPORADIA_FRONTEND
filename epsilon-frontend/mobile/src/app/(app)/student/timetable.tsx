@@ -1,8 +1,16 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { useMemo, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
+import {
+  DateStrip,
+  MONTH_LABELS,
+  WEEKDAY_LABELS,
+  pad,
+  todayISO,
+  weekdayOfISO,
+} from "@/components/academics/DateStrip";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { CalendarIcon, ClockIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
@@ -10,23 +18,8 @@ import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
 import type { AgendaPersonalBlock, EstablishmentEvent, OccurrenceScope, TimetableSlot } from "@/services/academics";
 
-const WEEKDAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-const WEEKDAY_SHORT = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
-const MONTH_LABELS = [
-  "janvier", "février", "mars", "avril", "mai", "juin",
-  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
-];
-const MONTH_SHORT = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const HOUR_HEIGHT = 56;
-
-// Bande de dates parcourable : suffisamment large pour couvrir une année
-// scolaire (un peu avant, beaucoup après aujourd'hui), jamais régénérée au
-// fil de la sélection pour ne pas faire sauter le scroll.
-const STRIP_DAYS_BEFORE = 30;
-const STRIP_DAYS_AFTER = 240;
-const STRIP_ITEM_WIDTH = 52;
-const STRIP_ITEM_GAP = 8;
 
 /** Mélange une couleur hex avec une opacité — pour des remplissages en
  * dégradé "matière et lumière" plutôt que des aplats francs. */
@@ -35,21 +28,6 @@ function withAlpha(hex: string, alpha: number) {
     .toString(16)
     .padStart(2, "0");
   return `${hex}${a}`;
-}
-
-function pad(n: number) {
-  return n < 10 ? `0${n}` : `${n}`;
-}
-
-function todayISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function weekdayOfISO(iso: string) {
-  // Date.getDay() : dimanche=0..samedi=6 -> on veut lundi=0..dimanche=6
-  const jsDay = new Date(`${iso}T00:00:00`).getDay();
-  return (jsDay + 6) % 7;
 }
 
 function timeToMinutes(t: string) {
@@ -245,124 +223,6 @@ function ScopeChoiceSheet({
         </View>
       </Pressable>
     </Pressable>
-  );
-}
-
-/** Bande de dates parcourable horizontalement — remplace le sélecteur à
- * flèches précédent/suivant. Par défaut, aujourd'hui est visible et centré ;
- * n'importe quelle date de la bande reste sélectionnable en un tap. Le jour
- * actif reprend le dégradé navy → orange déjà établi pour l'en-tête du
- * tableau de bord (matière et lumière), jamais un aplat. */
-function DateStrip({ selectedDate, onSelect }: { selectedDate: string; onSelect: (iso: string) => void }) {
-  const listRef = useRef<FlatList<string>>(null);
-  const today = useMemo(() => todayISO(), []);
-  const dates = useMemo(() => {
-    const base = new Date(`${today}T00:00:00`);
-    const arr: string[] = [];
-    for (let i = -STRIP_DAYS_BEFORE; i <= STRIP_DAYS_AFTER; i++) {
-      const d = new Date(base);
-      d.setDate(d.getDate() + i);
-      arr.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
-    }
-    return arr;
-  }, [today]);
-
-  const selectedIndex = dates.indexOf(selectedDate);
-
-  useEffect(() => {
-    if (selectedIndex < 0) return;
-    const timer = setTimeout(() => {
-      listRef.current?.scrollToIndex({ index: selectedIndex, viewPosition: 0.5, animated: true });
-    }, 60);
-    return () => clearTimeout(timer);
-  }, [selectedIndex]);
-
-  return (
-    <FlatList
-      ref={listRef}
-      data={dates}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      keyExtractor={(iso) => iso}
-      contentContainerStyle={{ paddingHorizontal: 24, gap: STRIP_ITEM_GAP, alignItems: "flex-end" }}
-      getItemLayout={(_, index) => ({
-        length: STRIP_ITEM_WIDTH + STRIP_ITEM_GAP,
-        offset: (STRIP_ITEM_WIDTH + STRIP_ITEM_GAP) * index,
-        index,
-      })}
-      onScrollToIndexFailed={({ index }) => {
-        setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: false }), 80);
-      }}
-      renderItem={({ item: iso }) => {
-        const d = new Date(`${iso}T00:00:00`);
-        const active = iso === selectedDate;
-        const isToday = iso === today;
-        const showsMonth = d.getDate() === 1 || iso === dates[0];
-        return (
-          <View style={{ alignItems: "center" }}>
-            <Text
-              style={{
-                fontSize: 9,
-                fontWeight: "700",
-                color: Colors.textSecondary,
-                marginBottom: 2,
-                textTransform: "uppercase",
-                opacity: showsMonth ? 1 : 0,
-              }}
-            >
-              {MONTH_SHORT[d.getMonth()]}
-            </Text>
-            <Pressable
-              onPress={() => onSelect(iso)}
-              accessibilityRole="button"
-              accessibilityLabel={`${WEEKDAY_LABELS[weekdayOfISO(iso)]} ${d.getDate()} ${MONTH_LABELS[d.getMonth()]}`}
-            >
-              {active ? (
-                <LinearGradient
-                  colors={[Colors.navy, Colors.orangeLight]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    width: STRIP_ITEM_WIDTH,
-                    height: 64,
-                    borderRadius: 18,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 2,
-                  }}
-                >
-                  <Text style={{ fontSize: 11, fontWeight: "600", color: "rgba(255,255,255,0.75)" }}>
-                    {WEEKDAY_SHORT[weekdayOfISO(iso)]}
-                  </Text>
-                  <Text style={{ fontSize: 17, fontWeight: "800", color: Colors.white }}>{d.getDate()}</Text>
-                </LinearGradient>
-              ) : (
-                <View
-                  style={{
-                    width: STRIP_ITEM_WIDTH,
-                    height: 64,
-                    borderRadius: 18,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 2,
-                    backgroundColor: Colors.white,
-                    borderWidth: isToday ? 1.5 : 1,
-                    borderColor: isToday ? Colors.orange : Colors.border,
-                  }}
-                >
-                  <Text style={{ fontSize: 11, fontWeight: "600", color: Colors.textSecondary }}>
-                    {WEEKDAY_SHORT[weekdayOfISO(iso)]}
-                  </Text>
-                  <Text style={{ fontSize: 17, fontWeight: "700", color: isToday ? Colors.orange : Colors.textPrimary }}>
-                    {d.getDate()}
-                  </Text>
-                </View>
-              )}
-            </Pressable>
-          </View>
-        );
-      }}
-    />
   );
 }
 

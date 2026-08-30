@@ -304,6 +304,23 @@ export interface AgendaDay {
 export const fetchMyAgenda = (date: string) =>
   api.get<AgendaDay>(`/academics/my-agenda/?date=${date}`).then((r) => r.data);
 
+export interface TeacherTimetableSlot extends TimetableSlot {
+  school_class_name: string;
+}
+
+export interface TeacherAgendaDay {
+  date: string;
+  weekday: number;
+  is_school_day: boolean;
+  official_slots: TeacherTimetableSlot[];
+}
+
+/** Agenda du jour pour l'enseignant connecté, agrégeant TOUTES ses classes
+ * (celles où il est enseignant dédié d'une matière) — jamais une classe à
+ * la fois, contrairement à fetchTimetable. */
+export const fetchMyTeacherAgenda = (date: string) =>
+  api.get<TeacherAgendaDay>(`/academics/my-teacher-agenda/?date=${date}`).then((r) => r.data);
+
 export interface PersonalScheduleBlock {
   id: number;
   weekday: number;

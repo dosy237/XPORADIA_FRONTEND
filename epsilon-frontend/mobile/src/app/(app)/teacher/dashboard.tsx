@@ -9,6 +9,7 @@ import { Chip } from "@/components/ui/Chip";
 import {
   BookIcon,
   BriefcaseIcon,
+  CalendarIcon,
   MedalIcon,
   NewspaperIcon,
   UsersIcon,
@@ -206,6 +207,7 @@ export default function TeacherDashboard() {
           <SectionTitle title="Mon espace" />
           <View className="flex-row flex-wrap gap-3">
             {[
+              { icon: CalendarIcon, label: "Mon agenda", href: "/(app)/teacher/agenda" },
               { icon: UsersIcon, label: "Mes classes", href: "/(app)/teacher/my-classes" },
               { icon: BookIcon, label: "Mes matières", href: "/(app)/teacher/my-subjects" },
               { icon: BriefcaseIcon, label: "Mes postes", href: "/(app)/teacher/my-recruitments" },
