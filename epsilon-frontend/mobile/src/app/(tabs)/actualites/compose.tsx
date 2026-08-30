@@ -145,6 +145,9 @@ export default function ComposeScreen() {
       role_label: ROLE_LABELS[user.primary_role] ?? user.primary_role,
       is_followed_by_me: false,
       followers_count: 0,
+      // Aperçu avant publication uniquement — le niveau réel arrive avec la
+      // réponse serveur une fois le post effectivement publié.
+      certification_level: null,
     },
     title: title.trim(),
     body: body.trim(),

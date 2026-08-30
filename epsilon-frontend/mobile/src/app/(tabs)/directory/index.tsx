@@ -6,6 +6,7 @@ import { ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
+import { CertificationBadge } from "@/components/ui/CertificationBadge";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, BuildingIcon, SearchIcon, UsersIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
@@ -65,9 +66,12 @@ function TeacherCard({ teacher }: { teacher: TeacherDirectoryCard }) {
     >
       <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} size={52} />
       <View className="flex-1 gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          {teacher.first_name} {teacher.last_name}
-        </Text>
+        <View className="flex-row items-center gap-1.5">
+          <Text className="text-base font-semibold text-xporadia-text-primary" style={{ flexShrink: 1 }}>
+            {teacher.first_name} {teacher.last_name}
+          </Text>
+          <CertificationBadge level={teacher.current_level} />
+        </View>
         <Text className="text-xs text-xporadia-text-secondary" numberOfLines={2} style={{ minHeight: SUBTITLE_MIN_HEIGHT }}>
           {teacher.subjects.join(", ") || "Matières non renseignées"}
           {teacher.location ? ` · ${teacher.location}` : ""}

@@ -16,6 +16,7 @@ import {
 import { PostCard } from "@/components/feed/PostCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { CertificationBadge } from "@/components/ui/CertificationBadge";
 import { HeartIcon, TrashIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import { useFeedSocket } from "@/hooks/useFeedSocket";
@@ -56,11 +57,12 @@ function CommentRow({
             hitSlop={4}
             accessibilityRole="button"
             accessibilityLabel={`Voir le profil de ${comment.author.full_name}`}
-            className="flex-1"
+            className="flex-1 flex-row items-center gap-1.5"
           >
-            <Text className="text-xs font-semibold text-xporadia-text-primary" numberOfLines={1}>
+            <Text className="text-xs font-semibold text-xporadia-text-primary" numberOfLines={1} style={{ flexShrink: 1 }}>
               {comment.author.full_name}
             </Text>
+            <CertificationBadge level={comment.author.certification_level} size={13} />
           </Pressable>
           <View className="flex-row items-center gap-2 flex-shrink-0">
             <Text className="text-[10px] text-xporadia-text-secondary">{relativeTime}</Text>

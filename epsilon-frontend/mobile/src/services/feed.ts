@@ -1,4 +1,5 @@
 import api from "@/services/api";
+import type { CertificationLevel } from "@/services/certification";
 import type { Paginated } from "@/services/teacherDirectory";
 import type { UserRole } from "@/types/user";
 
@@ -10,6 +11,8 @@ export interface PostAuthor {
   role_label: string;
   is_followed_by_me: boolean;
   followers_count: number;
+  /** null pour tout auteur non-enseignant. */
+  certification_level: CertificationLevel | null;
 }
 
 export interface Post {

@@ -9,6 +9,7 @@ import { AuthorPostsList } from "@/components/feed/AuthorPostsList";
 import { FollowButton, ProfileSocialStats } from "@/components/feed/ProfileSocialBar";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { CertificationBadge } from "@/components/ui/CertificationBadge";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, MedalIcon, PinIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
@@ -73,9 +74,12 @@ export default function FeedTeacherDetailScreen() {
           <View className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]" />
         </View>
         <Avatar firstName={teacher.first_name} lastName={teacher.last_name} imageUri={teacher.avatar} />
-        <Text className="text-xl font-bold text-xporadia-navy mt-3">
-          {`${teacher.first_name} ${teacher.last_name}`}
-        </Text>
+        <View className="flex-row items-center gap-2 mt-3">
+          <Text className="text-xl font-bold text-xporadia-navy" style={{ flexShrink: 1 }}>
+            {`${teacher.first_name} ${teacher.last_name}`}
+          </Text>
+          <CertificationBadge level={teacher.current_level} />
+        </View>
         <View className="mt-2">
           <Chip label="Enseignant" variant="navy-subtle" />
         </View>
@@ -159,7 +163,7 @@ export default function FeedTeacherDetailScreen() {
           <LevelPath current={teacher.current_level} />
         </View>
 
-        {teacher.employment_history.length > 0 && (
+        {teacher.employment_history && teacher.employment_history.length > 0 && (
           <View className="gap-3">
             <Text className="text-base font-bold text-xporadia-navy">Établissements</Text>
             {teacher.employment_history.map((entry) => (

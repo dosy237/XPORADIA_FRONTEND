@@ -7,6 +7,7 @@ import { Alert, Dimensions, Pressable, ScrollView, Text, View } from "react-nati
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
+import { CertificationBadge } from "@/components/ui/CertificationBadge";
 import { HeartIcon, MoreIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
@@ -143,7 +144,12 @@ export function PostCard({ post, onToggleLike, onOpenComments, disableNavigation
         >
           <Avatar firstName={firstName} lastName={lastName} imageUri={post.author.avatar} size={44} />
           <View className="flex-1">
-            <Text className="text-sm font-semibold text-xporadia-text-primary">{post.author.full_name}</Text>
+            <View className="flex-row items-center gap-1.5">
+              <Text className="text-sm font-semibold text-xporadia-text-primary" style={{ flexShrink: 1 }}>
+                {post.author.full_name}
+              </Text>
+              <CertificationBadge level={post.author.certification_level} size={16} />
+            </View>
             <Text className="text-xs text-xporadia-text-secondary">
               {`${post.author.role_label} · ${relativeTime}`}
             </Text>

@@ -32,8 +32,11 @@ export interface EmploymentHistoryEntry {
 export interface TeacherDirectoryDetail extends TeacherDirectoryCard {
   bio: string;
   certifications: Certification[];
-  employment_history: EmploymentHistoryEntry[];
-  profile_visible: boolean | null;
+  // Absent (pas seulement vide) quand l'appelant est un parent — voir
+  // TeacherTutoringDetailSerializer côté backend, qui ne déclare pas ce
+  // champ du tout.
+  employment_history?: EmploymentHistoryEntry[];
+  profile_visible?: boolean | null;
 }
 
 export interface Paginated<T> {
