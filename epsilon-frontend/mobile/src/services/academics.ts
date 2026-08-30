@@ -321,6 +321,60 @@ export interface TeacherAgendaDay {
 export const fetchMyTeacherAgenda = (date: string) =>
   api.get<TeacherAgendaDay>(`/academics/my-teacher-agenda/?date=${date}`).then((r) => r.data);
 
+export type AttendanceStatus = "absent" | "late" | "excused";
+
+export interface AttendanceRosterEntry {
+  child: number;
+  first_name: string;
+  last_name: string;
+  avatar: string | null;
+  status: AttendanceStatus | null;
+  reason: string;
+}
+
+export interface SlotAttendance {
+  date: string;
+  taken: boolean;
+  taken_by: string | null;
+  taken_at: string | null;
+  roster: AttendanceRosterEntry[];
+}
+
+export interface AttendanceExceptionInput {
+  child: number;
+  status: AttendanceStatus;
+  reason?: string;
+}
+
+/** L'appel d'un créneau précis à une date précise — tous les élèves
+ * inscrits présents par défaut, seules les exceptions sont envoyées. */
+export const fetchSlotAttendance = (slotId: number, date: string) =>
+  api.get<SlotAttendance>(`/academics/timetable-slots/${slotId}/attendance/?date=${date}`).then((r) => r.data);
+
+/** Enregistre l'appel complet en un seul envoi — la liste `exceptions`
+ * remplace systématiquement celle déjà enregistrée (jamais un delta). */
+export const saveSlotAttendance = (slotId: number, date: string, exceptions: AttendanceExceptionInput[]) =>
+  api
+    .post<SlotAttendance>(`/academics/timetable-slots/${slotId}/attendance/`, { date, exceptions })
+    .then((r) => r.data);
+
+export interface TeacherAttendanceSlot extends TeacherTimetableSlot {
+  attendance_taken: boolean;
+  attendance_exceptions_count: number;
+}
+
+export interface TeacherAttendanceOverview {
+  date: string;
+  weekday: number;
+  is_school_day: boolean;
+  slots: TeacherAttendanceSlot[];
+}
+
+/** Créneaux du jour pour l'enseignant connecté, chacun annoté de l'état
+ * de son appel — pour repérer d'un coup d'œil ce qui reste à faire. */
+export const fetchMyAttendanceOverview = (date: string) =>
+  api.get<TeacherAttendanceOverview>(`/academics/my-attendance-overview/?date=${date}`).then((r) => r.data);
+
 export interface PersonalScheduleBlock {
   id: number;
   weekday: number;

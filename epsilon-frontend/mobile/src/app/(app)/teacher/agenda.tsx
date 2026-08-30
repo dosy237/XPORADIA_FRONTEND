@@ -5,10 +5,10 @@ import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { DateStrip, MONTH_LABELS, WEEKDAY_LABELS, todayISO, weekdayOfISO } from "@/components/academics/DateStrip";
-import { CalendarIcon, ClockIcon, PinIcon } from "@/components/ui/Icon";
+import { CalendarIcon, CheckCircleIcon, ClockIcon, PinIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
-import type { TeacherTimetableSlot } from "@/services/academics";
+import type { TeacherAttendanceSlot } from "@/services/academics";
 
 /** Bornée aux heures d'ouverture de l'établissement (6h-20h) plutôt que
  * minuit à minuit : un enseignant n'a jamais de cours hors de cette plage,
@@ -48,7 +48,7 @@ function colorForClass(classId: number) {
 }
 
 interface PositionedSlot {
-  slot: TeacherTimetableSlot;
+  slot: TeacherAttendanceSlot;
   column: number;
   columnCount: number;
 }
@@ -59,7 +59,7 @@ interface PositionedSlot {
  * superposent exactement et deviennent illisibles (texte mélangé). Regroupe
  * les créneaux qui se chevauchent en composantes connexes, puis attribue à
  * chacun la colonne la plus à gauche encore libre au sein de son groupe. */
-function layoutSlots(slots: TeacherTimetableSlot[]): PositionedSlot[] {
+function layoutSlots(slots: TeacherAttendanceSlot[]): PositionedSlot[] {
   const items = slots
     .map((slot) => ({ slot, start: timeToMinutes(slot.start_time), end: timeToMinutes(slot.end_time) }))
     .sort((a, b) => a.start - b.start || a.end - b.end);
@@ -112,19 +112,22 @@ function layoutSlots(slots: TeacherTimetableSlot[]): PositionedSlot[] {
   return items.map((item, i) => ({ slot: item.slot, column: columnOf[i], columnCount: columnCountOf[i] }));
 }
 
-function SlotCard({ slot, column, columnCount }: { slot: TeacherTimetableSlot; column: number; columnCount: number }) {
+function SlotCard({
+  slot,
+  column,
+  columnCount,
+  date,
+}: {
+  slot: TeacherAttendanceSlot;
+  column: number;
+  columnCount: number;
+  date: string;
+}) {
   const color = colorForClass(slot.school_class);
   const widthPercent = 100 / columnCount;
+  const attendanceTaken = slot.attendance_taken ?? false;
   return (
-    <Pressable
-      onPress={() =>
-        router.push({
-          pathname: "/(app)/teacher/subject/[subjectId]",
-          params: { subjectId: String(slot.subject) },
-        })
-      }
-      accessibilityRole="button"
-      accessibilityLabel={`${slot.subject_name}, ${slot.school_class_name}, de ${slot.start_time.slice(0, 5)} à ${slot.end_time.slice(0, 5)}`}
+    <View
       style={{
         position: "absolute",
         top: topFor(slot.start_time),
@@ -134,7 +137,17 @@ function SlotCard({ slot, column, columnCount }: { slot: TeacherTimetableSlot; c
         paddingHorizontal: 3,
       }}
     >
-      <View style={{ flex: 1, borderRadius: 14, overflow: "hidden", flexDirection: "row" }}>
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(app)/teacher/subject/[subjectId]",
+            params: { subjectId: String(slot.subject) },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel={`${slot.subject_name}, ${slot.school_class_name}, de ${slot.start_time.slice(0, 5)} à ${slot.end_time.slice(0, 5)}`}
+        style={{ flex: 1, borderRadius: 14, overflow: "hidden", flexDirection: "row" }}
+      >
         <View style={{ width: 4, backgroundColor: color }} />
         <LinearGradient
           colors={[withAlpha(color, 0.14), withAlpha(color, 0.03)]}
@@ -163,8 +176,37 @@ function SlotCard({ slot, column, columnCount }: { slot: TeacherTimetableSlot; c
             ) : null}
           </View>
         </LinearGradient>
-      </View>
-    </Pressable>
+      </Pressable>
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/(app)/teacher/attendance/[slotId]",
+            params: {
+              slotId: String(slot.id),
+              date,
+              subjectName: slot.subject_name,
+              className: slot.school_class_name,
+            },
+          })
+        }
+        accessibilityRole="button"
+        accessibilityLabel={attendanceTaken ? "Appel déjà fait, voir/modifier" : "Faire l'appel"}
+        hitSlop={4}
+        style={{
+          position: "absolute",
+          top: 5,
+          right: 6,
+          height: 22,
+          width: 22,
+          borderRadius: 11,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: attendanceTaken ? withAlpha(Colors.green, 0.16) : withAlpha(Colors.navy, 0.08),
+        }}
+      >
+        <CheckCircleIcon size={13} color={attendanceTaken ? Colors.green : Colors.textSecondary} />
+      </Pressable>
+    </View>
   );
 }
 
@@ -172,11 +214,11 @@ export default function TeacherAgendaScreen() {
   const [selectedDate, setSelectedDate] = useState(todayISO());
 
   const { data: agenda, isLoading } = useQuery({
-    queryKey: ["my-teacher-agenda", selectedDate],
-    queryFn: () => academicsApi.fetchMyTeacherAgenda(selectedDate),
+    queryKey: ["my-attendance-overview", selectedDate],
+    queryFn: () => academicsApi.fetchMyAttendanceOverview(selectedDate),
   });
 
-  const slots = agenda?.official_slots ?? [];
+  const slots = agenda?.slots ?? [];
   const positionedSlots = useMemo(() => layoutSlots(slots), [slots]);
   const dateObj = new Date(`${selectedDate}T00:00:00`);
   const dateLabel = `${WEEKDAY_LABELS[weekdayOfISO(selectedDate)]} ${dateObj.getDate()} ${MONTH_LABELS[dateObj.getMonth()]}`;
@@ -259,7 +301,7 @@ export default function TeacherAgendaScreen() {
                 />
               ))}
               {positionedSlots.map(({ slot, column, columnCount }) => (
-                <SlotCard key={slot.id} slot={slot} column={column} columnCount={columnCount} />
+                <SlotCard key={slot.id} slot={slot} column={column} columnCount={columnCount} date={selectedDate} />
               ))}
             </View>
           </View>
