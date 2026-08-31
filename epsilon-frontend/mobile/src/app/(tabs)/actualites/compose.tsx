@@ -284,7 +284,7 @@ export default function ComposeScreen() {
           <View className="flex-row items-center justify-between px-6 pt-14 pb-4 bg-white border-b border-xporadia-border">
             <View className="flex-row items-center gap-2">
               <EyeIcon size={16} color={Colors.textSecondary} />
-              <Text className="text-sm font-semibold text-xporadia-text-secondary">Aperçu — pas encore publié</Text>
+              <Text className="text-sm font-semibold text-xporadia-text-secondary">Aperçu, pas encore publié</Text>
             </View>
             <Pressable
               onPress={() => setPreviewing(false)}

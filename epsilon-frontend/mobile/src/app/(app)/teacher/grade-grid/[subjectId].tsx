@@ -418,7 +418,7 @@ function GradeGridTable({
               className="flex-row items-center gap-2 px-3 border-b border-xporadia-border"
             >
               <Avatar firstName={student.first_name} lastName={student.last_name} imageUri={student.avatar} size={30} />
-              <Text numberOfLines={1} className="flex-1 text-xs font-semibold text-xporadia-text-primary">
+              <Text numberOfLines={2} className="flex-1 text-xs font-semibold text-xporadia-text-primary leading-4">
                 {student.first_name} {student.last_name}
               </Text>
               {student.appreciation ? <FileTextIcon size={11} color={Colors.orange} /> : null}

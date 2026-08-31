@@ -148,7 +148,7 @@ export default function AdmissionReportScreen() {
       <View className="gap-1">
         <Text className="text-2xl font-bold text-xporadia-navy">Rapport d&apos;admission</Text>
         <Text className="text-sm text-xporadia-text-secondary leading-5">
-          Déposez la liste des résultats de concours (CSV ou PDF) — Xporadia propose un
+          Déposez la liste des résultats de concours (CSV ou PDF) : Xporadia propose un
           rapprochement avec vos demandes en attente, à vous de valider avant application.
         </Text>
       </View>
@@ -213,7 +213,7 @@ export default function AdmissionReportScreen() {
               </Text>
               {unmatched.map((p, i) => (
                 <Text key={i} className="text-xs text-xporadia-text-secondary">
-                  &quot;{p.extracted_name}&quot; — aucune demande en attente ne correspond
+                  &quot;{p.extracted_name}&quot;, aucune demande en attente ne correspond
                 </Text>
               ))}
             </View>

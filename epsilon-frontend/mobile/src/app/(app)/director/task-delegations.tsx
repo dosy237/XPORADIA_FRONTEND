@@ -13,7 +13,7 @@ import type { DelegatedTask, TaskDelegationEntry } from "@/services/academics";
 
 const TASK_DESCRIPTIONS: Record<DelegatedTask, string> = {
   timetable:
-    "L'enseignant délégué pourra créer et modifier l'emploi du temps de toutes les classes de votre établissement — comme un censeur. Il ne pourra jamais toucher aux effectifs, aux inscriptions, ni à la structure académique.",
+    "L'enseignant délégué pourra créer et modifier l'emploi du temps de toutes les classes de votre établissement, comme un censeur. Il ne pourra jamais toucher aux effectifs, aux inscriptions, ni à la structure académique.",
   join_requests:
     "L'enseignant délégué pourra consulter et traiter les demandes de rattachement (approuver, rejeter, placer en classe), ainsi que déposer un rapport d'admission. Il ne pourra jamais créer ni modifier une classe.",
 };
@@ -127,7 +127,7 @@ export default function TaskDelegationsScreen() {
       <View className="gap-1">
         <Text className="text-2xl font-bold text-xporadia-navy">Délégations de tâches</Text>
         <Text className="text-sm text-xporadia-text-secondary leading-5">
-          Confiez une responsabilité précise à un enseignant de votre établissement — il reste un
+          Confiez une responsabilité précise à un enseignant de votre établissement : il reste un
           compte enseignant ordinaire, cette délégation ne fait que lui ajouter une capacité.
         </Text>
       </View>
