@@ -330,11 +330,19 @@ export default function TeacherReportCardsScreen() {
             <Text className="text-sm text-xporadia-text-secondary text-center py-4">Chargement...</Text>
           ) : publishedReportCards && publishedReportCards.length > 0 ? (
             publishedReportCards.map((reportCard) => (
-              <View key={reportCard.id} className="gap-1">
-                <Text className="text-sm font-semibold text-xporadia-text-primary px-1">
+              <View key={reportCard.id} className="gap-0.5 px-1">
+                <Text className="text-sm font-semibold text-xporadia-text-primary">
                   {reportCard.child_first_name} {reportCard.child_last_name}
                 </Text>
-                <ReportCardCard reportCard={reportCard} />
+                {reportCard.updated_by_name ? (
+                  <Text className="text-[10px] text-xporadia-text-secondary">
+                    Publié par {reportCard.updated_by_name}, le{" "}
+                    {new Date(reportCard.updated_at).toLocaleDateString("fr-FR")}
+                  </Text>
+                ) : null}
+                <View className="mt-1">
+                  <ReportCardCard reportCard={reportCard} />
+                </View>
               </View>
             ))
           ) : (

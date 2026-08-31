@@ -116,6 +116,11 @@ export interface ReportCard {
   document: string | null;
   subject_entries: SubjectReportEntry[];
   published_at: string;
+  /** Traçabilité minimale : qui a publié en dernier (une republication
+   * écrase le bulletin précédent), quand. Absent si le compte a depuis
+   * été supprimé. */
+  updated_by_name: string | null;
+  updated_at: string;
 }
 
 export const fetchChildReportCards = (childId: number) =>
@@ -200,6 +205,11 @@ export const createEvaluation = (
 export interface GradeGridCell {
   score: string | null;
   is_excused: boolean;
+  /** Traçabilité minimale : qui a saisi/modifié cette note en dernier,
+   * quand — surtout utile après une réaffectation de matière en cours
+   * d'année. Absent (jamais saisie ou saisie par un compte supprimé). */
+  updated_by_name: string | null;
+  updated_at: string;
 }
 
 export interface GradeGridStudent {
@@ -243,6 +253,8 @@ export interface GradeGridSaveResult {
     child_last_name: string;
     score: string | null;
     is_excused: boolean;
+    updated_by_name: string | null;
+    updated_at: string;
   }[];
   /** Clé = id élève (en string) -> nouvelle moyenne de matière. */
   updated_averages: Record<string, string | null>;

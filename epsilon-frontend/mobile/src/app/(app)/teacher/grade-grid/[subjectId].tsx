@@ -534,7 +534,12 @@ export default function TeacherGradeGridScreen() {
               grades: {
                 ...student.grades,
                 [String(entry.evaluation)]: savedGrade
-                  ? { score: savedGrade.score, is_excused: savedGrade.is_excused }
+                  ? {
+                      score: savedGrade.score,
+                      is_excused: savedGrade.is_excused,
+                      updated_by_name: savedGrade.updated_by_name,
+                      updated_at: savedGrade.updated_at,
+                    }
                   : null,
               },
               subject_average: result.updated_averages[String(entry.child)] ?? student.subject_average,
@@ -557,6 +562,18 @@ export default function TeacherGradeGridScreen() {
       setAddSheetOpen(false);
     },
   });
+
+  // Traçabilité minimale (Point 8) : dernière modification de la cellule
+  // actuellement ouverte, affichée juste au-dessus de la grille plutôt
+  // que dans la cellule elle-même (bien trop étroite pour du texte).
+  const activeCellTrace = (() => {
+    if (!activeCell || !grid) return null;
+    const student = grid.students.find((s) => s.child_id === activeCell.childId);
+    const cell = student?.grades[String(activeCell.evaluationId)];
+    if (!cell?.updated_by_name) return null;
+    const date = new Date(cell.updated_at);
+    return `Dernière modification par ${cell.updated_by_name}, le ${date.toLocaleDateString("fr-FR")} à ${date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+  })();
 
   const [appreciationTarget, setAppreciationTarget] = useState<GradeGridStudent | null>(null);
   const saveAppreciationMutation = useMutation({
@@ -611,6 +628,14 @@ export default function TeacherGradeGridScreen() {
           <Text className="text-xs font-bold text-white">Ajouter une colonne</Text>
         </Pressable>
       </View>
+
+      {activeCellTrace ? (
+        <View className="px-4 pb-2">
+          <Text className="text-[11px] text-xporadia-text-secondary" numberOfLines={2}>
+            {activeCellTrace}
+          </Text>
+        </View>
+      ) : null}
 
       {isLoading ? (
         <Text className="text-sm text-xporadia-text-secondary text-center py-10">Chargement...</Text>
