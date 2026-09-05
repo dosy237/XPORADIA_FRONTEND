@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
@@ -9,6 +9,7 @@ import { Chip } from "@/components/ui/Chip";
 import { NewspaperIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
+import * as gradingApi from "@/services/grading";
 import * as messagingApi from "@/services/messaging";
 import * as virtualClassesApi from "@/services/virtualClasses";
 import type { Exercise, ExerciseKind, ExerciseStatus } from "@/services/virtualClasses";
@@ -139,6 +140,19 @@ export default function SubjectVirtualClassScreen() {
   const [title, setTitle] = useState("");
   const [instructions, setInstructions] = useState("");
   const [kind, setKind] = useState<ExerciseKind>("homework");
+  const [selectedTermId, setSelectedTermId] = useState<number | null>(null);
+
+  const termsQuery = useQuery({
+    queryKey: ["subject-terms", subjectId],
+    queryFn: () => gradingApi.fetchSubjectTerms(Number(subjectId)),
+    enabled: !!subjectId && adding,
+  });
+
+  useEffect(() => {
+    if (selectedTermId || !termsQuery.data || termsQuery.data.length === 0) return;
+    const active = termsQuery.data.find((t) => t.is_active);
+    setSelectedTermId((active ?? termsQuery.data[0]).id);
+  }, [termsQuery.data, selectedTermId]);
 
   const virtualClassQuery = useQuery({
     queryKey: ["subject-virtual-class", subjectId],
@@ -154,7 +168,13 @@ export default function SubjectVirtualClassScreen() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () => virtualClassesApi.createExercise(Number(subjectId), { title, instructions, kind }),
+    mutationFn: () =>
+      virtualClassesApi.createExercise(Number(subjectId), {
+        title,
+        instructions,
+        kind,
+        term: selectedTermId as number,
+      }),
     onSuccess: (exercise) => {
       queryClient.setQueryData<Exercise[] | undefined>(exercisesQueryKey, (prev) =>
         prev ? [exercise, ...prev] : [exercise]
@@ -162,6 +182,7 @@ export default function SubjectVirtualClassScreen() {
       setTitle("");
       setInstructions("");
       setKind("homework");
+      setSelectedTermId(null);
       setAdding(false);
     },
   });
@@ -262,15 +283,39 @@ export default function SubjectVirtualClassScreen() {
               numberOfLines={3}
               style={{ height: 80, textAlignVertical: "top" }}
             />
+            <View className="gap-1.5">
+              <Text className="text-sm font-medium text-xporadia-text-secondary">Trimestre</Text>
+              <Text className="text-[11px] text-xporadia-text-secondary">
+                Détermine dans quel trimestre la correction alimentera le tableur de notes.
+              </Text>
+              <View className="flex-row flex-wrap gap-2">
+                {(termsQuery.data ?? []).map((term) => (
+                  <Chip
+                    key={term.id}
+                    label={term.name || `Trimestre ${term.number}`}
+                    variant={selectedTermId === term.id ? "navy" : "neutral"}
+                    onPress={() => setSelectedTermId(term.id)}
+                  />
+                ))}
+              </View>
+            </View>
             <View className="flex-row gap-3">
               <View className="flex-1">
-                <Button label="Annuler" variant="secondary" pill onPress={() => setAdding(false)} />
+                <Button
+                  label="Annuler"
+                  variant="secondary"
+                  pill
+                  onPress={() => {
+                    setAdding(false);
+                    setSelectedTermId(null);
+                  }}
+                />
               </View>
               <View className="flex-1">
                 <Button
                   label="Créer"
                   pill
-                  disabled={!title || !instructions}
+                  disabled={!title || !instructions || !selectedTermId}
                   loading={createMutation.isPending}
                   onPress={() => createMutation.mutate()}
                 />

@@ -10,6 +10,9 @@ export interface Exercise {
   instructions: string;
   attachments: { name: string; url: string; type: string }[];
   deadline: string | null;
+  // Trimestre dans lequel ce devoir alimente le tableur de notes une fois
+  // corrigé — obligatoire à la création (voir backend Exercise.term).
+  term: number;
   status: ExerciseStatus;
   is_overdue: boolean;
   published_at: string | null;
@@ -45,7 +48,14 @@ export const fetchExercise = (exerciseId: string) =>
 
 export const createExercise = (
   subjectId: number,
-  payload: { title: string; instructions: string; kind?: ExerciseKind; status?: ExerciseStatus; deadline?: string }
+  payload: {
+    title: string;
+    instructions: string;
+    term: number;
+    kind?: ExerciseKind;
+    status?: ExerciseStatus;
+    deadline?: string;
+  }
 ) => api.post<Exercise>(`/virtual-classes/subjects/${subjectId}/exercises/`, payload).then((r) => r.data);
 
 export const updateExercise = (exerciseId: string, payload: Partial<{ status: ExerciseStatus }>) =>
