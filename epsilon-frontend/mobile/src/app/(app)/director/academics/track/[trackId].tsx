@@ -16,15 +16,21 @@ function ClassCard({ schoolClass, trackId }: { schoolClass: SchoolClass; trackId
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [homeroomEmail, setHomeroomEmail] = useState(schoolClass.homeroom_teacher?.email ?? "");
+  const [homeroomSubjectName, setHomeroomSubjectName] = useState("");
   const [error, setError] = useState("");
 
   const updateMutation = useMutation({
-    mutationFn: () => academicsApi.updateClass(schoolClass.id, { homeroom_teacher_email: homeroomEmail || undefined }),
+    mutationFn: () =>
+      academicsApi.updateClass(schoolClass.id, {
+        homeroom_teacher_email: homeroomEmail || undefined,
+        homeroom_subject_name: homeroomSubjectName || undefined,
+      }),
     onSuccess: (updated) => {
       queryClient.setQueryData<SchoolClass[] | undefined>(["classes", trackId], (prev) =>
         prev ? prev.map((c) => (c.id === updated.id ? updated : c)) : prev
       );
       setError("");
+      setHomeroomSubjectName("");
       setEditing(false);
     },
     onError: () => setError("Aucun enseignant actif ne correspond à cet email."),
@@ -42,10 +48,17 @@ function ClassCard({ schoolClass, trackId }: { schoolClass: SchoolClass; trackId
           autoCapitalize="none"
           keyboardType="email-address"
         />
+        <Input
+          label="Matière qu'il enseigne dans cette classe (optionnel)"
+          value={homeroomSubjectName}
+          onChangeText={setHomeroomSubjectName}
+          placeholder="Mathématiques"
+        />
         {error ? <Text className="text-xs text-xporadia-red">{error}</Text> : null}
         <Text className="text-[11px] text-xporadia-text-secondary">
           Le nouveau titulaire est notifié et reçoit les droits d&apos;administration du canal de classe ;
-          l&apos;ancien titulaire les perd automatiquement.
+          l&apos;ancien titulaire les perd automatiquement. Un titulaire est d&apos;abord un enseignant :
+          précisez sa matière pour qu&apos;elle apparaisse aussi dans son propre emploi du temps.
         </Text>
         <View className="flex-row gap-2">
           <View className="flex-1">
@@ -137,6 +150,7 @@ export default function TrackClassesScreen() {
   const [name, setName] = useState("");
   const [schoolYear, setSchoolYear] = useState("");
   const [homeroomEmail, setHomeroomEmail] = useState("");
+  const [homeroomSubjectName, setHomeroomSubjectName] = useState("");
   const [capacity, setCapacity] = useState("");
   const [error, setError] = useState("");
 
@@ -159,6 +173,7 @@ export default function TrackClassesScreen() {
         name,
         school_year: schoolYear,
         homeroom_teacher_email: homeroomEmail || undefined,
+        homeroom_subject_name: homeroomSubjectName || undefined,
         capacity: capacity ? Number(capacity) : undefined,
       }),
     onSuccess: (schoolClass) => {
@@ -168,6 +183,7 @@ export default function TrackClassesScreen() {
       setName("");
       setSchoolYear("");
       setHomeroomEmail("");
+      setHomeroomSubjectName("");
       setCapacity("");
       setError("");
       setAdding(false);
@@ -206,6 +222,14 @@ export default function TrackClassesScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
           />
+          {homeroomEmail ? (
+            <Input
+              label="Matière qu'il enseigne dans cette classe (optionnel)"
+              value={homeroomSubjectName}
+              onChangeText={setHomeroomSubjectName}
+              placeholder="Mathématiques"
+            />
+          ) : null}
           <Input
             label="Effectif maximum (optionnel)"
             value={capacity}

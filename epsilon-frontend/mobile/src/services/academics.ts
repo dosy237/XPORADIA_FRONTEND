@@ -72,12 +72,19 @@ export const createClass = (payload: {
   name: string;
   school_year: string;
   homeroom_teacher_email?: string;
+  homeroom_subject_name?: string;
   capacity?: number;
 }) => api.post<SchoolClass>("/academics/classes/", payload).then((r) => r.data);
 
 export const updateClass = (
   classId: number,
-  payload: Partial<{ name: string; school_year: string; homeroom_teacher_email: string; capacity: number }>
+  payload: Partial<{
+    name: string;
+    school_year: string;
+    homeroom_teacher_email: string;
+    homeroom_subject_name: string;
+    capacity: number;
+  }>
 ) => api.patch<SchoolClass>(`/academics/classes/${classId}/`, payload).then((r) => r.data);
 
 export const fetchMyHomeroomClasses = () =>

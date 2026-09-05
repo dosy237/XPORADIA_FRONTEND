@@ -13,11 +13,23 @@ import { Colors } from "@/constants/theme";
 import * as gradingApi from "@/services/grading";
 import type { EvalType, Evaluation, GradeGrid, GradeGridEntry, GradeGridStudent } from "@/services/grading";
 
-const NAME_COL_WIDTH = 150;
-const EVAL_COL_WIDTH = 96;
-const AVG_COL_WIDTH = 78;
-const HEADER_HEIGHT = 68;
-const ROW_HEIGHT = 60;
+const NAME_COL_WIDTH = 160;
+const EVAL_COL_MIN_WIDTH = 112;
+const EVAL_COL_MAX_WIDTH = 178;
+const AVG_COL_WIDTH = 84;
+const HEADER_HEIGHT = 92;
+const ROW_HEIGHT = 64;
+
+/** Largeur de colonne calculée à partir du titre de l'évaluation — un
+ * intitulé court ("Devoir 3") n'a pas besoin de la même largeur qu'un
+ * intitulé long ("Interrogation n°3"). Fixer une largeur unique pour
+ * toutes les colonnes tronquait systématiquement les titres un peu
+ * longs ; ici chaque colonne s'adapte au sien, dans les bornes
+ * min/max, pour ne jamais couper un en-tête. */
+function evaluationColumnWidth(title: string) {
+  const estimated = 56 + title.length * 6.4;
+  return Math.max(EVAL_COL_MIN_WIDTH, Math.min(EVAL_COL_MAX_WIDTH, Math.round(estimated)));
+}
 
 function toLocalDateInputValue(date: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -243,22 +255,28 @@ function AppreciationSheet({
   );
 }
 
-function EvaluationHeaderCell({ evaluation }: { evaluation: Evaluation }) {
+function EvaluationHeaderCell({ evaluation, width }: { evaluation: Evaluation; width: number }) {
   return (
     <View
-      style={{ width: EVAL_COL_WIDTH, height: HEADER_HEIGHT }}
-      className="px-2 py-1.5 justify-between border-b border-r border-xporadia-border bg-white"
+      style={{ width, height: HEADER_HEIGHT }}
+      className="px-2.5 py-2 justify-between border-b border-r border-xporadia-border/70 bg-xporadia-navy/5"
     >
-      <Text numberOfLines={2} className="text-[10px] font-bold text-xporadia-text-primary leading-3">
+      {/* Pas de numberOfLines strict ici : la largeur de la colonne est déjà
+          calculée pour le titre (evaluationColumnWidth), donc 3 lignes
+          couvrent large sans jamais avoir besoin de couper le texte en
+          usage réel. */}
+      <Text numberOfLines={3} className="text-[11px] font-bold text-xporadia-navy leading-3.5">
         {evaluation.title}
       </Text>
       <Text className="text-[9px] text-xporadia-text-secondary" numberOfLines={1}>
         {gradingApi.EVAL_TYPE_LABELS[evaluation.eval_type]}, coef {evaluation.coefficient}
       </Text>
-      {/* Échelle toujours visible en badge — pour ne jamais se tromper de
-          barème en saisissant une note. */}
-      <View className="self-start bg-xporadia-navy/10 rounded-full px-1.5 py-0.5">
-        <Text className="text-[9px] font-bold text-xporadia-navy">/{evaluation.max_score}</Text>
+      {/* Échelle toujours visible en badge, sur sa propre ligne — pour ne
+          jamais se tromper de barème en saisissant une note, et pour ne
+          jamais se faire écraser par le texte voisin dans les colonnes
+          les plus étroites. */}
+      <View className="self-start bg-xporadia-orange/15 rounded-full px-1.5 py-0.5">
+        <Text className="text-[9px] font-bold text-xporadia-orange-text">/{evaluation.max_score}</Text>
       </View>
     </View>
   );
@@ -267,6 +285,7 @@ function EvaluationHeaderCell({ evaluation }: { evaluation: Evaluation }) {
 function GradeCell({
   student,
   evaluation,
+  width,
   isActive,
   justSaved,
   onActivate,
@@ -274,6 +293,7 @@ function GradeCell({
 }: {
   student: GradeGridStudent;
   evaluation: Evaluation;
+  width: number;
   isActive: boolean;
   justSaved: boolean;
   onActivate: () => void;
@@ -300,18 +320,25 @@ function GradeCell({
   };
 
   if (!isActive) {
+    const ratio = cellData?.score ? Number(cellData.score) / evaluation.max_score : null;
+    const scoreColor =
+      ratio === null ? Colors.textPrimary : ratio >= 0.5 ? Colors.green : Colors.red;
     return (
       <Pressable
         onPress={onActivate}
         accessibilityRole="button"
-        style={{ width: EVAL_COL_WIDTH, height: ROW_HEIGHT }}
-        className="items-center justify-center border-b border-r border-xporadia-border"
+        style={{ width, height: ROW_HEIGHT }}
+        className="items-center justify-center border-b border-r border-xporadia-border/70"
       >
         {cellData?.is_excused ? (
           <Text className="text-[10px] font-semibold text-xporadia-orange-text">Dispensé</Text>
         ) : cellData?.score ? (
-          <Text className="text-sm font-bold text-xporadia-text-primary">{cellData.score}</Text>
-        ) : null}
+          <Text className="text-base font-extrabold" style={{ color: scoreColor }}>
+            {cellData.score}
+          </Text>
+        ) : (
+          <Text className="text-xs text-xporadia-border">—</Text>
+        )}
         {justSaved ? (
           <View className="absolute top-1 right-1">
             <CheckCircleIcon size={11} color={Colors.green} />
@@ -323,7 +350,7 @@ function GradeCell({
 
   return (
     <View
-      style={{ width: EVAL_COL_WIDTH, height: ROW_HEIGHT }}
+      style={{ width, height: ROW_HEIGHT }}
       className="items-center justify-center gap-1 border-b border-r border-xporadia-orange bg-xporadia-orange/5 px-1"
     >
       <TextInput
@@ -401,23 +428,32 @@ function GradeGridTable({
     );
   }
 
+  // Largeur par colonne, calculée une fois par rendu de grille — partagée
+  // entre l'en-tête et chaque cellule de la même évaluation pour que les
+  // deux zones défilantes restent alignées.
+  const columnWidths = Object.fromEntries(
+    grid.evaluations.map((evaluation) => [evaluation.id, evaluationColumnWidth(evaluation.title)])
+  );
+
   return (
-    <View className="flex-1 flex-row">
-      <View style={{ width: NAME_COL_WIDTH }} className="border-r border-xporadia-border bg-white">
-        <View style={{ height: HEADER_HEIGHT }} className="justify-center px-3 border-b border-xporadia-border">
+    <View className="flex-1 flex-row mx-4 rounded-2xl overflow-hidden shadow-soft bg-white">
+      <View style={{ width: NAME_COL_WIDTH }} className="border-r border-xporadia-border/70 bg-white">
+        <View style={{ height: HEADER_HEIGHT }} className="justify-center px-3.5 border-b border-xporadia-border/70 bg-xporadia-navy/5">
           <Text className="text-[11px] font-bold text-xporadia-text-secondary uppercase">Élève</Text>
         </View>
         <ScrollView ref={leftScrollRef} scrollEnabled={false} showsVerticalScrollIndicator={false}>
-          {grid.students.map((student) => (
+          {grid.students.map((student, index) => (
             <Pressable
               key={student.child_id}
               onPress={() => onOpenAppreciation(student)}
               accessibilityRole="button"
               accessibilityLabel={`Appréciation de ${student.first_name} ${student.last_name}`}
               style={{ height: ROW_HEIGHT }}
-              className="flex-row items-center gap-2 px-3 border-b border-xporadia-border"
+              className={`flex-row items-center gap-2.5 px-3.5 border-b border-xporadia-border/70 ${
+                index % 2 === 1 ? "bg-xporadia-bg/60" : "bg-white"
+              }`}
             >
-              <Avatar firstName={student.first_name} lastName={student.last_name} imageUri={student.avatar} size={30} />
+              <Avatar firstName={student.first_name} lastName={student.last_name} imageUri={student.avatar} size={32} />
               <Text numberOfLines={2} className="flex-1 text-xs font-semibold text-xporadia-text-primary leading-4">
                 {student.first_name} {student.last_name}
               </Text>
@@ -431,7 +467,7 @@ function GradeGridTable({
         <View>
           <View style={{ height: HEADER_HEIGHT, flexDirection: "row" }}>
             {grid.evaluations.map((evaluation) => (
-              <EvaluationHeaderCell key={evaluation.id} evaluation={evaluation} />
+              <EvaluationHeaderCell key={evaluation.id} evaluation={evaluation} width={columnWidths[evaluation.id]} />
             ))}
           </View>
           <ScrollView
@@ -439,8 +475,12 @@ function GradeGridTable({
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
           >
-            {grid.students.map((student) => (
-              <View key={student.child_id} style={{ height: ROW_HEIGHT, flexDirection: "row" }}>
+            {grid.students.map((student, index) => (
+              <View
+                key={student.child_id}
+                style={{ height: ROW_HEIGHT, flexDirection: "row" }}
+                className={index % 2 === 1 ? "bg-xporadia-bg/60" : "bg-white"}
+              >
                 {grid.evaluations.map((evaluation) => {
                   const isActive = activeCell?.evaluationId === evaluation.id && activeCell?.childId === student.child_id;
                   const isJustSaved =
@@ -450,6 +490,7 @@ function GradeGridTable({
                       key={evaluation.id}
                       student={student}
                       evaluation={evaluation}
+                      width={columnWidths[evaluation.id]}
                       isActive={isActive}
                       justSaved={isJustSaved}
                       onActivate={() => onActivateCell({ evaluationId: evaluation.id, childId: student.child_id })}
@@ -463,22 +504,39 @@ function GradeGridTable({
         </View>
       </ScrollView>
 
-      <View style={{ width: AVG_COL_WIDTH }} className="border-l border-xporadia-border bg-white">
-        <View style={{ height: HEADER_HEIGHT }} className="items-center justify-center px-1 border-b border-xporadia-border">
+      <View style={{ width: AVG_COL_WIDTH }} className="border-l border-xporadia-border/70 bg-white">
+        <View style={{ height: HEADER_HEIGHT }} className="items-center justify-center px-1 border-b border-xporadia-border/70 bg-xporadia-navy/5">
           <Text className="text-[10px] font-bold text-xporadia-text-secondary uppercase text-center">Moyenne</Text>
         </View>
         <ScrollView ref={rightScrollRef} scrollEnabled={false} showsVerticalScrollIndicator={false}>
-          {grid.students.map((student) => (
-            <View
-              key={student.child_id}
-              style={{ height: ROW_HEIGHT }}
-              className="items-center justify-center border-b border-xporadia-border"
-            >
-              {student.subject_average ? (
-                <Text className="text-sm font-bold text-xporadia-navy">{student.subject_average}</Text>
-              ) : null}
-            </View>
-          ))}
+          {grid.students.map((student, index) => {
+            const average = student.subject_average ? Number(student.subject_average) : null;
+            const tint = average === null ? null : average >= 10 ? "green" : "red";
+            return (
+              <View
+                key={student.child_id}
+                style={{ height: ROW_HEIGHT }}
+                className={`items-center justify-center px-1 border-b border-xporadia-border/70 ${
+                  index % 2 === 1 ? "bg-xporadia-bg/60" : "bg-white"
+                }`}
+              >
+                {student.subject_average ? (
+                  <View
+                    className={`rounded-full px-2.5 py-1 ${tint === "green" ? "bg-xporadia-green/15" : "bg-xporadia-red/10"}`}
+                  >
+                    <Text
+                      className="text-sm font-extrabold"
+                      style={{ color: tint === "green" ? Colors.green : Colors.red }}
+                    >
+                      {student.subject_average}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="text-xs text-xporadia-border">—</Text>
+                )}
+              </View>
+            );
+          })}
         </ScrollView>
       </View>
     </View>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Divider } from "@/components/ui/Divider";
 import { Input } from "@/components/ui/Input";
 import { SocialButton } from "@/components/ui/SocialButton";
+import { ROLE_DASHBOARD_PATH } from "@/constants/roleDashboard";
 import * as academicsApi from "@/services/academics";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
@@ -37,7 +38,8 @@ export default function LoginScreen() {
           return;
         }
       }
-      router.replace("/(tabs)/me");
+      const dashboardPath = ROLE_DASHBOARD_PATH[data.user.primary_role];
+      router.replace((dashboardPath ?? "/(tabs)/me") as never);
     },
     onError: () => setFormError("Email ou mot de passe incorrect."),
   });
