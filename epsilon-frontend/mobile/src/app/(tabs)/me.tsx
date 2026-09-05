@@ -20,7 +20,6 @@ import {
   UserCircleIcon,
 } from "@/components/ui/Icon";
 import { LEVEL_COLORS, LEVEL_LABELS } from "@/constants/certificationLevels";
-import { ROLE_DASHBOARD_PATH } from "@/constants/roleDashboard";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
 import * as authApi from "@/services/auth";
@@ -39,6 +38,15 @@ const ROLE_LABELS: Record<UserRole, string> = {
   trainer: "Formateur partenaire",
   admin: "Administrateur Xporadia",
   student: "Élève",
+};
+
+const ROLE_DASHBOARD_PATH: Record<string, string> = {
+  teacher: "/(app)/teacher/dashboard",
+  director: "/(app)/director/dashboard",
+  parent: "/(app)/parent/dashboard",
+  company: "/(app)/company/dashboard",
+  student: "/(app)/student/dashboard",
+  admin: "/(app)/admin/dashboard",
 };
 
 function RoleStat() {

@@ -6,7 +6,6 @@ import { ScrollView, Text, View } from "react-native";
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Button } from "@/components/ui/Button";
 import { OtpInput } from "@/components/ui/OtpInput";
-import { ROLE_DASHBOARD_PATH } from "@/constants/roleDashboard";
 import * as academicsApi from "@/services/academics";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
@@ -37,8 +36,7 @@ export default function VerifyOtpScreen() {
       router.replace("/(auth)/join-establishment");
       return;
     }
-    const dashboardPath = user ? ROLE_DASHBOARD_PATH[user.primary_role] : undefined;
-    router.replace((dashboardPath ?? "/(tabs)/me") as never);
+    router.replace("/(tabs)/me");
   };
 
   const verifyMutation = useMutation({
