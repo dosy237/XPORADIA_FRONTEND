@@ -8,6 +8,7 @@ export interface CompanyBasic {
   id: number;
   company_name: string;
   address: string;
+  avatar: string | null;
 }
 
 export interface SchoolBasic {
@@ -34,6 +35,7 @@ export interface InternshipOffer {
   places: number;
   city: string;
   skills_wanted: string[];
+  cover_image: string | null;
   is_premium: boolean;
   is_active: boolean;
   application_count: number;
@@ -58,8 +60,46 @@ export const createInternshipOffer = (payload: {
   places?: number;
 }) => api.post<InternshipOffer>("/internships/offers/", payload).then((r) => r.data);
 
-export const updateInternshipOffer = (offerId: string, payload: { is_active: boolean }) =>
+export const updateInternshipOffer = (offerId: string, payload: { is_active?: boolean; is_premium?: boolean }) =>
   api.patch<InternshipOffer>(`/internships/offers/${offerId}/`, payload).then((r) => r.data);
+
+export interface InternshipOfferSchoolLink {
+  id: number;
+  offer: InternshipOffer;
+  school: SchoolBasic;
+  status: "sent" | "published";
+  sent_at: string;
+  published_at: string | null;
+}
+
+/** Réservé au staff — voir AdminInternshipOfferSerializer côté backend. */
+export const distributeInternshipOfferToSchools = (offerId: string, schoolIds: number[]) =>
+  api
+    .post<InternshipOfferSchoolLink[]>(`/internships/offers/${offerId}/distribute/`, { school_ids: schoolIds })
+    .then((r) => r.data);
+
+export const fetchOffersDistributedToMySchool = () =>
+  api.get<InternshipOfferSchoolLink[]>("/internships/offer-links/distributed-to-me/").then((r) => r.data);
+
+export const publishOfferForMySchool = (linkId: number) =>
+  api.post<InternshipOfferSchoolLink>(`/internships/offer-links/${linkId}/publish/`).then((r) => r.data);
+
+export const uploadInternshipOfferCoverImage = (
+  offerId: string,
+  asset: { uri: string; name: string; mimeType?: string | null },
+) => {
+  const formData = new FormData();
+  formData.append("cover_image", {
+    uri: asset.uri,
+    name: asset.name,
+    type: asset.mimeType ?? "image/jpeg",
+  } as unknown as Blob);
+  return api
+    .patch<InternshipOffer>(`/internships/offers/${offerId}/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
+};
 
 export interface InternshipApplication {
   id: string;
@@ -97,15 +137,25 @@ export const updateInternshipApplicationStatus = (
 export interface InternshipConvention {
   id: string;
   application: InternshipApplication;
+  position_title: string;
+  document: string | null;
   pdf_url: string;
   status: ConventionStatus;
+  channel_id: number | null;
   signed_by_school_at: string | null;
   signed_by_company_at: string | null;
   generated_at: string;
+  has_company_review: boolean;
+  can_review_company: boolean;
 }
 
 export const fetchMyConventions = () =>
   api.get<InternshipConvention[]>("/internships/my-conventions/").then((r) => r.data);
+
+export const submitCompanyReview = (
+  conventionId: string,
+  payload: { atmosphere: number; mentorship: number; role_accuracy: number; learning_value: number; comment?: string }
+) => api.post(`/internships/conventions/${conventionId}/company-review/`, payload);
 
 export const signConvention = (conventionId: string) =>
   api.post<InternshipConvention>(`/internships/conventions/${conventionId}/sign/`).then((r) => r.data);

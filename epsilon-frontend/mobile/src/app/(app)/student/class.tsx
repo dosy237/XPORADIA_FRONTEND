@@ -1,0 +1,138 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { Pressable, ScrollView, Text, View } from "react-native";
+
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { BookIcon, UsersIcon } from "@/components/ui/Icon";
+import { Colors } from "@/constants/theme";
+import * as academicsApi from "@/services/academics";
+import * as messagingApi from "@/services/messaging";
+
+export default function StudentClassScreen() {
+  const { data: myClass, isLoading } = useQuery({ queryKey: ["my-class"], queryFn: academicsApi.fetchMyClass });
+
+  const contactClassmateMutation = useMutation({
+    mutationFn: (classmateId: number) => messagingApi.contactClassmate(classmateId),
+    onSuccess: (channel) => router.push(`/(app)/messages/${channel.id}`),
+  });
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-xporadia-bg items-center justify-center">
+        <Text className="text-xporadia-text-secondary">Chargement...</Text>
+      </View>
+    );
+  }
+
+  if (!myClass?.school_class_name) {
+    return (
+      <View className="flex-1 bg-xporadia-bg items-center justify-center p-8">
+        <Text className="text-sm text-xporadia-text-secondary text-center">
+          Vous n'êtes inscrit dans aucune classe pour le moment.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-5 pb-12">
+      <View className="gap-1">
+        <Text className="text-2xl font-bold text-xporadia-navy">{myClass.school_class_name}</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          {myClass.classmates.length + 1} élève{myClass.classmates.length !== 0 ? "s" : ""}
+        </Text>
+      </View>
+
+      {myClass.homeroom_teacher && (
+        <Card className="flex-row items-center gap-3">
+          <Avatar
+            firstName={myClass.homeroom_teacher.first_name}
+            lastName={myClass.homeroom_teacher.last_name}
+            imageUri={myClass.homeroom_teacher.avatar}
+            size={48}
+          />
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-xporadia-text-primary">
+              {myClass.homeroom_teacher.first_name} {myClass.homeroom_teacher.last_name}
+            </Text>
+            <Text className="text-xs text-xporadia-text-secondary">Professeur principal</Text>
+          </View>
+          <Button
+            label="Message"
+            variant="secondary"
+            pill
+            onPress={() => router.push("/(app)/messages")}
+          />
+        </Card>
+      )}
+
+      <View className="gap-3">
+        <Text className="text-base font-bold text-xporadia-navy">Mes matières</Text>
+        {myClass.subjects.length > 0 ? (
+          <View className="gap-2">
+            {myClass.subjects.map((subject) => (
+              <Pressable
+                key={subject.id}
+                disabled={!subject.channel_id}
+                onPress={() => subject.channel_id && router.push(`/(app)/messages/${subject.channel_id}`)}
+                accessibilityRole={subject.channel_id ? "button" : undefined}
+              >
+                <Card variant="flat" className="flex-row items-center gap-3 bg-white">
+                  <View className="h-10 w-10 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
+                    <BookIcon size={16} color={Colors.navy} />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-sm font-semibold text-xporadia-text-primary">{subject.name}</Text>
+                    <Text className="text-xs text-xporadia-text-secondary">
+                      {subject.channel_id
+                        ? subject.teacher_name ?? "Canal de discussion"
+                        : "Canal pas encore ouvert par l'enseignant"}
+                    </Text>
+                  </View>
+                </Card>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <View className="items-center gap-2 py-8">
+            <BookIcon size={22} color={Colors.textSecondary} />
+            <Text className="text-xs text-xporadia-text-secondary">Aucune matière pour l'instant.</Text>
+          </View>
+        )}
+      </View>
+
+      <View className="gap-3">
+        <Text className="text-base font-bold text-xporadia-navy">Mes camarades</Text>
+        {myClass.classmates.length > 0 ? (
+          <View className="gap-2">
+            {myClass.classmates.map((c) => (
+              <Pressable
+                key={c.id}
+                disabled={!c.can_message}
+                onPress={() => c.can_message && contactClassmateMutation.mutate(c.id)}
+                accessibilityRole={c.can_message ? "button" : undefined}
+              >
+                <Card variant="flat" className="flex-row items-center gap-3 bg-white">
+                  <Avatar firstName={c.first_name} lastName={c.last_name} imageUri={c.avatar} size={40} />
+                  <Text className="text-sm font-medium text-xporadia-text-primary flex-1">
+                    {c.first_name} {c.last_name}
+                  </Text>
+                  {!c.can_message ? (
+                    <Text className="text-[10px] text-xporadia-text-secondary">Compte non activé</Text>
+                  ) : null}
+                </Card>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <View className="items-center gap-2 py-8">
+            <UsersIcon size={24} color={Colors.textSecondary} />
+            <Text className="text-xs text-xporadia-text-secondary">Aucun autre élève inscrit pour l'instant.</Text>
+          </View>
+        )}
+      </View>
+    </ScrollView>
+  );
+}

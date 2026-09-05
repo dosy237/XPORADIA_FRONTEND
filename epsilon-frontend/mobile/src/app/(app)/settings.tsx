@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as authApi from "@/services/auth";
+import * as notificationsApi from "@/services/notifications";
+import type { NotificationCategory } from "@/services/notifications";
 import { useAuthStore } from "@/store/authStore";
 
 function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
@@ -80,6 +82,17 @@ export default function AccountSettingsScreen() {
     onSuccess: (data) => updateUser(data),
   });
 
+  const { data: notifCategories } = useQuery({
+    queryKey: ["notification-preferences"],
+    queryFn: notificationsApi.fetchNotificationPreferences,
+  });
+
+  const categoryMutation = useMutation({
+    mutationFn: ({ category, enabled }: { category: NotificationCategory; enabled: boolean }) =>
+      notificationsApi.setNotificationPreference(category, enabled),
+    onSuccess: (data) => queryClient.setQueryData(["notification-preferences"], data),
+  });
+
   const passwordMutation = useMutation({
     mutationFn: () => authApi.changePassword(oldPassword, newPassword),
     onSuccess: () => {
@@ -124,7 +137,7 @@ export default function AccountSettingsScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="p-6 gap-5 pb-12">
         <SettingsSection title="Informations personnelles">
@@ -179,6 +192,9 @@ export default function AccountSettingsScreen() {
         </SettingsSection>
 
         <SettingsSection title="Notifications">
+          <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase -mb-1">
+            Canaux
+          </Text>
           <ToggleRow
             label="Email"
             value={user.notify_email}
@@ -194,6 +210,25 @@ export default function AccountSettingsScreen() {
             value={user.notify_push}
             onValueChange={(v) => preferencesMutation.mutate({ notify_push: v })}
           />
+
+          <View className="h-px bg-xporadia-border" />
+
+          <View className="gap-1">
+            <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+              Ce que vous recevez
+            </Text>
+            <Text className="text-xs text-xporadia-text-secondary">
+              Désactivez une catégorie pour ne plus recevoir aucune notification qui en fait partie.
+            </Text>
+          </View>
+          {(notifCategories ?? []).map((entry) => (
+            <ToggleRow
+              key={entry.category}
+              label={entry.category_label}
+              value={entry.enabled}
+              onValueChange={(v) => categoryMutation.mutate({ category: entry.category, enabled: v })}
+            />
+          ))}
         </SettingsSection>
 
         <SettingsSection title="Visibilité">

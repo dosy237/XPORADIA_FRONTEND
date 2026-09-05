@@ -1,7 +1,7 @@
 import "@/global.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
@@ -19,6 +19,27 @@ function PushRegistration() {
   return null;
 }
 
+// Garde globale : un compte connecté mais jamais vérifié (OTP passé "plus
+// tard" à l'inscription) est ramené à l'écran de vérification à chaque
+// relance de l'app plutôt que de traîner un accès dégradé partout ailleurs
+//, sauf s'il navigue déjà dans le flow (auth), pour ne pas casser l'écran
+// verify-otp lui-même ou un retour volontaire vers login/register.
+function VerificationGate() {
+  const router = useRouter();
+  const segments = useSegments();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isVerified = useAuthStore((s) => s.user?.is_verified);
+
+  useEffect(() => {
+    const inAuthGroup = segments[0] === "(auth)";
+    if (isAuthenticated && !isVerified && !inAuthGroup) {
+      router.replace("/(auth)/verify-otp");
+    }
+  }, [isAuthenticated, isVerified, segments, router]);
+
+  return null;
+}
+
 export default function RootLayout() {
   const hasHydrated = useAuthStore((s) => s.hasHydrated);
 
@@ -31,6 +52,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <PushRegistration />
+      <VerificationGate />
       <Stack screenOptions={{ headerShown: false }} />
     </QueryClientProvider>
   );

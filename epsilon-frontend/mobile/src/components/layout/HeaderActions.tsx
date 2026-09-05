@@ -2,13 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
-import { BellIcon, GearIcon } from "@/components/ui/Icon";
+import { BellIcon, GearIcon, LogoutIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as notificationsApi from "@/services/notifications";
 import { useAuthStore } from "@/store/authStore";
 
 // Icônes notifications/réglages/déconnexion communes aux écrans
-// authentifiés — que ce soit la Stack (app) ou l'onglet Espace personnel.
+// authentifiés, que ce soit la Stack (app) ou l'onglet Espace personnel.
 export function HeaderActions() {
   const logout = useAuthStore((s) => s.logout);
   const { data: notifications } = useQuery({
@@ -51,7 +51,7 @@ export function HeaderActions() {
         accessibilityLabel="Se déconnecter"
         hitSlop={8}
       >
-        <Text style={{ color: Colors.white }}>Déconnexion</Text>
+        <LogoutIcon color={Colors.white} size={20} />
       </Pressable>
     </View>
   );

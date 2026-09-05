@@ -1,4 +1,4 @@
-export type UserRole = "teacher" | "director" | "parent" | "company" | "trainer" | "admin";
+export type UserRole = "teacher" | "director" | "parent" | "company" | "trainer" | "admin" | "student";
 
 export interface User {
   id: number;
@@ -10,6 +10,8 @@ export interface User {
   primary_role: UserRole;
   secondary_roles: UserRole[];
   all_roles: UserRole[];
+  /** Présent uniquement pour un compte élève. */
+  child_id: number | null;
   is_verified: boolean;
   is_documents_validated: boolean;
   two_fa_enabled: boolean;

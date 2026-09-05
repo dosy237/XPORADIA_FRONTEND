@@ -1,3 +1,4 @@
+import { appendFileAsset } from "@/lib/formDataAsset";
 import api from "@/services/api";
 import type { User } from "@/types/user";
 
@@ -62,6 +63,19 @@ export interface ParentRegisterPayload {
   children?: ChildPayload[];
 }
 
+export interface StudentRegisterPayload {
+  email: string;
+  phone?: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  declared_level: string;
+}
+
+export interface StudentRegisterResponse extends RegisterResponse {
+  child_id: number;
+}
+
 export const registerTeacher = (payload: TeacherRegisterPayload) =>
   api.post<RegisterResponse>("/auth/register/teacher/", payload).then((r) => r.data);
 
@@ -73,6 +87,9 @@ export const registerParent = (payload: ParentRegisterPayload) =>
 
 export const registerCompany = (payload: CompanyRegisterPayload) =>
   api.post<RegisterResponse>("/auth/register/company/", payload).then((r) => r.data);
+
+export const registerStudent = (payload: StudentRegisterPayload) =>
+  api.post<StudentRegisterResponse>("/auth/register/student/", payload).then((r) => r.data);
 
 export const login = (email: string, password: string) =>
   api.post<LoginResponse>("/auth/token/", { email, password }).then((r) => r.data);
@@ -98,6 +115,16 @@ export interface UpdateMePayload {
 
 export const updateMe = (payload: UpdateMePayload) =>
   api.patch<User>("/auth/me/", payload).then((r) => r.data);
+
+export const uploadMyAvatar = async (asset: { uri: string; name: string; mimeType?: string | null }) => {
+  const formData = new FormData();
+  await appendFileAsset(formData, "avatar", asset);
+  return api
+    .post<User>("/auth/me/avatar/", formData, { headers: { "Content-Type": "multipart/form-data" } })
+    .then((r) => r.data);
+};
+
+export const deleteMyAvatar = () => api.delete<User>("/auth/me/avatar/").then((r) => r.data);
 
 export const changePassword = (oldPassword: string, newPassword: string) =>
   api

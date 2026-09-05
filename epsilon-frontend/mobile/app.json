@@ -39,11 +39,18 @@
           "icon": "./assets/images/icon.png",
           "color": "#FB5406"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Xporadia a besoin d'accéder à vos photos pour joindre une image à un devoir ou une note.",
+          "cameraPermission": "Xporadia a besoin d'accéder à l'appareil photo pour prendre une photo à joindre."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
     }
   }
 }

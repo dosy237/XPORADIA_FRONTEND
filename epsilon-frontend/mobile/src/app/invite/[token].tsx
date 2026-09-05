@@ -44,7 +44,7 @@ export default function AcceptInvitationScreen() {
         <Text className="text-base font-semibold text-xporadia-text-primary text-center">
           Invitation introuvable ou déjà utilisée.
         </Text>
-        <Button label="Retour à l'accueil" pill onPress={() => router.replace("/(tabs)/feed")} />
+        <Button label="Retour à l'accueil" pill onPress={() => router.replace("/(tabs)/actualites")} />
       </View>
     );
   }

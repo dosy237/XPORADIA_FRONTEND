@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 
-import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPicker } from "@/components/ui/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
@@ -65,11 +65,76 @@ function AddChildForm({ onCancel, onSubmit, loading }: {
   );
 }
 
-function ChildCard({ child, onDelete, deleting }: {
+/** État civil affiché sur le bulletin officiel de l'enfant (voir
+ * apps.grading.pdf côté backend : matricule, sexe, nationalité, date et
+ * lieu de naissance) — jamais requis à l'ajout, complété ici quand le
+ * parent l'a sous la main. */
+function ChildAdminInfoForm({
+  child, onCancel, onSubmit, loading,
+}: {
+  child: parentApi.Child;
+  onCancel: () => void;
+  onSubmit: (data: Partial<parentApi.ChildInput>) => void;
+  loading: boolean;
+}) {
+  const [matricule, setMatricule] = useState(child.matricule ?? "");
+  const [sex, setSex] = useState(child.sex ?? "");
+  const [nationality, setNationality] = useState(child.nationality || "Ivoirienne");
+  const [birthDate, setBirthDate] = useState(child.birth_date ?? "");
+  const [birthPlace, setBirthPlace] = useState(child.birth_place ?? "");
+
+  return (
+    <View className="gap-3 pt-1">
+      <Input label="Matricule" value={matricule} onChangeText={setMatricule} placeholder="08 036 659 C" />
+      <View className="gap-2">
+        <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Sexe</Text>
+        <View className="flex-row gap-2">
+          <Chip label="Masculin" variant={sex === "M" ? "navy" : "neutral"} onPress={() => setSex("M")} />
+          <Chip label="Féminin" variant={sex === "F" ? "navy" : "neutral"} onPress={() => setSex("F")} />
+        </View>
+      </View>
+      <Input label="Nationalité" value={nationality} onChangeText={setNationality} />
+      <Input
+        label="Date de naissance (AAAA-MM-JJ)"
+        value={birthDate}
+        onChangeText={setBirthDate}
+        placeholder="2008-03-14"
+      />
+      <Input label="Lieu de naissance" value={birthPlace} onChangeText={setBirthPlace} placeholder="Yopougon" />
+      <View className="flex-row gap-3 mt-1">
+        <View className="flex-1">
+          <Button label="Annuler" variant="secondary" pill onPress={onCancel} />
+        </View>
+        <View className="flex-1">
+          <Button
+            label="Enregistrer"
+            pill
+            loading={loading}
+            onPress={() =>
+              onSubmit({
+                matricule, sex, nationality,
+                birth_date: birthDate.trim() || null,
+                birth_place: birthPlace,
+              })
+            }
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function ChildCard({
+  child, onDelete, deleting, onUpdate, updating,
+}: {
   child: parentApi.Child;
   onDelete: () => void;
   deleting: boolean;
+  onUpdate: (data: Partial<parentApi.ChildInput>) => void;
+  updating: boolean;
 }) {
+  const [editingInfo, setEditingInfo] = useState(false);
+
   return (
     <Card className="gap-2">
       <View className="flex-row items-start justify-between">
@@ -84,9 +149,19 @@ function ChildCard({ child, onDelete, deleting }: {
             <Text className="text-xs text-xporadia-text-secondary">{child.class_level}</Text>
           </View>
         </View>
-        <Pressable onPress={onDelete} disabled={deleting} hitSlop={8} className="p-1">
-          <TrashIcon size={17} />
-        </Pressable>
+        <View className="flex-row items-center gap-3">
+          <Pressable
+            onPress={() => setEditingInfo((v) => !v)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`Modifier l'état civil de ${child.first_name}`}
+          >
+            <PencilIcon size={16} color={Colors.navy} />
+          </Pressable>
+          <Pressable onPress={onDelete} disabled={deleting} hitSlop={8} className="p-1">
+            <TrashIcon size={17} />
+          </Pressable>
+        </View>
       </View>
       {child.target_subjects.length > 0 && (
         <View className="flex-row flex-wrap gap-1.5 pl-[50px]">
@@ -103,6 +178,17 @@ function ChildCard({ child, onDelete, deleting }: {
           onPress={() => router.push(`/(app)/parent/child-space/${child.id}`)}
         />
       </View>
+      {editingInfo ? (
+        <ChildAdminInfoForm
+          child={child}
+          loading={updating}
+          onCancel={() => setEditingInfo(false)}
+          onSubmit={(data) => {
+            onUpdate(data);
+            setEditingInfo(false);
+          }}
+        />
+      ) : null}
     </Card>
   );
 }
@@ -150,6 +236,20 @@ export default function ParentProfileScreen() {
     onError: () => setDeletingId(null),
   });
 
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const updateChildMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: Partial<parentApi.ChildInput> }) =>
+      parentApi.updateChild(id, data),
+    onMutate: ({ id }) => setUpdatingId(id),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<parentApi.ParentProfile | undefined>(["parent-profile"], (prev) =>
+        prev ? { ...prev, children: prev.children.map((c) => (c.id === updated.id ? updated : c)) } : prev
+      );
+      setUpdatingId(null);
+    },
+    onError: () => setUpdatingId(null),
+  });
+
   if (isLoading || !profile) {
     return (
       <View className="flex-1 bg-xporadia-bg items-center justify-center">
@@ -161,19 +261,15 @@ export default function ParentProfileScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-12">
-        <View className="items-center pt-10 pb-5 overflow-hidden">
-          <View
-            className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]"
-            pointerEvents="none"
-          />
-          <View
-            className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
-            pointerEvents="none"
-          />
-          <Avatar firstName={user?.first_name} lastName={user?.last_name} />
+        <View className="items-center pt-10 pb-5">
+          <View className="absolute inset-0 overflow-hidden" pointerEvents="none">
+            <View className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]" />
+            <View className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]" />
+          </View>
+          <AvatarPicker firstName={user?.first_name} lastName={user?.last_name} imageUri={user?.avatar} />
           <Text className="text-xl font-bold text-xporadia-navy mt-3">
             {user?.first_name} {user?.last_name}
           </Text>
@@ -254,6 +350,8 @@ export default function ParentProfileScreen() {
                 child={child}
                 deleting={deletingId === child.id}
                 onDelete={() => deleteChildMutation.mutate(child.id)}
+                updating={updatingId === child.id}
+                onUpdate={(data) => updateChildMutation.mutate({ id: child.id, data })}
               />
             ))}
 

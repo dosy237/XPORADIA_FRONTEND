@@ -6,7 +6,7 @@ interface SocialButtonProps {
 }
 
 // Connexion Google/Apple pas encore câblée côté backend (OAuth hors scope
-// EP-01 Sprint 1) — le bouton reste visible pour respecter la maquette mais
+// EP-01 Sprint 1), le bouton reste visible pour respecter la maquette mais
 // affiche un message honnête plutôt que de simuler une action.
 export function SocialButton({ label, onPress }: SocialButtonProps) {
   return (
