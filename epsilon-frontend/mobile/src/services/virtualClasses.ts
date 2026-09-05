@@ -1,3 +1,5 @@
+import { appendFileAsset } from "@/lib/formDataAsset";
+import type { LocalFileAsset } from "@/lib/formDataAsset";
 import api from "@/services/api";
 
 export type ExerciseStatus = "draft" | "published" | "closed";
@@ -46,7 +48,7 @@ export const fetchExercises = (subjectId: number) =>
 export const fetchExercise = (exerciseId: string) =>
   api.get<Exercise>(`/virtual-classes/exercises/${exerciseId}/`).then((r) => r.data);
 
-export const createExercise = (
+export const createExercise = async (
   subjectId: number,
   payload: {
     title: string;
@@ -55,8 +57,25 @@ export const createExercise = (
     kind?: ExerciseKind;
     status?: ExerciseStatus;
     deadline?: string;
+    attachments?: LocalFileAsset[];
   }
-) => api.post<Exercise>(`/virtual-classes/subjects/${subjectId}/exercises/`, payload).then((r) => r.data);
+) => {
+  const formData = new FormData();
+  formData.append("title", payload.title);
+  formData.append("instructions", payload.instructions);
+  formData.append("term", String(payload.term));
+  if (payload.kind) formData.append("kind", payload.kind);
+  if (payload.status) formData.append("status", payload.status);
+  if (payload.deadline) formData.append("deadline", payload.deadline);
+  for (const asset of payload.attachments ?? []) {
+    await appendFileAsset(formData, "attachments", asset);
+  }
+  return api
+    .post<Exercise>(`/virtual-classes/subjects/${subjectId}/exercises/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
+};
 
 export const updateExercise = (exerciseId: string, payload: Partial<{ status: ExerciseStatus }>) =>
   api.patch<Exercise>(`/virtual-classes/exercises/${exerciseId}/`, payload).then((r) => r.data);

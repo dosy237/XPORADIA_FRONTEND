@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
@@ -6,8 +8,9 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
-import { NewspaperIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import { CloseIcon, FileTextIcon, ImageIcon, NewspaperIcon, PencilIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import type { LocalFileAsset } from "@/lib/formDataAsset";
 import { Colors } from "@/constants/theme";
 import * as gradingApi from "@/services/grading";
 import * as messagingApi from "@/services/messaging";
@@ -141,6 +144,26 @@ export default function SubjectVirtualClassScreen() {
   const [instructions, setInstructions] = useState("");
   const [kind, setKind] = useState<ExerciseKind>("homework");
   const [selectedTermId, setSelectedTermId] = useState<number | null>(null);
+  const [attachments, setAttachments] = useState<LocalFileAsset[]>([]);
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.85 });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    setAttachments((prev) => [...prev, { uri: asset.uri, name: asset.fileName ?? "image.jpg", mimeType: asset.mimeType }]);
+  };
+
+  const pickDocument = async () => {
+    const result = await DocumentPicker.getDocumentAsync({ type: ["application/pdf", "image/*"], multiple: true });
+    if (result.canceled) return;
+    setAttachments((prev) => [
+      ...prev,
+      ...result.assets.map((asset) => ({ uri: asset.uri, name: asset.name, mimeType: asset.mimeType })),
+    ]);
+  };
+
+  const removeAttachment = (index: number) =>
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
 
   const termsQuery = useQuery({
     queryKey: ["subject-terms", subjectId],
@@ -174,6 +197,7 @@ export default function SubjectVirtualClassScreen() {
         instructions,
         kind,
         term: selectedTermId as number,
+        attachments,
       }),
     onSuccess: (exercise) => {
       queryClient.setQueryData<Exercise[] | undefined>(exercisesQueryKey, (prev) =>
@@ -183,6 +207,7 @@ export default function SubjectVirtualClassScreen() {
       setInstructions("");
       setKind("homework");
       setSelectedTermId(null);
+      setAttachments([]);
       setAdding(false);
     },
   });
@@ -299,6 +324,54 @@ export default function SubjectVirtualClassScreen() {
                 ))}
               </View>
             </View>
+            <View className="gap-1.5">
+              <Text className="text-sm font-medium text-xporadia-text-secondary">
+                Images et documents (optionnel)
+              </Text>
+              {attachments.length > 0 ? (
+                <View className="gap-2">
+                  {attachments.map((asset, index) => (
+                    <View
+                      key={`${asset.uri}-${index}`}
+                      className="flex-row items-center gap-2 border border-xporadia-border rounded-2xl px-4 py-3"
+                    >
+                      {asset.mimeType?.startsWith("image/") ? (
+                        <ImageIcon size={14} color={Colors.orange} />
+                      ) : (
+                        <FileTextIcon size={14} color={Colors.orange} />
+                      )}
+                      <Text className="text-sm text-xporadia-text-primary flex-1" numberOfLines={1}>
+                        {asset.name}
+                      </Text>
+                      <Pressable
+                        onPress={() => removeAttachment(index)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Retirer ${asset.name}`}
+                        hitSlop={8}
+                      >
+                        <CloseIcon size={14} color={Colors.textSecondary} />
+                      </Pressable>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={pickImage}
+                  className="flex-1 flex-row items-center justify-center gap-2 border border-dashed border-xporadia-border rounded-2xl py-3"
+                >
+                  <ImageIcon size={14} color={Colors.textSecondary} />
+                  <Text className="text-xs font-semibold text-xporadia-text-secondary">Photo</Text>
+                </Pressable>
+                <Pressable
+                  onPress={pickDocument}
+                  className="flex-1 flex-row items-center justify-center gap-2 border border-dashed border-xporadia-border rounded-2xl py-3"
+                >
+                  <FileTextIcon size={14} color={Colors.textSecondary} />
+                  <Text className="text-xs font-semibold text-xporadia-text-secondary">Document</Text>
+                </Pressable>
+              </View>
+            </View>
             <View className="flex-row gap-3">
               <View className="flex-1">
                 <Button
@@ -308,6 +381,7 @@ export default function SubjectVirtualClassScreen() {
                   onPress={() => {
                     setAdding(false);
                     setSelectedTermId(null);
+                    setAttachments([]);
                   }}
                 />
               </View>
