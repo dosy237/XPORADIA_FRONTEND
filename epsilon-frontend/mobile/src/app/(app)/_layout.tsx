@@ -58,6 +58,7 @@ export default function AppLayout() {
       <Stack.Screen name="director/tuition/index" options={{ title: "Frais de scolarité" }} />
       <Stack.Screen name="director/tuition/schedule" options={{ title: "Échéancier" }} />
       <Stack.Screen name="director/tuition/child/[childId]" options={{ title: "Frais de scolarité" }} />
+      <Stack.Screen name="director/documents/child/[childId]" options={{ title: "Documents" }} />
       <Stack.Screen name="director/academics/index" options={{ title: "Structure académique" }} />
       <Stack.Screen name="director/task-delegations" options={{ title: "Délégations de tâches" }} />
       <Stack.Screen name="director/academics/[departmentId]" options={{ title: "Département" }} />

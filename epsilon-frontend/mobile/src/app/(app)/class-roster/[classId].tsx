@@ -48,6 +48,7 @@ function RosterRow({
   enrollment,
   isDirector,
   otherClasses,
+  schoolYear,
   onTransition,
   onWithdraw,
   onRemoveFromEstablishment,
@@ -55,6 +56,7 @@ function RosterRow({
   enrollment: Enrollment;
   isDirector: boolean;
   otherClasses: SchoolClass[];
+  schoolYear?: string;
   onTransition: (enrollmentId: number, status: "promoted" | "repeating", targetClassId: number) => void;
   onWithdraw: (enrollmentId: number) => void;
   onRemoveFromEstablishment: (childId: number, childName: string) => void;
@@ -88,6 +90,23 @@ function RosterRow({
                 router.push({
                   pathname: "/(app)/director/tuition/child/[childId]",
                   params: { childId: String(enrollment.child.id) },
+                })
+              }
+            />
+          )}
+          {isDirector && (
+            <Button
+              label="Documents administratifs"
+              variant="secondary"
+              pill
+              onPress={() =>
+                router.push({
+                  pathname: "/(app)/director/documents/child/[childId]",
+                  params: {
+                    childId: String(enrollment.child.id),
+                    childName: enrollment.child.first_name,
+                    schoolYear: schoolYear ?? "",
+                  },
                 })
               }
             />
@@ -244,6 +263,7 @@ export default function ClassRosterScreen() {
               enrollment={enrollment}
               isDirector={isDirector}
               otherClasses={otherClasses}
+              schoolYear={schoolYear}
               onTransition={(enrollmentId, status, targetClassId) =>
                 transitionMutation.mutate({ enrollmentId, status, targetClassId })
               }
