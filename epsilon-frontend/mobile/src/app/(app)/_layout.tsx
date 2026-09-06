@@ -62,6 +62,8 @@ export default function AppLayout() {
       <Stack.Screen name="director/discipline/index" options={{ title: "Discipline" }} />
       <Stack.Screen name="director/discipline/child/[childId]" options={{ title: "Discipline" }} />
       <Stack.Screen name="director/teaching-staff/index" options={{ title: "Enseignants" }} />
+      <Stack.Screen name="director/students/index" options={{ title: "Élèves" }} />
+      <Stack.Screen name="director/students/[childId]" options={{ title: "Élève" }} />
       <Stack.Screen name="director/academics/index" options={{ title: "Structure académique" }} />
       <Stack.Screen name="director/task-delegations" options={{ title: "Délégations de tâches" }} />
       <Stack.Screen name="director/academics/[departmentId]" options={{ title: "Département" }} />

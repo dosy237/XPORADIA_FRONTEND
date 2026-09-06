@@ -571,3 +571,38 @@ export interface TeachingStaffMember {
 
 export const fetchTeachingStaff = () =>
   api.get<TeachingStaffMember[]>("/academics/teaching-staff/").then((r) => r.data);
+
+export interface EstablishmentStudent {
+  id: number;
+  first_name: string;
+  last_name: string;
+  avatar: string | null;
+  matricule: string;
+  class_name: string;
+  school_year: string;
+}
+
+export const fetchEstablishmentStudents = (query?: string) =>
+  api
+    .get<EstablishmentStudent[]>(`/academics/students/${query ? `?q=${encodeURIComponent(query)}` : ""}`)
+    .then((r) => r.data);
+
+export interface StudentOverview {
+  id: number;
+  first_name: string;
+  last_name: string;
+  avatar: string | null;
+  matricule: string;
+  birth_date: string | null;
+  birth_place: string;
+  sex_label: string;
+  nationality: string;
+  class_name: string;
+  school_year: string;
+  parent_name: string;
+  parent_phone: string;
+  parent_email: string;
+}
+
+export const fetchStudentOverview = (childId: number) =>
+  api.get<StudentOverview>(`/academics/students/${childId}/overview/`).then((r) => r.data);
