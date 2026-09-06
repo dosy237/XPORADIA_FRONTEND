@@ -121,6 +121,13 @@ export default function DirectorDashboard() {
         </Text>
       </Card>
 
+      <Card onPress={() => router.push("/(app)/director/tuition")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Frais de scolarité</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Échéancier, paiements des familles et relances.
+        </Text>
+      </Card>
+
       <Card onPress={() => router.push("/(app)/director/academics")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">
           Structure académique
