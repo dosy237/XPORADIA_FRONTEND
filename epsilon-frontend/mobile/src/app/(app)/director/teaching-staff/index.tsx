@@ -4,8 +4,10 @@ import { ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
+import { CertificationBadge } from "@/components/ui/CertificationBadge";
 import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
+import { LEVEL_COLORS } from "@/constants/certificationLevels";
 import * as academicsApi from "@/services/academics";
 import type { TeachingStaffMember } from "@/services/academics";
 
@@ -16,9 +18,34 @@ function normalize(value: string) {
     .toLowerCase();
 }
 
+// Même gabarit de carte que l'Annuaire commun ((tabs)/directory/index.tsx) :
+// accent navy à gauche, avatar + nom + pastille "Or et plus" sur une ligne,
+// sous-titre réservé à hauteur fixe, ligne de puce de niveau teintée de la
+// vraie couleur du palier — pour qu'un enseignant se reconnaisse au même
+// coup d'œil ici que dans l'annuaire public. Les blocs classes/matières/
+// contrat, propres à cette vue directeur (coordonnées, affectations réelles
+// à l'établissement), s'ajoutent en dessous plutôt que de remplacer ce
+// gabarit commun.
+const SUBTITLE_MIN_HEIGHT = 32;
+const BADGE_ROW_MIN_HEIGHT = 30;
+
+function LevelChip({ level, label }: { level: TeachingStaffMember["certification_level"]; label: string }) {
+  const color = LEVEL_COLORS[level];
+  return (
+    <View
+      className="flex-row items-center rounded-full px-3 py-1.5"
+      style={{ borderWidth: 1, backgroundColor: `${color}1F`, borderColor: `${color}40` }}
+    >
+      <Text className="text-xs font-semibold" style={{ color }}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
 function TeacherCard({ teacher }: { teacher: TeachingStaffMember }) {
   return (
-    <Card className="gap-3">
+    <Card className="gap-3 border-l-4 border-xporadia-navy">
       <View className="flex-row items-center gap-3">
         <Avatar
           firstName={teacher.first_name}
@@ -26,16 +53,25 @@ function TeacherCard({ teacher }: { teacher: TeachingStaffMember }) {
           imageUri={teacher.avatar ?? undefined}
           size={52}
         />
-        <View className="flex-1 gap-0.5">
-          <Text className="text-sm font-semibold text-xporadia-text-primary">
-            {teacher.first_name} {teacher.last_name}
+        <View className="flex-1 gap-1">
+          <View className="flex-row items-center gap-1.5">
+            <Text className="text-base font-semibold text-xporadia-text-primary" style={{ flexShrink: 1 }}>
+              {teacher.first_name} {teacher.last_name}
+            </Text>
+            <CertificationBadge level={teacher.certification_level} />
+          </View>
+          <Text
+            className="text-xs text-xporadia-text-secondary"
+            numberOfLines={2}
+            style={{ minHeight: SUBTITLE_MIN_HEIGHT }}
+          >
+            {teacher.email}
+            {teacher.phone ? ` · ${teacher.phone}` : ""}
           </Text>
-          <Text className="text-xs text-xporadia-text-secondary">{teacher.email}</Text>
-          {teacher.phone ? (
-            <Text className="text-xs text-xporadia-text-secondary">{teacher.phone}</Text>
-          ) : null}
+          <View className="flex-row gap-1.5 mt-1" style={{ minHeight: BADGE_ROW_MIN_HEIGHT }}>
+            <LevelChip level={teacher.certification_level} label={teacher.certification_level_label} />
+          </View>
         </View>
-        <Chip label={teacher.certification_level_label} variant="navy-subtle" />
       </View>
 
       {teacher.homeroom_classes.length > 0 ? (

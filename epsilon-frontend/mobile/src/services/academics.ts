@@ -1,4 +1,5 @@
 import api from "@/services/api";
+import type { CertificationLevel } from "@/services/certification";
 
 export interface DelegateBasic {
   id: number;
@@ -561,7 +562,7 @@ export interface TeachingStaffMember {
   avatar: string | null;
   phone: string;
   email: string;
-  certification_level: string;
+  certification_level: CertificationLevel;
   certification_level_label: string;
   homeroom_classes: string[];
   subjects: { name: string; class_name: string }[];
