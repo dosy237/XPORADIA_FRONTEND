@@ -1,12 +1,64 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Text, View } from "react-native";
 
 import { DashboardPlaceholder } from "@/components/DashboardPlaceholder";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import * as directorProfileApi from "@/services/directorProfile";
 import * as employmentApi from "@/services/employment";
 import * as gradingApi from "@/services/grading";
+
+function SchoolGroupInvitationBanner() {
+  const queryClient = useQueryClient();
+  const { data: invitations } = useQuery({
+    queryKey: ["my-school-group-invitations"],
+    queryFn: directorProfileApi.fetchMySchoolGroupInvitations,
+  });
+
+  const respondMutation = useMutation({
+    mutationFn: ({ id, accept }: { id: number; accept: boolean }) =>
+      directorProfileApi.respondToSchoolGroupInvitation(id, accept),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-school-group-invitations"] });
+      queryClient.invalidateQueries({ queryKey: ["my-school-group"] });
+    },
+  });
+
+  const invitation = (invitations ?? [])[0];
+  if (!invitation) return null;
+
+  return (
+    <Card className="gap-2">
+      <Text className="text-base font-semibold text-xporadia-text-primary">
+        Invitation à un groupe scolaire
+      </Text>
+      <Text className="text-sm text-xporadia-text-secondary">
+        {invitation.group_name} vous invite à rejoindre son groupe scolaire.
+      </Text>
+      <View className="flex-row gap-3 mt-1">
+        <View className="flex-1">
+          <Button
+            label="Refuser"
+            variant="secondary"
+            pill
+            loading={respondMutation.isPending}
+            onPress={() => respondMutation.mutate({ id: invitation.id, accept: false })}
+          />
+        </View>
+        <View className="flex-1">
+          <Button
+            label="Accepter"
+            pill
+            loading={respondMutation.isPending}
+            onPress={() => respondMutation.mutate({ id: invitation.id, accept: true })}
+          />
+        </View>
+      </View>
+    </Card>
+  );
+}
 
 export default function DirectorDashboard() {
   const { data: joinRequests } = useQuery({
@@ -23,6 +75,8 @@ export default function DirectorDashboard() {
 
   return (
     <DashboardPlaceholder title="Gérez vos recrutements et vos stages.">
+      <SchoolGroupInvitationBanner />
+
       <Card onPress={() => router.push("/(app)/director/join-requests")} className="gap-1">
         <View className="flex-row items-center justify-between">
           <Text className="text-base font-semibold text-xporadia-text-primary">
@@ -57,6 +111,13 @@ export default function DirectorDashboard() {
         <Text className="text-base font-semibold text-xporadia-text-primary">Mon établissement</Text>
         <Text className="text-sm text-xporadia-text-secondary">
           Nom, adresse, niveaux enseignés, effectif : visible par Xporadia et les partenaires.
+        </Text>
+      </Card>
+
+      <Card onPress={() => router.push("/(app)/director/school-group")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Groupe scolaire</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Regroupez plusieurs établissements et consultez leurs chiffres consolidés.
         </Text>
       </Card>
 
