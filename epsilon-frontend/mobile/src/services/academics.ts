@@ -553,3 +553,20 @@ export const removeTaskDelegation = (task: DelegatedTask, email: string) =>
 
 export const removeFromEstablishment = (childId: number) =>
   api.post(`/academics/children/${childId}/remove-from-establishment/`);
+
+export interface TeachingStaffMember {
+  id: number;
+  first_name: string;
+  last_name: string;
+  avatar: string | null;
+  phone: string;
+  email: string;
+  certification_level: string;
+  certification_level_label: string;
+  homeroom_classes: string[];
+  subjects: { name: string; class_name: string }[];
+  recruitment: { contract_type: string; contract_type_label: string; hourly_rate_teacher: number | null } | null;
+}
+
+export const fetchTeachingStaff = () =>
+  api.get<TeachingStaffMember[]>("/academics/teaching-staff/").then((r) => r.data);

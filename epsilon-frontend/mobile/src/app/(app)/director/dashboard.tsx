@@ -135,6 +135,13 @@ export default function DirectorDashboard() {
         </Text>
       </Card>
 
+      <Card onPress={() => router.push("/(app)/director/teaching-staff")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Équipe enseignante</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Enseignants de l&apos;établissement, leurs classes et matières.
+        </Text>
+      </Card>
+
       <Card onPress={() => router.push("/(app)/director/academics")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">
           Structure académique
