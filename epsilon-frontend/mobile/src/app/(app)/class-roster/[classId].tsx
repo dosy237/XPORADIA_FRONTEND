@@ -111,6 +111,22 @@ function RosterRow({
               }
             />
           )}
+          {isDirector && (
+            <Button
+              label="Suivi disciplinaire"
+              variant="secondary"
+              pill
+              onPress={() =>
+                router.push({
+                  pathname: "/(app)/director/discipline/child/[childId]",
+                  params: {
+                    childId: String(enrollment.child.id),
+                    childName: enrollment.child.first_name,
+                  },
+                })
+              }
+            />
+          )}
           {isDirector && <Button label="Passe" pill onPress={() => setPicking("promoted")} />}
           {isDirector && (
             <Button label="Redouble" variant="secondary" pill onPress={() => setPicking("repeating")} />

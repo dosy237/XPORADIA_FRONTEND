@@ -128,6 +128,13 @@ export default function DirectorDashboard() {
         </Text>
       </Card>
 
+      <Card onPress={() => router.push("/(app)/director/discipline")} className="gap-1">
+        <Text className="text-base font-semibold text-xporadia-text-primary">Suivi disciplinaire</Text>
+        <Text className="text-sm text-xporadia-text-secondary">
+          Incidents consignés, sanctions et relances aux familles.
+        </Text>
+      </Card>
+
       <Card onPress={() => router.push("/(app)/director/academics")} className="gap-1">
         <Text className="text-base font-semibold text-xporadia-text-primary">
           Structure académique
