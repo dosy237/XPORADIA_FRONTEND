@@ -5,7 +5,7 @@ import { ScrollView, Text, View } from "react-native";
 
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { OtpInput } from "@/components/ui/OtpInput";
 import * as academicsApi from "@/services/academics";
 import * as authApi from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
@@ -32,6 +32,10 @@ export default function VerifyOtpScreen() {
         return;
       }
     }
+    if (user?.primary_role === "student") {
+      router.replace("/(auth)/join-establishment");
+      return;
+    }
     router.replace("/(tabs)/me");
   };
 
@@ -50,20 +54,19 @@ export default function VerifyOtpScreen() {
   });
 
   return (
-    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-10">
-      <AuthHeader title="Vérifiez votre compte" subtitle={`Un code a été envoyé à ${user?.email ?? "votre email"}`} />
+    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-10 flex-grow">
+      <AuthHeader
+        title="Vérifiez votre compte"
+        subtitle={`Un code à 6 chiffres a été envoyé à ${user?.email ?? "votre adresse email"}`}
+        showBack
+      />
 
-      <View className="px-6 pt-4">
-        <View className="bg-white rounded-2xl p-6 gap-4 shadow-card border border-xporadia-border">
-          <Input
-            label="Code de vérification"
-            value={code}
-            onChangeText={(v) => setCode(v.replace(/\D/g, "").slice(0, 6))}
-            keyboardType="number-pad"
-            placeholder="000000"
-            maxLength={6}
-          />
-          {error ? <Text className="text-xporadia-red text-sm">{error}</Text> : null}
+      <View className="px-6 pt-6">
+        <View className="bg-white rounded-2xl p-6 gap-6 shadow-soft">
+          <OtpInput value={code} onChangeText={(v) => { setError(null); setCode(v); }} autoFocus />
+
+          {error ? <Text className="text-xporadia-red text-sm text-center">{error}</Text> : null}
+          {resent ? <Text className="text-xporadia-green text-sm text-center">Nouveau code envoyé.</Text> : null}
 
           <Button
             label="Vérifier"
@@ -76,19 +79,27 @@ export default function VerifyOtpScreen() {
             disabled={code.length !== 6}
           />
 
-          <View className="items-center gap-2">
-            {resent ? <Text className="text-xporadia-green text-sm">Nouveau code envoyé.</Text> : null}
-            <Text className="text-xporadia-orange-text font-semibold" onPress={() => resendMutation.mutate()}>
-              Renvoyer le code
-            </Text>
+          <View className="items-center flex-row justify-center gap-1">
+            <Text className="text-xporadia-text-secondary text-sm">Vous n'avez rien reçu ?</Text>
             <Text
-              className="text-xporadia-text-secondary"
-              onPress={() => user && redirectAfterVerification()}
+              className="text-xporadia-orange-text font-semibold text-sm"
+              onPress={() => resendMutation.mutate()}
+              suppressHighlighting
             >
-              Vérifier plus tard
+              Renvoyer le code
             </Text>
           </View>
         </View>
+
+        {user ? (
+          <Text
+            className="text-xporadia-text-secondary text-center text-sm mt-5"
+            onPress={() => redirectAfterVerification()}
+            suppressHighlighting
+          >
+            Vérifier plus tard
+          </Text>
+        ) : null}
       </View>
     </ScrollView>
   );

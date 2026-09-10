@@ -1,18 +1,35 @@
-import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Image } from "expo-image";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
 import { ClockIcon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/Input";
 import { CATEGORY_LABELS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
 import * as certificationApi from "@/services/certification";
+import type { MobileOperator, TrainingSession } from "@/services/certification";
+import { useAuthStore } from "@/store/authStore";
 
 const NEXT_SESSIONS_COUNT = 3;
+const OPERATORS: { value: MobileOperator; label: string }[] = [
+  { value: "orange", label: "Orange Money" },
+  { value: "wave", label: "Wave" },
+  { value: "mtn", label: "MTN Money" },
+];
 
 export default function PublicModuleDetailScreen() {
   const { moduleId, from } = useLocalSearchParams<{ moduleId: string; from?: string }>();
+  const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const isTeacher = useAuthStore((s) => s.currentRole === "teacher");
+  const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
+  const [operator, setOperator] = useState<MobileOperator>("orange");
+  const [phone, setPhone] = useState("");
 
   const { data: module, isLoading } = useQuery({
     queryKey: ["training-module", moduleId],
@@ -24,6 +41,28 @@ export default function PublicModuleDetailScreen() {
     queryFn: () => certificationApi.fetchTrainingSessions({ module: moduleId }),
     enabled: !!moduleId,
   });
+
+  const enrollMutation = useMutation({
+    mutationFn: () => {
+      if (!selectedSession) throw new Error("Aucune session sélectionnée.");
+      return certificationApi.enrollInSession(selectedSession.id, { operator, phone_number: phone.trim() });
+    },
+    onSuccess: () => {
+      setSelectedSession(null);
+      setPhone("");
+      queryClient.invalidateQueries({ queryKey: ["training-sessions", moduleId] });
+      queryClient.invalidateQueries({ queryKey: ["my-certification-status"] });
+    },
+  });
+
+  const handleSessionPress = (session: TrainingSession) => {
+    if (!isAuthenticated) {
+      router.push("/(auth)/login");
+      return;
+    }
+    if (!isTeacher) return; // le bandeau ci-dessous explique déjà pourquoi
+    setSelectedSession(session);
+  };
 
   if (isLoading || !module) {
     return (
@@ -45,7 +84,11 @@ export default function PublicModuleDetailScreen() {
         </View>
       ) : null}
 
-      <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-4">
+      {module.cover_image ? (
+        <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 180, borderRadius: 16 }} contentFit="cover" />
+      ) : null}
+
+      <View className="bg-white rounded-3xl p-6 shadow-soft gap-4">
         <View className="flex-row items-start justify-between gap-2">
           <Text className="text-xl font-bold text-xporadia-navy flex-1">{module.title}</Text>
           <Chip label={LEVEL_LABELS[module.target_level]} variant="navy-subtle" />
@@ -71,7 +114,7 @@ export default function PublicModuleDetailScreen() {
         <View className="flex-row items-center gap-4 pt-1">
           <View className="flex-row items-center gap-1.5">
             <ClockIcon size={14} color={Colors.textSecondary} />
-            <Text className="text-xs text-xporadia-text-secondary">{module.duration_hours}h</Text>
+            <Text className="text-xs text-xporadia-text-secondary">{`${module.duration_hours}h`}</Text>
           </View>
           <Text className="text-sm font-semibold text-xporadia-navy">
             {module.price.toLocaleString("fr-FR")} FCFA
@@ -79,29 +122,95 @@ export default function PublicModuleDetailScreen() {
         </View>
       </View>
 
+      {!isAuthenticated ? (
+        <Card className="items-center gap-3 py-6">
+          <Text className="text-sm text-xporadia-text-secondary text-center">
+            Connectez-vous pour vous inscrire à une session de ce module.
+          </Text>
+          <Button label="Se connecter" pill onPress={() => router.push("/(auth)/login")} />
+        </Card>
+      ) : !isTeacher ? (
+        <Card>
+          <Text className="text-xs text-xporadia-text-secondary text-center leading-5">
+            La certification Xporadia est réservée aux enseignants. Ce module reste consultable,
+            mais l'inscription n'est pas ouverte à votre profil.
+          </Text>
+        </Card>
+      ) : null}
+
       {nextSessions.length > 0 && (
         <View className="gap-3">
           <Text className="text-base font-bold text-xporadia-navy">Prochaines sessions</Text>
-          {nextSessions.map((session) => (
-            <View key={session.id} className="bg-white rounded-2xl p-4 border border-xporadia-border gap-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">
-                {session.city} · {new Date(session.date).toLocaleDateString("fr-FR")}
-              </Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                {session.location} · {session.places_left} places restantes
-              </Text>
-            </View>
-          ))}
+          {nextSessions.map((session) => {
+            const selected = selectedSession?.id === session.id;
+            return (
+              <Card
+                key={session.id}
+                onPress={() => handleSessionPress(session)}
+                className={
+                  !isAuthenticated || !isTeacher
+                    ? "gap-1 opacity-60"
+                    : selected
+                      ? "gap-1 border-2 border-xporadia-orange"
+                      : "gap-1"
+                }
+              >
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-sm font-semibold text-xporadia-text-primary">
+                    {session.city} · {new Date(session.date).toLocaleDateString("fr-FR")}
+                  </Text>
+                  {selected ? <Chip label="Sélectionnée" variant="orange" /> : null}
+                </View>
+                <Text className="text-xs text-xporadia-text-secondary">
+                  {session.location} · {session.places_left} places restantes
+                </Text>
+              </Card>
+            );
+          })}
         </View>
       )}
 
-      <Button
-        label="S'inscrire à ce module"
-        pill
-        onPress={() =>
-          Alert.alert("Bientôt disponible", "L'inscription et le paiement en ligne arrivent prochainement.")
-        }
-      />
+      {isAuthenticated && isTeacher && nextSessions.length > 0 ? (
+        <Card className="gap-3">
+          <Text className="text-sm font-bold text-xporadia-navy">Paiement et inscription</Text>
+          {!selectedSession ? (
+            <Text className="text-xs text-xporadia-text-secondary">
+              Choisissez une session ci-dessus pour continuer.
+            </Text>
+          ) : (
+            <Text className="text-xs text-xporadia-text-secondary">
+              {selectedSession.city}, {new Date(selectedSession.date).toLocaleDateString("fr-FR")}
+            </Text>
+          )}
+          <View className="flex-row gap-2">
+            {OPERATORS.map((op) => (
+              <Chip
+                key={op.value}
+                label={op.label}
+                variant={operator === op.value ? "navy" : "neutral"}
+                onPress={() => setOperator(op.value)}
+              />
+            ))}
+          </View>
+          <Input
+            label="Numéro Mobile Money"
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Ex. 07 00 00 00 00"
+            keyboardType="phone-pad"
+          />
+          {enrollMutation.error ? (
+            <Text className="text-xs text-xporadia-red">L'inscription a échoué. Vérifiez le numéro saisi.</Text>
+          ) : null}
+          <Button
+            label="Payer et s'inscrire"
+            pill
+            onPress={() => enrollMutation.mutate()}
+            loading={enrollMutation.isPending}
+            disabled={!selectedSession || phone.trim().length < 8}
+          />
+        </Card>
+      ) : null}
     </ScrollView>
   );
 }

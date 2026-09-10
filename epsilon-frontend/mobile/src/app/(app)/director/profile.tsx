@@ -9,26 +9,17 @@ import {
   View,
 } from "react-native";
 
-import { Avatar } from "@/components/ui/Avatar";
+import { AvatarPicker } from "@/components/ui/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { BuildingIcon, LayersIcon, PencilIcon, UsersIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { LogoPicker } from "@/components/ui/LogoPicker";
+import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
+import { openInMaps } from "@/lib/openInMaps";
 import * as directorApi from "@/services/directorProfile";
 import { useAuthStore } from "@/store/authStore";
-
-function StatBox({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <View className="flex-1 bg-xporadia-bg rounded-2xl p-3 gap-2 items-center">
-      <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-card">{icon}</View>
-      <Text className="text-sm font-bold text-xporadia-navy" numberOfLines={1}>
-        {value}
-      </Text>
-      <Text className="text-[11px] text-xporadia-text-secondary">{label}</Text>
-    </View>
-  );
-}
 
 export default function DirectorProfileScreen() {
   const queryClient = useQueryClient();
@@ -44,6 +35,10 @@ export default function DirectorProfileScreen() {
   const [address, setAddress] = useState("");
   const [levelsTaught, setLevelsTaught] = useState("");
   const [studentCount, setStudentCount] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [establishmentCode, setEstablishmentCode] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
     if (!profile) return;
@@ -51,6 +46,10 @@ export default function DirectorProfileScreen() {
     setAddress(profile.address);
     setLevelsTaught(profile.levels_taught.join(", "));
     setStudentCount(profile.student_count != null ? String(profile.student_count) : "");
+    setPhone(profile.phone);
+    setContactEmail(profile.contact_email);
+    setEstablishmentCode(profile.establishment_code);
+    setIsPublic(profile.is_public);
   }, [profile]);
 
   const mutation = useMutation({
@@ -60,6 +59,10 @@ export default function DirectorProfileScreen() {
         address,
         levels_taught: levelsTaught.split(",").map((s) => s.trim()).filter(Boolean),
         student_count: studentCount ? Number(studentCount) : null,
+        phone,
+        contact_email: contactEmail,
+        establishment_code: establishmentCode,
+        is_public: isPublic,
       }),
     onSuccess: (data) => {
       queryClient.setQueryData(["director-profile"], data);
@@ -78,23 +81,19 @@ export default function DirectorProfileScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-12">
-        <View className="items-center pt-10 pb-5 overflow-hidden">
-          <View
-            className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]"
-            pointerEvents="none"
-          />
-          <View
-            className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]"
-            pointerEvents="none"
-          />
+        <View className="items-center pt-10 pb-5">
+          <View className="absolute inset-0 overflow-hidden" pointerEvents="none">
+            <View className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]" />
+            <View className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]" />
+          </View>
           <View>
-            <Avatar firstName={user?.first_name} lastName={user?.last_name} />
+            <AvatarPicker firstName={user?.first_name} lastName={user?.last_name} imageUri={user?.avatar} />
             {profile.is_partner && (
               <View
-                className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white"
+                className="absolute bottom-1 left-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white"
               />
             )}
           </View>
@@ -108,6 +107,18 @@ export default function DirectorProfileScreen() {
         </View>
 
         <View className="px-6">
+          <View className="bg-white rounded-3xl p-5 mb-5 shadow-deep border border-xporadia-border flex-row items-center gap-4">
+            <LogoPicker imageUri={profile.logo} size={64} />
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                Logo de l'établissement
+              </Text>
+              <Text className="text-sm text-xporadia-text-primary leading-5 mt-1">
+                Affiché en en-tête des bulletins officiels
+              </Text>
+            </View>
+          </View>
+
           {!editing ? (
             <View className="gap-5">
               <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-5">
@@ -115,26 +126,32 @@ export default function DirectorProfileScreen() {
                   <StatBox
                     icon={<BuildingIcon color={Colors.navy} size={18} />}
                     label="Établissement"
-                    value={profile.school_name || "—"}
+                    value={profile.school_name || "Non renseigné"}
                   />
                   <StatBox
                     icon={<UsersIcon color={Colors.navy} size={18} />}
                     label="Effectif"
-                    value={profile.student_count != null ? `${profile.student_count} élèves` : "—"}
+                    value={profile.student_count != null ? `${profile.student_count} élèves` : "Non renseigné"}
                   />
                   <StatBox
                     icon={<LayersIcon color={Colors.navy} size={18} />}
                     label="Niveaux"
-                    value={profile.levels_taught.length ? String(profile.levels_taught.length) : "—"}
+                    value={profile.levels_taught.length ? String(profile.levels_taught.length) : "Non renseigné"}
                   />
                 </View>
 
-                <View className="gap-1">
+                <Pressable
+                  onPress={() => openInMaps(profile.address)}
+                  disabled={!profile.address}
+                  className="gap-1"
+                  accessibilityRole="button"
+                  accessibilityLabel="Ouvrir l'adresse dans Maps"
+                >
                   <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
                     Adresse
                   </Text>
                   <Text className="text-sm text-xporadia-text-primary leading-5">{profile.address}</Text>
-                </View>
+                </Pressable>
 
                 {profile.levels_taught.length > 0 && (
                   <View className="gap-2">
@@ -182,6 +199,40 @@ export default function DirectorProfileScreen() {
                 keyboardType="numeric"
                 placeholder="120"
               />
+
+              <View className="gap-1">
+                <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                  Coordonnées affichées sur les bulletins officiels
+                </Text>
+              </View>
+              <Input
+                label="Téléphone de l'établissement"
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                placeholder="22443517"
+              />
+              <Input
+                label="Email de contact de l'établissement"
+                value={contactEmail}
+                onChangeText={setContactEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholder="contact@monetablissement.ci"
+              />
+              <Input
+                label="Code établissement"
+                value={establishmentCode}
+                onChangeText={setEstablishmentCode}
+                placeholder="000395"
+              />
+              <View className="gap-2">
+                <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Statut</Text>
+                <View className="flex-row gap-2">
+                  <Chip label="Public" variant={isPublic ? "navy" : "neutral"} onPress={() => setIsPublic(true)} />
+                  <Chip label="Privé" variant={!isPublic ? "navy" : "neutral"} onPress={() => setIsPublic(false)} />
+                </View>
+              </View>
 
               <View className="flex-row gap-3 mt-2">
                 <View className="flex-1">

@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from "react-native";
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Button } from "@/components/ui/Button";
@@ -48,29 +48,42 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10 flex-grow">
-        <AuthHeader title="Connexion" subtitle="Accédez à votre espace Xporadia" />
+        <AuthHeader title="Ravi de vous revoir" subtitle="Connectez-vous pour retrouver votre espace" showBack />
 
-        <View className="px-6 pt-4">
-          <View className="bg-white rounded-2xl p-6 gap-4 shadow-card border border-xporadia-border">
-            <Input
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              placeholder="vous@exemple.ci"
-            />
-            <Input
-              label="Mot de passe"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              placeholder="••••••••"
-            />
-            {formError ? <Text className="text-xporadia-red text-sm">{formError}</Text> : null}
+        <View className="px-6 pt-6">
+          <View className="bg-white rounded-2xl p-6 gap-5 shadow-soft">
+            <View className="gap-4">
+              <Input
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholder="vous@exemple.ci"
+              />
+              <Input
+                label="Mot de passe"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                placeholder="••••••••"
+              />
+            </View>
+
+            <Pressable
+              onPress={() =>
+                Alert.alert("Bientôt disponible", "La réinitialisation du mot de passe arrive prochainement.")
+              }
+              hitSlop={8}
+              className="self-end -mt-2"
+            >
+              <Text className="text-xporadia-orange-text text-sm font-medium">Mot de passe oublié ?</Text>
+            </Pressable>
+
+            {formError ? <Text className="text-xporadia-red text-sm text-center">{formError}</Text> : null}
 
             <Button
               label="Se connecter"
@@ -82,7 +95,7 @@ export default function LoginScreen() {
               loading={mutation.isPending}
             />
 
-            <Divider label="ou" />
+            <Divider label="ou continuer avec" />
 
             <View className="flex-row gap-3">
               <SocialButton label="Google" onPress={() => notifySocialSoon("Google")} />
@@ -90,7 +103,7 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          <View className="items-center gap-1 flex-row justify-center mt-4">
+          <View className="items-center gap-1 flex-row justify-center mt-6">
             <Text className="text-xporadia-text-secondary">Pas encore de compte ?</Text>
             <Link href="/(auth)/register" asChild>
               <Text className="text-xporadia-orange-text font-semibold"> Créer un compte</Text>

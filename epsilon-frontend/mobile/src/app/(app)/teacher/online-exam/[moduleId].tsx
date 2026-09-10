@@ -78,7 +78,7 @@ export default function OnlineExamScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <Text className="text-xs text-xporadia-text-secondary leading-5">
-        Examen en ligne auto-corrigé — {module?.title}. Répondez à toutes les questions puis
+        Examen en ligne auto-corrigé : {module?.title}. Répondez à toutes les questions puis
         soumettez pour obtenir votre résultat immédiatement.
       </Text>
 

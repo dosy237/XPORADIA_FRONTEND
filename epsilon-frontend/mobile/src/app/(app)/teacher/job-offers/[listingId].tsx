@@ -56,7 +56,7 @@ export default function JobListingDetailScreen() {
         </View>
         {(listing.salary_min || listing.salary_max) && (
           <Text className="text-xs text-xporadia-text-secondary">
-            Salaire : {listing.salary_min ?? "?"} — {listing.salary_max ?? "?"} FCFA
+            Salaire : {listing.salary_min ?? "?"} à {listing.salary_max ?? "?"} FCFA
           </Text>
         )}
         <Text className="text-sm text-xporadia-text-primary leading-5 mt-2">{listing.description}</Text>

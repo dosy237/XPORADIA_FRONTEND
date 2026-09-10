@@ -56,7 +56,7 @@ export default function MyJobApplicationsScreen() {
       {applications.map((application) => (
         <View key={application.id} className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+            <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
               {application.listing.title}
             </Text>
             <Chip label={STATUS_LABELS[application.status]} variant={STATUS_VARIANTS[application.status]} />

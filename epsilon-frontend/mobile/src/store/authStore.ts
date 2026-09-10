@@ -15,7 +15,7 @@ interface AuthState {
   logout: () => void;
   switchRole: (role: UserRole) => void;
   updateUser: (data: Partial<User>) => void;
-  setAccessToken: (accessToken: string) => void;
+  setTokens: (accessToken: string, refreshToken: string) => void;
   setHasHydrated: (hasHydrated: boolean) => void;
 }
 
@@ -55,7 +55,11 @@ export const useAuthStore = create<AuthState>()(
       updateUser: (data) =>
         set((state) => ({ user: state.user ? { ...state.user, ...data } : state.user })),
 
-      setAccessToken: (accessToken) => set({ accessToken }),
+      // Le backend fait tourner (rotate) le refresh token à chaque
+      // utilisation — ne persister que l'access token laisserait l'app
+      // réutiliser indéfiniment l'ancien refresh token, périmé dès le
+      // premier rafraîchissement.
+      setTokens: (accessToken, refreshToken) => set({ accessToken, refreshToken }),
 
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
     }),

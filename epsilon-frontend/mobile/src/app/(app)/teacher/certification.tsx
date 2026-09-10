@@ -12,7 +12,7 @@ import * as certificationApi from "@/services/certification";
 function ModuleCard({ module }: { module: certificationApi.TrainingModule }) {
   return (
     <Pressable
-      onPress={() => router.push(`/(app)/teacher/module/${module.id}`)}
+      onPress={() => router.push(`/(tabs)/certifications/${module.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`Voir le module ${module.title}`}
       className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"
@@ -32,7 +32,7 @@ function ModuleCard({ module }: { module: certificationApi.TrainingModule }) {
       <View className="flex-row items-center gap-4 pt-1">
         <View className="flex-row items-center gap-1.5">
           <ClockIcon size={14} color={Colors.textSecondary} />
-          <Text className="text-xs text-xporadia-text-secondary">{module.duration_hours}h</Text>
+          <Text className="text-xs text-xporadia-text-secondary">{`${module.duration_hours}h`}</Text>
         </View>
         <Text className="text-xs font-semibold text-xporadia-navy">
           {module.price.toLocaleString("fr-FR")} FCFA
@@ -64,7 +64,7 @@ export default function TeacherCertificationScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-12">
       <View className="px-6 pt-6 gap-5">
-        <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-5 overflow-hidden">
+        <View className="bg-white rounded-3xl p-6 shadow-deep border border-xporadia-border gap-5">
           <View className="flex-row items-center gap-4">
             {status.current_level ? (
               <LevelBadge level={status.current_level} />
