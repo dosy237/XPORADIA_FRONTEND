@@ -4,7 +4,8 @@ import { syncServerClock } from "@/lib/serverClock";
 import { useAuthStore } from "@/store/authStore";
 
 export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+  process.env.EXPO_PUBLIC_API_URL ??
+  "https://epsilon.fotsoeddysteve.online/api/v1";
 
 const api = axios.create({
   baseURL: API_URL,
