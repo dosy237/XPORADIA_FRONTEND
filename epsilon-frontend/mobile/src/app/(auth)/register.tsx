@@ -172,9 +172,9 @@ export default function RegisterScreen() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-10">
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-24">
         <AuthHeader title="Créer un compte" subtitle="Rejoignez la communauté Xporadia" onBack={goBack} showBack />
 
         <View className="px-6 pt-6">
