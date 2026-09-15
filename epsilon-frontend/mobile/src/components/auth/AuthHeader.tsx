@@ -3,6 +3,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Pressable, Text, View } from "react-native";
 
+import { ChevronLeftIcon } from "@/components/ui/Icon";
+import { Colors } from "@/constants/theme";
+
 interface AuthHeaderProps {
   title: string;
   subtitle?: string;
@@ -35,9 +38,9 @@ export function AuthHeader({ title, subtitle, showLogo, showBack, onBack }: Auth
           hitSlop={12}
           accessibilityRole="button"
           accessibilityLabel="Retour"
-          className="mb-6 h-10 w-10 items-center justify-center rounded-full bg-xporadia-bg self-start"
+          className="mb-6 h-11 w-11 items-center justify-center rounded-full bg-xporadia-bg self-start"
         >
-          <Text className="text-xporadia-navy text-lg">←</Text>
+          <ChevronLeftIcon size={24} color={Colors.navy} strokeWidth={2.75} />
         </Pressable>
       ) : (
         <View className="h-6" />

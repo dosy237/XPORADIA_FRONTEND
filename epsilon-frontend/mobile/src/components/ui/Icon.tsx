@@ -590,18 +590,18 @@ export function LogoutIcon({ size = 16, color = "#FFFFFF" }: IconProps) {
   );
 }
 
-export function ChevronLeftIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+export function ChevronLeftIcon({ size = 16, color = "#5A6A8A", strokeWidth = 2 }: IconProps & { strokeWidth?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M15 18l-6-6 6-6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M15 18l-6-6 6-6" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
 
-export function ChevronRightIcon({ size = 16, color = "#5A6A8A" }: IconProps) {
+export function ChevronRightIcon({ size = 16, color = "#5A6A8A", strokeWidth = 2 }: IconProps & { strokeWidth?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M9 6l6 6-6 6" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M9 6l6 6-6 6" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }

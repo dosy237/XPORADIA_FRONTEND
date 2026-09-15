@@ -17,6 +17,15 @@ export default function VerifyOtpScreen() {
   const [resent, setResent] = useState(false);
   const user = useAuthStore((s) => s.user);
   const updateUser = useAuthStore((s) => s.updateUser);
+  const logout = useAuthStore((s) => s.logout);
+
+  // Échappatoire réelle : si le code n'arrive jamais (email erroné, retard
+  // de livraison...), il faut pouvoir abandonner cette inscription et en
+  // recommencer une autre plutôt que rester coincé sur cet écran.
+  const cancelAndRestart = () => {
+    logout();
+    router.replace("/(auth)/register");
+  };
 
   const redirectAfterVerification = async () => {
     if (inviteToken) {
@@ -100,6 +109,14 @@ export default function VerifyOtpScreen() {
             Vérifier plus tard
           </Text>
         ) : null}
+
+        <Text
+          className="text-xporadia-text-secondary text-center text-sm mt-3 underline"
+          onPress={cancelAndRestart}
+          suppressHighlighting
+        >
+          Annuler et recommencer avec une autre adresse
+        </Text>
       </View>
     </ScrollView>
   );
