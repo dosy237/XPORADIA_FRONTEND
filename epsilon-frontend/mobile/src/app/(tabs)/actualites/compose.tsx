@@ -3,13 +3,29 @@ import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { KeyboardAwareScrollView } from "@/components/ui/KeyboardAwareScrollView";
 import { useVideoPlayer, VideoView } from "expo-video";
 
 import { PostCard } from "@/components/feed/PostCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
-import { CloseIcon, EyeIcon, PlusIcon, TrashIcon, VideoIcon } from "@/components/ui/Icon";
+import {
+  CloseIcon,
+  EyeIcon,
+  PlusIcon,
+  TrashIcon,
+  VideoIcon,
+} from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as feedApi from "@/services/feed";
@@ -50,7 +66,11 @@ export default function ComposeScreen() {
     mutationFn: () =>
       feedApi.createPost(
         body.trim(),
-        images.map((img) => ({ uri: img.uri, name: img.fileName ?? "photo.jpg", mimeType: img.mimeType })),
+        images.map((img) => ({
+          uri: img.uri,
+          name: img.fileName ?? "photo.jpg",
+          mimeType: img.mimeType,
+        })),
         "public",
         title.trim() || undefined,
         video
@@ -78,10 +98,13 @@ export default function ComposeScreen() {
       router.back();
     },
     onError: (error: any) => {
-      const detail = error?.response?.data?.video ?? error?.response?.data?.detail;
+      const detail =
+        error?.response?.data?.video ?? error?.response?.data?.detail;
       Alert.alert(
         "Publication impossible",
-        Array.isArray(detail) ? detail.join(" ") : detail ?? "Une erreur est survenue. Réessayez.",
+        Array.isArray(detail)
+          ? detail.join(" ")
+          : (detail ?? "Une erreur est survenue. Réessayez."),
       );
     },
   });
@@ -111,7 +134,10 @@ export default function ComposeScreen() {
       // `quality` ne s'applique qu'aux photos (voir doc expo-image-picker) —
       // c'est `videoQuality` qui compresse la vidéo, iOS uniquement (pas
       // d'équivalent Android côté sélecteur de galerie).
-      videoQuality: Platform.OS === "ios" ? ImagePicker.UIImagePickerControllerQualityType.Medium : undefined,
+      videoQuality:
+        Platform.OS === "ios"
+          ? ImagePicker.UIImagePickerControllerQualityType.Medium
+          : undefined,
     });
     if (result.canceled) return;
     const asset = result.assets[0];
@@ -151,10 +177,14 @@ export default function ComposeScreen() {
     },
     title: title.trim(),
     body: body.trim(),
-    hashtags: Array.from(new Set(Array.from(body.matchAll(/#(\w+)/g), (m) => m[1]))),
+    hashtags: Array.from(
+      new Set(Array.from(body.matchAll(/#(\w+)/g), (m) => m[1])),
+    ),
     images: images.map((img, order) => ({ id: order, image: img.uri, order })),
     video: video?.uri ?? null,
-    video_duration_seconds: video?.duration ? Math.round(video.duration / 1000) : null,
+    video_duration_seconds: video?.duration
+      ? Math.round(video.duration / 1000)
+      : null,
     visibility: "public",
     like_count: 0,
     comment_count: 0,
@@ -163,128 +193,172 @@ export default function ComposeScreen() {
   };
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerClassName="p-6 gap-4 pb-8" keyboardShouldPersistTaps="handled">
-        <Input
-          value={title}
-          onChangeText={setTitle}
-          placeholder="Titre (optionnel)"
-          maxLength={MAX_TITLE_LENGTH}
-        />
+    <KeyboardAwareScrollView
+      className="flex-1 bg-xporadia-bg"
+      contentContainerClassName="p-6 gap-4 pb-8"
+      keyboardShouldPersistTaps="handled"
+      bottomOffset={32}
+    >
+      <Input
+        value={title}
+        onChangeText={setTitle}
+        placeholder="Titre (optionnel)"
+        maxLength={MAX_TITLE_LENGTH}
+      />
 
-        <View className="flex-row items-start gap-3">
-          <Avatar firstName={user.first_name} lastName={user.last_name} imageUri={user.avatar} size={44} />
-          <TextInput
-            value={body}
-            onChangeText={setBody}
-            placeholder="Partagez une actualité avec la communauté Xporadia. Utilisez #hashtags pour la retrouver facilement."
-            placeholderTextColor="#94A3B8"
-            multiline
-            autoFocus
-            maxLength={MAX_LENGTH}
-            className="flex-1 text-base text-xporadia-text-primary min-h-[120px] pt-2"
+      <View className="flex-row items-start gap-3">
+        <Avatar
+          firstName={user.first_name}
+          lastName={user.last_name}
+          imageUri={user.avatar}
+          size={44}
+        />
+        <TextInput
+          value={body}
+          onChangeText={setBody}
+          placeholder="Partagez une actualité avec la communauté Xporadia. Utilisez #hashtags pour la retrouver facilement."
+          placeholderTextColor="#94A3B8"
+          multiline
+          autoFocus
+          maxLength={MAX_LENGTH}
+          className="flex-1 text-base text-xporadia-text-primary min-h-[120px] pt-2"
+        />
+      </View>
+
+      {images.length > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-2"
+        >
+          {images.map((img, index) => (
+            <View key={img.uri} className="relative">
+              <Image
+                source={{ uri: img.uri }}
+                style={{ width: 100, height: 100, borderRadius: 12 }}
+                contentFit="cover"
+              />
+              <Pressable
+                onPress={() => removeImage(index)}
+                className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-xporadia-navy items-center justify-center"
+                accessibilityRole="button"
+                accessibilityLabel="Retirer cette photo"
+              >
+                <TrashIcon size={12} color={Colors.white} />
+              </Pressable>
+            </View>
+          ))}
+        </ScrollView>
+      ) : null}
+
+      {video ? (
+        <View className="relative">
+          <VideoView
+            player={videoPlayer}
+            style={{
+              width: "100%",
+              height: 420,
+              borderRadius: 14,
+              backgroundColor: "#000",
+            }}
+            contentFit="contain"
+            nativeControls
+          />
+          <Pressable
+            onPress={() => setVideo(null)}
+            className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-xporadia-navy items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel="Retirer cette vidéo"
+          >
+            <TrashIcon size={12} color={Colors.white} />
+          </Pressable>
+        </View>
+      ) : null}
+
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={pickImages}
+            disabled={images.length >= MAX_IMAGES || !!video}
+            className="flex-row items-center gap-2 border border-xporadia-border rounded-full px-4 py-2"
+          >
+            <PlusIcon
+              size={14}
+              color={
+                images.length >= MAX_IMAGES || video
+                  ? Colors.textSecondary
+                  : Colors.navy
+              }
+            />
+            <Text
+              className={`text-xs font-semibold ${
+                images.length >= MAX_IMAGES || video
+                  ? "text-xporadia-text-secondary"
+                  : "text-xporadia-navy"
+              }`}
+            >
+              Photos ({images.length}/{MAX_IMAGES})
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={pickVideo}
+            disabled={!!video || images.length > 0}
+            className="flex-row items-center gap-2 border border-xporadia-border rounded-full px-4 py-2"
+          >
+            <VideoIcon
+              size={14}
+              color={
+                video || images.length > 0 ? Colors.textSecondary : Colors.navy
+              }
+            />
+            <Text
+              className={`text-xs font-semibold ${
+                video || images.length > 0
+                  ? "text-xporadia-text-secondary"
+                  : "text-xporadia-navy"
+              }`}
+            >
+              Vidéo (1 min max)
+            </Text>
+          </Pressable>
+        </View>
+        <Text className="text-xs text-xporadia-text-secondary">
+          {body.length}/{MAX_LENGTH}
+        </Text>
+      </View>
+
+      <View className="flex-row gap-3">
+        <View className="flex-1">
+          <Button
+            label="Prévisualiser"
+            variant="secondary"
+            pill
+            onPress={() => setPreviewing(true)}
+            disabled={body.trim().length === 0}
           />
         </View>
-
-        {images.length > 0 ? (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
-            {images.map((img, index) => (
-              <View key={img.uri} className="relative">
-                <Image source={{ uri: img.uri }} style={{ width: 100, height: 100, borderRadius: 12 }} contentFit="cover" />
-                <Pressable
-                  onPress={() => removeImage(index)}
-                  className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-xporadia-navy items-center justify-center"
-                  accessibilityRole="button"
-                  accessibilityLabel="Retirer cette photo"
-                >
-                  <TrashIcon size={12} color={Colors.white} />
-                </Pressable>
-              </View>
-            ))}
-          </ScrollView>
-        ) : null}
-
-        {video ? (
-          <View className="relative">
-            <VideoView
-              player={videoPlayer}
-              style={{ width: "100%", height: 420, borderRadius: 14, backgroundColor: "#000" }}
-              contentFit="contain"
-              nativeControls
-            />
-            <Pressable
-              onPress={() => setVideo(null)}
-              className="absolute -top-1.5 -right-1.5 h-6 w-6 rounded-full bg-xporadia-navy items-center justify-center"
-              accessibilityRole="button"
-              accessibilityLabel="Retirer cette vidéo"
-            >
-              <TrashIcon size={12} color={Colors.white} />
-            </Pressable>
-          </View>
-        ) : null}
-
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <Pressable
-              onPress={pickImages}
-              disabled={images.length >= MAX_IMAGES || !!video}
-              className="flex-row items-center gap-2 border border-xporadia-border rounded-full px-4 py-2"
-            >
-              <PlusIcon size={14} color={images.length >= MAX_IMAGES || video ? Colors.textSecondary : Colors.navy} />
-              <Text
-                className={`text-xs font-semibold ${
-                  images.length >= MAX_IMAGES || video ? "text-xporadia-text-secondary" : "text-xporadia-navy"
-                }`}
-              >
-                Photos ({images.length}/{MAX_IMAGES})
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={pickVideo}
-              disabled={!!video || images.length > 0}
-              className="flex-row items-center gap-2 border border-xporadia-border rounded-full px-4 py-2"
-            >
-              <VideoIcon size={14} color={video || images.length > 0 ? Colors.textSecondary : Colors.navy} />
-              <Text
-                className={`text-xs font-semibold ${
-                  video || images.length > 0 ? "text-xporadia-text-secondary" : "text-xporadia-navy"
-                }`}
-              >
-                Vidéo (1 min max)
-              </Text>
-            </Pressable>
-          </View>
-          <Text className="text-xs text-xporadia-text-secondary">{body.length}/{MAX_LENGTH}</Text>
+        <View className="flex-1">
+          <Button
+            label="Publier"
+            pill
+            onPress={() => mutation.mutate()}
+            loading={mutation.isPending}
+            disabled={body.trim().length === 0}
+          />
         </View>
-
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Button
-              label="Prévisualiser"
-              variant="secondary"
-              pill
-              onPress={() => setPreviewing(true)}
-              disabled={body.trim().length === 0}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              label="Publier"
-              pill
-              onPress={() => mutation.mutate()}
-              loading={mutation.isPending}
-              disabled={body.trim().length === 0}
-            />
-          </View>
-        </View>
-      </ScrollView>
-
-      <Modal visible={previewing} animationType="slide" onRequestClose={() => setPreviewing(false)}>
+      </View>
+      <Modal
+        visible={previewing}
+        animationType="slide"
+        onRequestClose={() => setPreviewing(false)}
+      >
         <View className="flex-1 bg-xporadia-bg">
           <View className="flex-row items-center justify-between px-6 pt-14 pb-4 bg-white border-b border-xporadia-border">
             <View className="flex-row items-center gap-2">
               <EyeIcon size={16} color={Colors.textSecondary} />
-              <Text className="text-sm font-semibold text-xporadia-text-secondary">Aperçu, pas encore publié</Text>
+              <Text className="text-sm font-semibold text-xporadia-text-secondary">
+                Aperçu, pas encore publié
+              </Text>
             </View>
             <Pressable
               onPress={() => setPreviewing(false)}
@@ -308,10 +382,15 @@ export default function ComposeScreen() {
               }}
               loading={mutation.isPending}
             />
-            <Button label="Continuer à modifier" variant="secondary" pill onPress={() => setPreviewing(false)} />
+            <Button
+              label="Continuer à modifier"
+              variant="secondary"
+              pill
+              onPress={() => setPreviewing(false)}
+            />
           </View>
         </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 }

@@ -37,7 +37,10 @@ export default function VerifyOtpScreen() {
         });
         return;
       } catch {
-        router.replace({ pathname: "/invite/[token]", params: { token: inviteToken } });
+        router.replace({
+          pathname: "/invite/[token]",
+          params: { token: inviteToken },
+        });
         return;
       }
     }
@@ -63,7 +66,10 @@ export default function VerifyOtpScreen() {
   });
 
   return (
-    <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="pb-10 flex-grow">
+    <ScrollView
+      className="flex-1 bg-xporadia-bg"
+      contentContainerClassName="pb-10 flex-grow"
+    >
       <AuthHeader
         title="Vérifiez votre compte"
         subtitle={`Un code à 6 chiffres a été envoyé à ${user?.email ?? "votre adresse email"}`}
@@ -72,10 +78,25 @@ export default function VerifyOtpScreen() {
 
       <View className="px-6 pt-6">
         <View className="bg-white rounded-2xl p-6 gap-6 shadow-soft">
-          <OtpInput value={code} onChangeText={(v) => { setError(null); setCode(v); }} autoFocus />
+          <OtpInput
+            value={code}
+            onChangeText={(v) => {
+              setError(null);
+              setCode(v);
+            }}
+            autoFocus
+          />
 
-          {error ? <Text className="text-xporadia-red text-sm text-center">{error}</Text> : null}
-          {resent ? <Text className="text-xporadia-green text-sm text-center">Nouveau code envoyé.</Text> : null}
+          {error ? (
+            <Text className="text-xporadia-red text-sm text-center">
+              {error}
+            </Text>
+          ) : null}
+          {resent ? (
+            <Text className="text-xporadia-green text-sm text-center">
+              Nouveau code envoyé.
+            </Text>
+          ) : null}
 
           <Button
             label="Vérifier"
@@ -89,7 +110,9 @@ export default function VerifyOtpScreen() {
           />
 
           <View className="items-center flex-row justify-center gap-1">
-            <Text className="text-xporadia-text-secondary text-sm">Vous n'avez rien reçu ?</Text>
+            <Text className="text-xporadia-text-secondary text-sm">
+              Vous n'avez rien reçu ?
+            </Text>
             <Text
               className="text-xporadia-orange-text font-semibold text-sm"
               onPress={() => resendMutation.mutate()}

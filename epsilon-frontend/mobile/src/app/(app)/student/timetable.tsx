@@ -1,7 +1,15 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import {
   DateStrip,
@@ -13,10 +21,20 @@ import {
 } from "@/components/academics/DateStrip";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { CalendarIcon, ClockIcon, PlusIcon, TrashIcon } from "@/components/ui/Icon";
+import {
+  CalendarIcon,
+  ClockIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
 import * as academicsApi from "@/services/academics";
-import type { AgendaPersonalBlock, EstablishmentEvent, OccurrenceScope, TimetableSlot } from "@/services/academics";
+import type {
+  AgendaPersonalBlock,
+  EstablishmentEvent,
+  OccurrenceScope,
+  TimetableSlot,
+} from "@/services/academics";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const HOUR_HEIGHT = 56;
@@ -40,7 +58,10 @@ function topFor(t: string) {
 }
 
 function heightFor(start: string, end: string) {
-  return Math.max(((timeToMinutes(end) - timeToMinutes(start)) / 60) * HOUR_HEIGHT, 22);
+  return Math.max(
+    ((timeToMinutes(end) - timeToMinutes(start)) / 60) * HOUR_HEIGHT,
+    22,
+  );
 }
 
 function isValidTime(t: string) {
@@ -54,7 +75,12 @@ interface BlockFormState {
   endTime: string;
 }
 
-const EMPTY_FORM: BlockFormState = { title: "", subjectId: "", startTime: "", endTime: "" };
+const EMPTY_FORM: BlockFormState = {
+  title: "",
+  subjectId: "",
+  startTime: "",
+  endTime: "",
+};
 
 function BlockFormSheet({
   visible,
@@ -82,92 +108,136 @@ function BlockFormSheet({
   deleteLoading?: boolean;
 }) {
   if (!visible) return null;
-  const canSubmit = form.title.trim().length > 0 && isValidTime(form.startTime) && isValidTime(form.endTime) &&
+  const canSubmit =
+    form.title.trim().length > 0 &&
+    isValidTime(form.startTime) &&
+    isValidTime(form.endTime) &&
     timeToMinutes(form.startTime) < timeToMinutes(form.endTime);
 
   return (
     <KeyboardAvoidingView
       className="absolute inset-0"
       style={{ zIndex: 30 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Pressable className="flex-1 bg-black/30 items-center justify-center px-6" onPress={onCancel}>
-        <Pressable onPress={(e) => e.stopPropagation()} className="bg-white rounded-3xl w-full p-5 gap-3" style={{ maxWidth: 400 }}>
-          <Text className="text-base font-bold text-xporadia-navy">{heading}</Text>
+      <Pressable
+        className="flex-1 bg-black/30 items-center justify-center px-6"
+        onPress={onCancel}
+      >
+        <Pressable
+          onPress={(e) => e.stopPropagation()}
+          className="bg-white rounded-3xl w-full p-5 gap-3"
+          style={{ maxWidth: 400 }}
+        >
+          <Text className="text-base font-bold text-xporadia-navy">
+            {heading}
+          </Text>
 
-        <View className="gap-1">
-          <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Titre</Text>
-          <TextInput
-            value={form.title}
-            onChangeText={(v) => onChange({ ...form, title: v })}
-            placeholder="Révision de maths"
-            className="bg-xporadia-bg rounded-xl px-4 py-3 text-sm text-xporadia-text-primary"
-          />
-        </View>
-
-        {subjects.length > 0 ? (
           <View className="gap-1">
-            <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Matière (optionnel)</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2 py-1">
-              <Chip
-                label="Aucune"
-                variant={form.subjectId === "" ? "navy" : "neutral"}
-                onPress={() => onChange({ ...form, subjectId: "" })}
-              />
-              {subjects.map((s) => (
+            <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+              Titre
+            </Text>
+            <TextInput
+              value={form.title}
+              onChangeText={(v) => onChange({ ...form, title: v })}
+              placeholder="Révision de maths"
+              className="bg-xporadia-bg rounded-xl px-4 py-3 text-sm text-xporadia-text-primary"
+            />
+          </View>
+
+          {subjects.length > 0 ? (
+            <View className="gap-1">
+              <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                Matière (optionnel)
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerClassName="gap-2 py-1"
+              >
                 <Chip
-                  key={s.id}
-                  label={s.name}
-                  variant={form.subjectId === String(s.id) ? "navy" : "neutral"}
-                  onPress={() => onChange({ ...form, subjectId: String(s.id) })}
+                  label="Aucune"
+                  variant={form.subjectId === "" ? "navy" : "neutral"}
+                  onPress={() => onChange({ ...form, subjectId: "" })}
                 />
-              ))}
-            </ScrollView>
-          </View>
-        ) : null}
+                {subjects.map((s) => (
+                  <Chip
+                    key={s.id}
+                    label={s.name}
+                    variant={
+                      form.subjectId === String(s.id) ? "navy" : "neutral"
+                    }
+                    onPress={() =>
+                      onChange({ ...form, subjectId: String(s.id) })
+                    }
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          ) : null}
 
-        <View className="flex-row gap-2">
-          <View className="flex-1 gap-1">
-            <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Début</Text>
-            <TextInput
-              value={form.startTime}
-              onChangeText={(v) => onChange({ ...form, startTime: v })}
-              placeholder="18:00"
-              className="bg-xporadia-bg rounded-xl px-4 py-3 text-sm text-xporadia-text-primary"
-            />
+          <View className="flex-row gap-2">
+            <View className="flex-1 gap-1">
+              <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                Début
+              </Text>
+              <TextInput
+                value={form.startTime}
+                onChangeText={(v) => onChange({ ...form, startTime: v })}
+                placeholder="18:00"
+                className="bg-xporadia-bg rounded-xl px-4 py-3 text-sm text-xporadia-text-primary"
+              />
+            </View>
+            <View className="flex-1 gap-1">
+              <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                Fin
+              </Text>
+              <TextInput
+                value={form.endTime}
+                onChangeText={(v) => onChange({ ...form, endTime: v })}
+                placeholder="19:00"
+                className="bg-xporadia-bg rounded-xl px-4 py-3 text-sm text-xporadia-text-primary"
+              />
+            </View>
           </View>
-          <View className="flex-1 gap-1">
-            <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Fin</Text>
-            <TextInput
-              value={form.endTime}
-              onChangeText={(v) => onChange({ ...form, endTime: v })}
-              placeholder="19:00"
-              className="bg-xporadia-bg rounded-xl px-4 py-3 text-sm text-xporadia-text-primary"
-            />
-          </View>
-        </View>
 
-        {onDelete ? (
-          <Pressable
-            onPress={onDelete}
-            disabled={deleteLoading}
-            className="flex-row items-center justify-center gap-2 py-2"
-            accessibilityRole="button"
-            accessibilityLabel="Supprimer ce créneau"
-          >
-            <TrashIcon size={14} color={Colors.red} />
-            <Text className="text-xs font-semibold" style={{ color: Colors.red }}>Supprimer ce créneau</Text>
-          </Pressable>
-        ) : null}
+          {onDelete ? (
+            <Pressable
+              onPress={onDelete}
+              disabled={deleteLoading}
+              className="flex-row items-center justify-center gap-2 py-2"
+              accessibilityRole="button"
+              accessibilityLabel="Supprimer ce créneau"
+            >
+              <TrashIcon size={14} color={Colors.red} />
+              <Text
+                className="text-xs font-semibold"
+                style={{ color: Colors.red }}
+              >
+                Supprimer ce créneau
+              </Text>
+            </Pressable>
+          ) : null}
 
-        <View className="flex-row gap-3 mt-1">
-          <View className="flex-1">
-            <Button label="Annuler" variant="secondary" pill onPress={onCancel} />
+          <View className="flex-row gap-3 mt-1">
+            <View className="flex-1">
+              <Button
+                label="Annuler"
+                variant="secondary"
+                pill
+                onPress={onCancel}
+              />
+            </View>
+            <View className="flex-1">
+              <Button
+                label={submitLabel}
+                pill
+                disabled={!canSubmit}
+                loading={loading}
+                onPress={onSubmit}
+              />
+            </View>
           </View>
-          <View className="flex-1">
-            <Button label={submitLabel} pill disabled={!canSubmit} loading={loading} onPress={onSubmit} />
-          </View>
-        </View>
         </Pressable>
       </Pressable>
     </KeyboardAvoidingView>
@@ -192,9 +262,19 @@ function ScopeChoiceSheet({
 }) {
   if (!visible) return null;
   return (
-    <Pressable className="absolute inset-0 bg-black/30 items-center justify-center px-6" style={{ zIndex: 40 }} onPress={onCancel}>
-      <Pressable onPress={(e) => e.stopPropagation()} className="bg-white rounded-3xl w-full p-5 gap-3" style={{ maxWidth: 380 }}>
-        <Text className="text-base font-bold text-xporadia-navy">{actionLabel}</Text>
+    <Pressable
+      className="absolute inset-0 bg-black/30 items-center justify-center px-6"
+      style={{ zIndex: 40 }}
+      onPress={onCancel}
+    >
+      <Pressable
+        onPress={(e) => e.stopPropagation()}
+        className="bg-white rounded-3xl w-full p-5 gap-3"
+        style={{ maxWidth: 380 }}
+      >
+        <Text className="text-base font-bold text-xporadia-navy">
+          {actionLabel}
+        </Text>
         <Text className="text-sm text-xporadia-text-secondary leading-5">
           Ce créneau se répète chaque semaine. Que voulez-vous faire ?
         </Text>
@@ -205,8 +285,12 @@ function ScopeChoiceSheet({
             className="bg-xporadia-bg rounded-2xl p-4"
             accessibilityRole="button"
           >
-            <Text className="text-sm font-semibold text-xporadia-text-primary">Cette date uniquement</Text>
-            <Text className="text-xs text-xporadia-text-secondary mt-0.5">Les autres semaines ne changent pas.</Text>
+            <Text className="text-sm font-semibold text-xporadia-text-primary">
+              Cette date uniquement
+            </Text>
+            <Text className="text-xs text-xporadia-text-secondary mt-0.5">
+              Les autres semaines ne changent pas.
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => onChoose("following")}
@@ -214,12 +298,22 @@ function ScopeChoiceSheet({
             className="bg-xporadia-bg rounded-2xl p-4"
             accessibilityRole="button"
           >
-            <Text className="text-sm font-semibold text-xporadia-text-primary">Cette date et les suivantes</Text>
-            <Text className="text-xs text-xporadia-text-secondary mt-0.5">Les dates passées gardent l'ancienne valeur.</Text>
+            <Text className="text-sm font-semibold text-xporadia-text-primary">
+              Cette date et les suivantes
+            </Text>
+            <Text className="text-xs text-xporadia-text-secondary mt-0.5">
+              Les dates passées gardent l'ancienne valeur.
+            </Text>
           </Pressable>
         </View>
         <View className="mt-1">
-          <Button label="Annuler" variant="secondary" pill onPress={onCancel} disabled={loading} />
+          <Button
+            label="Annuler"
+            variant="secondary"
+            pill
+            onPress={onCancel}
+            disabled={loading}
+          />
         </View>
       </Pressable>
     </Pressable>
@@ -239,17 +333,30 @@ export default function AgendaScreen() {
     queryKey: ["my-class-for-agenda"],
     queryFn: academicsApi.fetchMyClass,
   });
-  const subjects = useMemo(() => (myClass?.subjects ?? []).map((s) => ({ id: s.id, name: s.name })), [myClass]);
+  const subjects = useMemo(
+    () => (myClass?.subjects ?? []).map((s) => ({ id: s.id, name: s.name })),
+    [myClass],
+  );
 
-  const [createSheet, setCreateSheet] = useState<{ visible: boolean; startTime: string } | null>(null);
+  const [createSheet, setCreateSheet] = useState<{
+    visible: boolean;
+    startTime: string;
+  } | null>(null);
   const [createForm, setCreateForm] = useState<BlockFormState>(EMPTY_FORM);
 
-  const [editSheet, setEditSheet] = useState<{ visible: boolean; block: AgendaPersonalBlock } | null>(null);
+  const [editSheet, setEditSheet] = useState<{
+    visible: boolean;
+    block: AgendaPersonalBlock;
+  } | null>(null);
   const [editForm, setEditForm] = useState<BlockFormState>(EMPTY_FORM);
 
-  const [scopeSheet, setScopeSheet] = useState<{ visible: boolean; action: "save" | "delete" } | null>(null);
+  const [scopeSheet, setScopeSheet] = useState<{
+    visible: boolean;
+    action: "save" | "delete";
+  } | null>(null);
 
-  const invalidateAgenda = () => queryClient.invalidateQueries({ queryKey: ["my-agenda", selectedDate] });
+  const invalidateAgenda = () =>
+    queryClient.invalidateQueries({ queryKey: ["my-agenda", selectedDate] });
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -258,7 +365,9 @@ export default function AgendaScreen() {
         start_time: createForm.startTime,
         end_time: createForm.endTime,
         title: createForm.title.trim(),
-        subject: createForm.subjectId ? Number(createForm.subjectId) : undefined,
+        subject: createForm.subjectId
+          ? Number(createForm.subjectId)
+          : undefined,
         valid_from: selectedDate,
       }),
     onSuccess: () => {
@@ -287,7 +396,11 @@ export default function AgendaScreen() {
 
   const deleteMutation = useMutation({
     mutationFn: (scope: OccurrenceScope) =>
-      academicsApi.deletePersonalBlockOccurrence(editSheet!.block.block, scope, selectedDate),
+      academicsApi.deletePersonalBlockOccurrence(
+        editSheet!.block.block,
+        scope,
+        selectedDate,
+      ),
     onSuccess: () => {
       invalidateAgenda();
       setScopeSheet(null);
@@ -303,14 +416,23 @@ export default function AgendaScreen() {
   // annule (voir apps.academics.views.TeacherAbsenceDeclarationView) — le
   // signaler à part plutôt que comme un événement de plus au même endroit
   // évite que les deux blocs se superposent visuellement.
-  const cancelledClassEvents = schoolEvents.filter((e) => e.event_type === "cancelled_class");
-  const timedEvents = schoolEvents.filter((e) => !!e.start_time && e.event_type !== "cancelled_class");
+  const cancelledClassEvents = schoolEvents.filter(
+    (e) => e.event_type === "cancelled_class",
+  );
+  const timedEvents = schoolEvents.filter(
+    (e) => !!e.start_time && e.event_type !== "cancelled_class",
+  );
   const holidayEvent = untimedEvents.find((e) => e.event_type === "holiday");
-  const otherUntimedEvents = untimedEvents.filter((e) => e.event_type !== "holiday");
+  const otherUntimedEvents = untimedEvents.filter(
+    (e) => e.event_type !== "holiday",
+  );
 
   function cancelledReasonFor(slot: TimetableSlot) {
     return cancelledClassEvents.find(
-      (e) => e.title === slot.subject_name && e.start_time === slot.start_time && e.end_time === slot.end_time,
+      (e) =>
+        e.title === slot.subject_name &&
+        e.start_time === slot.start_time &&
+        e.end_time === slot.end_time,
     );
   }
 
@@ -334,7 +456,10 @@ export default function AgendaScreen() {
       <View className="px-6 pt-2 pb-2 flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           <CalendarIcon size={14} color={Colors.textSecondary} />
-          <Text className="text-sm font-semibold text-xporadia-navy" numberOfLines={1}>
+          <Text
+            className="text-sm font-semibold text-xporadia-navy"
+            numberOfLines={1}
+          >
             {isToday ? `Aujourd'hui, ${dateLabel}` : dateLabel}
           </Text>
         </View>
@@ -345,7 +470,9 @@ export default function AgendaScreen() {
             accessibilityLabel="Revenir à aujourd'hui"
             className="px-3 py-1.5 rounded-full bg-xporadia-navy/[0.06]"
           >
-            <Text className="text-xs font-semibold text-xporadia-navy">Aujourd&apos;hui</Text>
+            <Text className="text-xs font-semibold text-xporadia-navy">
+              Aujourd&apos;hui
+            </Text>
           </Pressable>
         ) : null}
       </View>
@@ -356,28 +483,49 @@ export default function AgendaScreen() {
             colors={[withAlpha(Colors.navy, 0.4), withAlpha(Colors.navy, 0.1)]}
             style={{ height: 12, width: 12, borderRadius: 4 }}
           />
-          <Text className="text-[11px] text-xporadia-text-secondary">Cours officiels</Text>
+          <Text className="text-[11px] text-xporadia-text-secondary">
+            Cours officiels
+          </Text>
         </View>
         <View className="flex-row items-center gap-1.5">
           <LinearGradient
-            colors={[withAlpha(Colors.orange, 0.55), withAlpha(Colors.orange, 0.15)]}
+            colors={[
+              withAlpha(Colors.orange, 0.55),
+              withAlpha(Colors.orange, 0.15),
+            ]}
             style={{ height: 12, width: 12, borderRadius: 4 }}
           />
-          <Text className="text-[11px] text-xporadia-text-secondary">Mes créneaux</Text>
+          <Text className="text-[11px] text-xporadia-text-secondary">
+            Mes créneaux
+          </Text>
         </View>
         <View className="flex-row items-center gap-1.5">
           <LinearGradient
-            colors={[withAlpha(Colors.purple, 0.45), withAlpha(Colors.purple, 0.12)]}
+            colors={[
+              withAlpha(Colors.purple, 0.45),
+              withAlpha(Colors.purple, 0.12),
+            ]}
             style={{ height: 12, width: 12, borderRadius: 4 }}
           />
-          <Text className="text-[11px] text-xporadia-text-secondary">Événements</Text>
+          <Text className="text-[11px] text-xporadia-text-secondary">
+            Événements
+          </Text>
         </View>
       </View>
 
       {agenda && !agenda.is_school_day ? (
         <LinearGradient
           colors={[withAlpha(Colors.navy, 0.07), withAlpha(Colors.navy, 0.02)]}
-          style={{ marginHorizontal: 24, marginBottom: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, flexDirection: "row", alignItems: "center", gap: 8 }}
+          style={{
+            marginHorizontal: 24,
+            marginBottom: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 14,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
           <ClockIcon size={14} color={Colors.textSecondary} />
           <Text className="text-xs text-xporadia-text-secondary flex-1">
@@ -389,11 +537,26 @@ export default function AgendaScreen() {
       {holidayEvent ? (
         <LinearGradient
           colors={[withAlpha(Colors.gold, 0.28), withAlpha(Colors.gold, 0.08)]}
-          style={{ marginHorizontal: 24, marginBottom: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, borderWidth: 1, borderColor: withAlpha(Colors.gold, 0.55), flexDirection: "row", alignItems: "center", gap: 8 }}
+          style={{
+            marginHorizontal: 24,
+            marginBottom: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: withAlpha(Colors.gold, 0.55),
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
           <CalendarIcon size={14} color={Colors.gold} />
-          <Text className="text-xs font-semibold flex-1" style={{ color: Colors.bronze }}>
-            Jour férié, {holidayEvent.title}. Pas de cours officiel aujourd&apos;hui.
+          <Text
+            className="text-xs font-semibold flex-1"
+            style={{ color: Colors.bronze }}
+          >
+            Jour férié, {holidayEvent.title}. Pas de cours officiel
+            aujourd&apos;hui.
           </Text>
         </LinearGradient>
       ) : null}
@@ -401,57 +564,119 @@ export default function AgendaScreen() {
       {otherUntimedEvents.map((event) => (
         <LinearGradient
           key={event.id}
-          colors={[withAlpha(Colors.purple, 0.16), withAlpha(Colors.purple, 0.04)]}
-          style={{ marginHorizontal: 24, marginBottom: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14, borderWidth: 1, borderColor: withAlpha(Colors.purple, 0.4), flexDirection: "row", alignItems: "center", gap: 8 }}
+          colors={[
+            withAlpha(Colors.purple, 0.16),
+            withAlpha(Colors.purple, 0.04),
+          ]}
+          style={{
+            marginHorizontal: 24,
+            marginBottom: 8,
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: withAlpha(Colors.purple, 0.4),
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
         >
           <CalendarIcon size={14} color={Colors.purple} />
           <View className="flex-1">
-            <Text className="text-xs font-semibold" style={{ color: Colors.purple }}>
+            <Text
+              className="text-xs font-semibold"
+              style={{ color: Colors.purple }}
+            >
               {event.event_type_label} : {event.title}
             </Text>
             {event.description ? (
-              <Text className="text-[11px] text-xporadia-text-secondary mt-0.5">{event.description}</Text>
+              <Text className="text-[11px] text-xporadia-text-secondary mt-0.5">
+                {event.description}
+              </Text>
             ) : null}
           </View>
         </LinearGradient>
       ))}
 
       {isLoading ? (
-        <Text className="text-sm text-xporadia-text-secondary text-center py-10">Chargement...</Text>
+        <Text className="text-sm text-xporadia-text-secondary text-center py-10">
+          Chargement...
+        </Text>
       ) : (
         <ScrollView className="flex-1" contentContainerClassName="px-6 pb-16">
           <View style={{ flexDirection: "row" }}>
             <View style={{ width: 40 }}>
               {HOURS.map((h) => (
                 <View key={h} style={{ height: HOUR_HEIGHT }}>
-                  <Text className="text-[10px] text-xporadia-text-secondary">{pad(h)}:00</Text>
+                  <Text className="text-[10px] text-xporadia-text-secondary">
+                    {pad(h)}:00
+                  </Text>
                 </View>
               ))}
             </View>
 
-            <View style={{ flex: 1, position: "relative", height: 24 * HOUR_HEIGHT }}>
+            <View
+              style={{
+                flex: 1,
+                position: "relative",
+                height: 24 * HOUR_HEIGHT,
+              }}
+            >
               {HOURS.map((h) => (
                 <View
                   key={h}
-                  style={{ position: "absolute", top: h * HOUR_HEIGHT, left: 0, right: 0, borderTopWidth: 1, borderTopColor: Colors.border }}
+                  style={{
+                    position: "absolute",
+                    top: h * HOUR_HEIGHT,
+                    left: 0,
+                    right: 0,
+                    borderTopWidth: 1,
+                    borderTopColor: Colors.border,
+                  }}
                 />
               ))}
 
               {timedEvents.map((event) => (
                 <View
                   key={event.id}
-                  style={{ position: "absolute", top: topFor(event.start_time as string), height: heightFor(event.start_time as string, event.end_time || event.start_time as string), left: 2, right: 2, zIndex: 5, borderRadius: 8, overflow: "hidden", flexDirection: "row" }}
+                  style={{
+                    position: "absolute",
+                    top: topFor(event.start_time as string),
+                    height: heightFor(
+                      event.start_time as string,
+                      event.end_time || (event.start_time as string),
+                    ),
+                    left: 2,
+                    right: 2,
+                    zIndex: 5,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    flexDirection: "row",
+                  }}
                 >
                   <View style={{ width: 3, backgroundColor: Colors.purple }} />
                   <LinearGradient
-                    colors={[withAlpha(Colors.purple, 0.18), withAlpha(Colors.purple, 0.05)]}
-                    style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                    colors={[
+                      withAlpha(Colors.purple, 0.18),
+                      withAlpha(Colors.purple, 0.05),
+                    ]}
+                    style={{
+                      flex: 1,
+                      paddingHorizontal: 8,
+                      paddingVertical: 4,
+                      justifyContent: "center",
+                    }}
                   >
-                    <Text numberOfLines={1} className="text-[10px] font-semibold" style={{ color: Colors.purple }}>
+                    <Text
+                      numberOfLines={1}
+                      className="text-[10px] font-semibold"
+                      style={{ color: Colors.purple }}
+                    >
                       {event.event_type_label} : {event.title}
                     </Text>
                     <Text className="text-[9px] text-xporadia-text-secondary">
-                      {event.start_time!.slice(0, 5)}{event.end_time ? `-${event.end_time.slice(0, 5)}` : ""}
+                      {event.start_time!.slice(0, 5)}
+                      {event.end_time ? `-${event.end_time.slice(0, 5)}` : ""}
                     </Text>
                   </LinearGradient>
                 </View>
@@ -476,29 +701,56 @@ export default function AgendaScreen() {
                           opacity: cancelledEvent ? 0.6 : 1,
                         }}
                       >
-                        <View style={{ width: 3, backgroundColor: cancelledEvent ? Colors.red : Colors.navy }} />
+                        <View
+                          style={{
+                            width: 3,
+                            backgroundColor: cancelledEvent
+                              ? Colors.red
+                              : Colors.navy,
+                          }}
+                        />
                         <LinearGradient
                           colors={
                             cancelledEvent
-                              ? [withAlpha(Colors.red, 0.1), withAlpha(Colors.red, 0.02)]
-                              : [withAlpha(Colors.navy, 0.14), withAlpha(Colors.navy, 0.04)]
+                              ? [
+                                  withAlpha(Colors.red, 0.1),
+                                  withAlpha(Colors.red, 0.02),
+                                ]
+                              : [
+                                  withAlpha(Colors.navy, 0.14),
+                                  withAlpha(Colors.navy, 0.04),
+                                ]
                           }
-                          style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                          style={{
+                            flex: 1,
+                            paddingHorizontal: 8,
+                            paddingVertical: 4,
+                            justifyContent: "center",
+                          }}
                         >
                           <Text
                             numberOfLines={1}
                             className="text-[10px] font-semibold text-xporadia-navy"
-                            style={cancelledEvent ? { textDecorationLine: "line-through" } : undefined}
+                            style={
+                              cancelledEvent
+                                ? { textDecorationLine: "line-through" }
+                                : undefined
+                            }
                           >
                             {slot.subject_name}
                           </Text>
                           {cancelledEvent ? (
-                            <Text className="text-[9px] font-semibold" style={{ color: Colors.red }} numberOfLines={1}>
+                            <Text
+                              className="text-[9px] font-semibold"
+                              style={{ color: Colors.red }}
+                              numberOfLines={1}
+                            >
                               Cours annulé
                             </Text>
                           ) : (
                             <Text className="text-[9px] text-xporadia-text-secondary">
-                              {slot.start_time.slice(0, 5)}-{slot.end_time.slice(0, 5)}
+                              {slot.start_time.slice(0, 5)}-
+                              {slot.end_time.slice(0, 5)}
                             </Text>
                           )}
                         </LinearGradient>
@@ -511,10 +763,23 @@ export default function AgendaScreen() {
                   {HOURS.map((h) => (
                     <Pressable
                       key={h}
-                      style={{ position: "absolute", top: h * HOUR_HEIGHT, left: 0, right: 0, height: HOUR_HEIGHT }}
+                      style={{
+                        position: "absolute",
+                        top: h * HOUR_HEIGHT,
+                        left: 0,
+                        right: 0,
+                        height: HOUR_HEIGHT,
+                      }}
                       onPress={() => {
-                        setCreateForm({ ...EMPTY_FORM, startTime: `${pad(h)}:00`, endTime: `${pad(h + 1 > 23 ? 23 : h + 1)}:00` });
-                        setCreateSheet({ visible: true, startTime: `${pad(h)}:00` });
+                        setCreateForm({
+                          ...EMPTY_FORM,
+                          startTime: `${pad(h)}:00`,
+                          endTime: `${pad(h + 1 > 23 ? 23 : h + 1)}:00`,
+                        });
+                        setCreateSheet({
+                          visible: true,
+                          startTime: `${pad(h)}:00`,
+                        });
                       }}
                       accessibilityRole="button"
                       accessibilityLabel={`Ajouter un créneau personnel à ${pad(h)}:00`}
@@ -523,7 +788,16 @@ export default function AgendaScreen() {
                   {personalBlocks.map((block) => (
                     <Pressable
                       key={`${block.block}-${block.exception ?? "base"}`}
-                      style={{ position: "absolute", top: topFor(block.start_time), height: heightFor(block.start_time, block.end_time), left: 4, right: 2, borderRadius: 8, overflow: "hidden", flexDirection: "row" }}
+                      style={{
+                        position: "absolute",
+                        top: topFor(block.start_time),
+                        height: heightFor(block.start_time, block.end_time),
+                        left: 4,
+                        right: 2,
+                        borderRadius: 8,
+                        overflow: "hidden",
+                        flexDirection: "row",
+                      }}
                       onPress={() => {
                         setEditForm({
                           title: block.title,
@@ -536,16 +810,30 @@ export default function AgendaScreen() {
                       accessibilityRole="button"
                       accessibilityLabel={`Modifier le créneau ${block.title}`}
                     >
-                      <View style={{ width: 3, backgroundColor: Colors.orange }} />
+                      <View
+                        style={{ width: 3, backgroundColor: Colors.orange }}
+                      />
                       <LinearGradient
-                        colors={[withAlpha(Colors.orange, 0.22), withAlpha(Colors.orange, 0.06)]}
-                        style={{ flex: 1, paddingHorizontal: 8, paddingVertical: 4, justifyContent: "center" }}
+                        colors={[
+                          withAlpha(Colors.orange, 0.22),
+                          withAlpha(Colors.orange, 0.06),
+                        ]}
+                        style={{
+                          flex: 1,
+                          paddingHorizontal: 8,
+                          paddingVertical: 4,
+                          justifyContent: "center",
+                        }}
                       >
-                        <Text numberOfLines={1} className="text-[10px] font-semibold text-xporadia-navy">
+                        <Text
+                          numberOfLines={1}
+                          className="text-[10px] font-semibold text-xporadia-navy"
+                        >
                           {block.title}
                         </Text>
                         <Text className="text-[9px] text-xporadia-text-secondary">
-                          {block.start_time.slice(0, 5)}-{block.end_time.slice(0, 5)}
+                          {block.start_time.slice(0, 5)}-
+                          {block.end_time.slice(0, 5)}
                         </Text>
                       </LinearGradient>
                     </Pressable>
@@ -598,7 +886,11 @@ export default function AgendaScreen() {
 
       <ScopeChoiceSheet
         visible={!!scopeSheet?.visible}
-        actionLabel={scopeSheet?.action === "delete" ? "Supprimer ce créneau" : "Enregistrer les modifications"}
+        actionLabel={
+          scopeSheet?.action === "delete"
+            ? "Supprimer ce créneau"
+            : "Enregistrer les modifications"
+        }
         onCancel={() => setScopeSheet(null)}
         loading={editMutation.isPending || deleteMutation.isPending}
         onChoose={(scope) => {

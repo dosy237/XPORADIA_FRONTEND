@@ -27,7 +27,13 @@ function Wordmark({ height }: { height: number }) {
   );
 }
 
-export function AuthHeader({ title, subtitle, showLogo, showBack, onBack }: AuthHeaderProps) {
+export function AuthHeader({
+  title,
+  subtitle,
+  showLogo,
+  showBack,
+  onBack,
+}: AuthHeaderProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -54,7 +60,11 @@ export function AuthHeader({ title, subtitle, showLogo, showBack, onBack }: Auth
 
       <View className="gap-1.5">
         <Text className="text-xporadia-navy font-bold text-3xl">{title}</Text>
-        {subtitle ? <Text className="text-xporadia-text-secondary text-base">{subtitle}</Text> : null}
+        {subtitle ? (
+          <Text className="text-xporadia-text-secondary text-base">
+            {subtitle}
+          </Text>
+        ) : null}
       </View>
     </View>
   );

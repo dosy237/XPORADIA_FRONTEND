@@ -1,7 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "@/components/ui/KeyboardAwareScrollView";
 
 import { AuthHeader } from "@/components/auth/AuthHeader";
 import { Button } from "@/components/ui/Button";
@@ -33,7 +34,10 @@ export default function LoginScreen() {
           });
           return;
         } catch {
-          router.replace({ pathname: "/invite/[token]", params: { token: inviteToken } });
+          router.replace({
+            pathname: "/invite/[token]",
+            params: { token: inviteToken },
+          });
           return;
         }
       }
@@ -43,74 +47,101 @@ export default function LoginScreen() {
   });
 
   const notifySocialSoon = (provider: string) =>
-    Alert.alert("Bientôt disponible", `La connexion avec ${provider} arrive prochainement.`);
+    Alert.alert(
+      "Bientôt disponible",
+      `La connexion avec ${provider} arrive prochainement.`,
+    );
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardShouldPersistTaps="handled"
+      contentContainerClassName="pb-24 flex-grow"
+      bottomOffset={32}
     >
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-24 flex-grow">
-        <AuthHeader title="Ravi de vous revoir" subtitle="Connectez-vous pour retrouver votre espace" showBack />
+      <AuthHeader
+        title="Ravi de vous revoir"
+        subtitle="Connectez-vous pour retrouver votre espace"
+        showBack
+      />
 
-        <View className="px-6 pt-6">
-          <View className="bg-white rounded-2xl p-6 gap-5 shadow-soft">
-            <View className="gap-4">
-              <Input
-                label="Email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                placeholder="vous@exemple.ci"
-              />
-              <Input
-                label="Mot de passe"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholder="••••••••"
-              />
-            </View>
-
-            <Pressable
-              onPress={() =>
-                Alert.alert("Bientôt disponible", "La réinitialisation du mot de passe arrive prochainement.")
-              }
-              hitSlop={8}
-              className="self-end -mt-2"
-            >
-              <Text className="text-xporadia-orange-text text-sm font-medium">Mot de passe oublié ?</Text>
-            </Pressable>
-
-            {formError ? <Text className="text-xporadia-red text-sm text-center">{formError}</Text> : null}
-
-            <Button
-              label="Se connecter"
-              pill
-              onPress={() => {
-                setFormError(null);
-                mutation.mutate();
-              }}
-              loading={mutation.isPending}
+      <View className="px-6 pt-6">
+        <View className="bg-white rounded-2xl p-6 gap-5 shadow-soft">
+          <View className="gap-4">
+            <Input
+              label="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="vous@exemple.ci"
             />
-
-            <Divider label="ou continuer avec" />
-
-            <View className="flex-row gap-3">
-              <SocialButton label="Google" onPress={() => notifySocialSoon("Google")} />
-              <SocialButton label="Apple" onPress={() => notifySocialSoon("Apple")} />
-            </View>
+            <Input
+              label="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="••••••••"
+            />
           </View>
 
-          <View className="items-center gap-1 flex-row justify-center mt-6">
-            <Text className="text-xporadia-text-secondary">Pas encore de compte ?</Text>
-            <Link href="/(auth)/register" asChild>
-              <Text className="text-xporadia-orange-text font-semibold"> Créer un compte</Text>
-            </Link>
+          <Pressable
+            onPress={() =>
+              Alert.alert(
+                "Bientôt disponible",
+                "La réinitialisation du mot de passe arrive prochainement.",
+              )
+            }
+            hitSlop={8}
+            className="self-end -mt-2"
+          >
+            <Text className="text-xporadia-orange-text text-sm font-medium">
+              Mot de passe oublié ?
+            </Text>
+          </Pressable>
+
+          {formError ? (
+            <Text className="text-xporadia-red text-sm text-center">
+              {formError}
+            </Text>
+          ) : null}
+
+          <Button
+            label="Se connecter"
+            pill
+            onPress={() => {
+              setFormError(null);
+              mutation.mutate();
+            }}
+            loading={mutation.isPending}
+          />
+
+          <Divider label="ou continuer avec" />
+
+          <View className="flex-row gap-3">
+            <SocialButton
+              label="Google"
+              onPress={() => notifySocialSoon("Google")}
+            />
+            <SocialButton
+              label="Apple"
+              onPress={() => notifySocialSoon("Apple")}
+            />
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <View className="items-center gap-1 flex-row justify-center mt-6">
+          <Text className="text-xporadia-text-secondary">
+            Pas encore de compte ?
+          </Text>
+          <Link href="/(auth)/register" asChild>
+            <Text className="text-xporadia-orange-text font-semibold">
+              {" "}
+              Créer un compte
+            </Text>
+          </Link>
+        </View>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }

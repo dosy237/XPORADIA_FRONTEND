@@ -43,29 +43,47 @@ function CommentRow({
   return (
     <View className="flex-row items-start gap-3">
       <Pressable
-        onPress={() => router.push(`/(tabs)/actualites/profile/${comment.author.id}`)}
+        onPress={() =>
+          router.push(`/(tabs)/actualites/profile/${comment.author.id}`)
+        }
         hitSlop={4}
         accessibilityRole="button"
         accessibilityLabel={`Voir le profil de ${comment.author.full_name}`}
       >
-        <Avatar firstName={firstName} lastName={rest.join(" ")} imageUri={comment.author.avatar} size={36} />
+        <Avatar
+          firstName={firstName}
+          lastName={rest.join(" ")}
+          imageUri={comment.author.avatar}
+          size={36}
+        />
       </Pressable>
       <View className="flex-1 bg-white rounded-2xl px-4 py-3 shadow-soft">
         <View className="flex-row items-center justify-between gap-2">
           <Pressable
-            onPress={() => router.push(`/(tabs)/actualites/profile/${comment.author.id}`)}
+            onPress={() =>
+              router.push(`/(tabs)/actualites/profile/${comment.author.id}`)
+            }
             hitSlop={4}
             accessibilityRole="button"
             accessibilityLabel={`Voir le profil de ${comment.author.full_name}`}
             className="flex-1 flex-row items-center gap-1.5"
           >
-            <Text className="text-xs font-semibold text-xporadia-text-primary" numberOfLines={1} style={{ flexShrink: 1 }}>
+            <Text
+              className="text-xs font-semibold text-xporadia-text-primary"
+              numberOfLines={1}
+              style={{ flexShrink: 1 }}
+            >
               {comment.author.full_name}
             </Text>
-            <CertificationBadge level={comment.author.certification_level} size={13} />
+            <CertificationBadge
+              level={comment.author.certification_level}
+              size={13}
+            />
           </Pressable>
           <View className="flex-row items-center gap-2 flex-shrink-0">
-            <Text className="text-[10px] text-xporadia-text-secondary">{relativeTime}</Text>
+            <Text className="text-[10px] text-xporadia-text-secondary">
+              {relativeTime}
+            </Text>
             {canDelete ? (
               <Pressable
                 onPress={onDelete}
@@ -78,21 +96,31 @@ function CommentRow({
             ) : null}
           </View>
         </View>
-        <Text className="text-sm text-xporadia-text-primary mt-1">{comment.body}</Text>
+        <Text className="text-sm text-xporadia-text-primary mt-1">
+          {comment.body}
+        </Text>
         <Pressable
           onPress={() => requireAuth(isAuthenticated) && onToggleLike()}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel={comment.is_liked_by_me ? "Ne plus aimer ce commentaire" : "Aimer ce commentaire"}
+          accessibilityLabel={
+            comment.is_liked_by_me
+              ? "Ne plus aimer ce commentaire"
+              : "Aimer ce commentaire"
+          }
           className="flex-row items-center gap-1 mt-2 self-start"
         >
           <HeartIcon
             size={13}
-            color={comment.is_liked_by_me ? Colors.orange : Colors.textSecondary}
+            color={
+              comment.is_liked_by_me ? Colors.orange : Colors.textSecondary
+            }
             filled={comment.is_liked_by_me}
           />
           {comment.like_count > 0 ? (
-            <Text className="text-[10px] text-xporadia-text-secondary">{comment.like_count}</Text>
+            <Text className="text-[10px] text-xporadia-text-secondary">
+              {comment.like_count}
+            </Text>
           ) : null}
         </Pressable>
       </View>
@@ -118,7 +146,9 @@ export default function PostDetailScreen() {
     queryFn: () => feedApi.fetchPost(Number(postId)),
     enabled: !!postId,
     initialData: () =>
-      queryClient.getQueryData<feedApi.Post[]>(["posts"])?.find((p) => p.id === Number(postId)),
+      queryClient
+        .getQueryData<feedApi.Post[]>(["posts"])
+        ?.find((p) => p.id === Number(postId)),
   });
 
   const { data: comments, isLoading: commentsLoading } = useQuery({
@@ -129,42 +159,55 @@ export default function PostDetailScreen() {
 
   useFeedSocket(Number(postId) || undefined, {
     onCommentCreated: (newComment) => {
-      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) => {
-        if (!current) return current;
-        if (current.some((c) => c.id === newComment.id)) return current;
-        return [...current, newComment];
-      });
+      queryClient.setQueryData<feedApi.PostComment[]>(
+        ["post-comments", postId],
+        (current) => {
+          if (!current) return current;
+          if (current.some((c) => c.id === newComment.id)) return current;
+          return [...current, newComment];
+        },
+      );
     },
     onLikeUpdated: (_postId, likeCount) => {
       queryClient.setQueryData<feedApi.Post[]>(["posts"], (current) =>
-        current?.map((p) => (p.id === Number(postId) ? { ...p, like_count: likeCount } : p)),
+        current?.map((p) =>
+          p.id === Number(postId) ? { ...p, like_count: likeCount } : p,
+        ),
       );
       queryClient.setQueryData<feedApi.Post>(["post", postId], (current) =>
         current ? { ...current, like_count: likeCount } : current,
       );
     },
     onCommentDeleted: (commentId) => {
-      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
-        current?.filter((c) => c.id !== commentId),
+      queryClient.setQueryData<feedApi.PostComment[]>(
+        ["post-comments", postId],
+        (current) => current?.filter((c) => c.id !== commentId),
       );
     },
     onCommentLikeUpdated: (commentId, likeCount) => {
-      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
-        current?.map((c) => (c.id === commentId ? { ...c, like_count: likeCount } : c)),
+      queryClient.setQueryData<feedApi.PostComment[]>(
+        ["post-comments", postId],
+        (current) =>
+          current?.map((c) =>
+            c.id === commentId ? { ...c, like_count: likeCount } : c,
+          ),
       );
     },
   });
 
   const deleteCommentMutation = useMutation({
-    mutationFn: (commentId: number) => feedApi.deletePostComment(Number(postId), commentId),
+    mutationFn: (commentId: number) =>
+      feedApi.deletePostComment(Number(postId), commentId),
     onSuccess: (_data, commentId) => {
-      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
-        current?.filter((c) => c.id !== commentId),
+      queryClient.setQueryData<feedApi.PostComment[]>(
+        ["post-comments", postId],
+        (current) => current?.filter((c) => c.id !== commentId),
       );
       queryClient.invalidateQueries({ queryKey: ["posts"] });
       queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
-    onError: () => Alert.alert("Erreur", "Impossible de supprimer ce commentaire."),
+    onError: () =>
+      Alert.alert("Erreur", "Impossible de supprimer ce commentaire."),
   });
 
   const likeMutation = useMutation({
@@ -172,22 +215,43 @@ export default function PostDetailScreen() {
     onSuccess: (result) => {
       queryClient.setQueryData<feedApi.Post[]>(["posts"], (current) =>
         current?.map((p) =>
-          p.id === Number(postId) ? { ...p, is_liked_by_me: result.liked, like_count: result.like_count } : p,
+          p.id === Number(postId)
+            ? {
+                ...p,
+                is_liked_by_me: result.liked,
+                like_count: result.like_count,
+              }
+            : p,
         ),
       );
       queryClient.setQueryData<feedApi.Post>(["post", postId], (current) =>
-        current ? { ...current, is_liked_by_me: result.liked, like_count: result.like_count } : current,
+        current
+          ? {
+              ...current,
+              is_liked_by_me: result.liked,
+              like_count: result.like_count,
+            }
+          : current,
       );
     },
   });
 
   const commentLikeMutation = useMutation({
-    mutationFn: (commentId: number) => feedApi.toggleCommentLike(Number(postId), commentId),
+    mutationFn: (commentId: number) =>
+      feedApi.toggleCommentLike(Number(postId), commentId),
     onSuccess: (result, commentId) => {
-      queryClient.setQueryData<feedApi.PostComment[]>(["post-comments", postId], (current) =>
-        current?.map((c) =>
-          c.id === commentId ? { ...c, is_liked_by_me: result.liked, like_count: result.like_count } : c,
-        ),
+      queryClient.setQueryData<feedApi.PostComment[]>(
+        ["post-comments", postId],
+        (current) =>
+          current?.map((c) =>
+            c.id === commentId
+              ? {
+                  ...c,
+                  is_liked_by_me: result.liked,
+                  like_count: result.like_count,
+                }
+              : c,
+          ),
       );
     },
   });
@@ -222,18 +286,33 @@ export default function PostDetailScreen() {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
+    <KeyboardAvoidingView
+      className="flex-1 bg-xporadia-bg"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <ScrollView contentContainerClassName="p-6 gap-4 pb-6">
-        <PostCard post={post} onToggleLike={() => likeMutation.mutate()} disableNavigation />
+        <PostCard
+          post={post}
+          onToggleLike={() => likeMutation.mutate()}
+          disableNavigation
+        />
 
         {isAuthor ? (
           <Text
             className="text-xs text-xporadia-red font-semibold text-center"
             onPress={() =>
-              Alert.alert("Supprimer la publication", "Cette action est définitive.", [
-                { text: "Annuler", style: "cancel" },
-                { text: "Supprimer", style: "destructive", onPress: () => deleteMutation.mutate() },
-              ])
+              Alert.alert(
+                "Supprimer la publication",
+                "Cette action est définitive.",
+                [
+                  { text: "Annuler", style: "cancel" },
+                  {
+                    text: "Supprimer",
+                    style: "destructive",
+                    onPress: () => deleteMutation.mutate(),
+                  },
+                ],
+              )
             }
             suppressHighlighting
           >
@@ -253,11 +332,18 @@ export default function PostDetailScreen() {
               <CommentRow
                 key={c.id}
                 comment={c}
-                canDelete={c.author.id === currentUser?.id || currentUser?.primary_role === "admin"}
+                canDelete={
+                  c.author.id === currentUser?.id ||
+                  currentUser?.primary_role === "admin"
+                }
                 onDelete={() =>
                   Alert.alert("Supprimer ce commentaire ?", undefined, [
                     { text: "Annuler", style: "cancel" },
-                    { text: "Supprimer", style: "destructive", onPress: () => deleteCommentMutation.mutate(c.id) },
+                    {
+                      text: "Supprimer",
+                      style: "destructive",
+                      onPress: () => deleteCommentMutation.mutate(c.id),
+                    },
                   ])
                 }
                 onToggleLike={() => commentLikeMutation.mutate(c.id)}

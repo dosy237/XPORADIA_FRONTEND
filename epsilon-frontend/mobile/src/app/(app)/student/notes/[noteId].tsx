@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, Text, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "@/components/ui/KeyboardAwareScrollView";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -12,7 +13,10 @@ export default function NoteDetailScreen() {
   const id = Number(noteId);
   const queryClient = useQueryClient();
 
-  const { data: notes } = useQuery({ queryKey: ["personal-notes"], queryFn: studentLifeApi.fetchNotes });
+  const { data: notes } = useQuery({
+    queryKey: ["personal-notes"],
+    queryFn: studentLifeApi.fetchNotes,
+  });
   const note = notes?.find((n) => n.id === id);
 
   const [title, setTitle] = useState("");
@@ -32,7 +36,8 @@ export default function NoteDetailScreen() {
 
   const saveMutation = useMutation({
     mutationFn: () => studentLifeApi.updateNote(id, { title, content }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["personal-notes"] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["personal-notes"] }),
   });
 
   const deleteMutation = useMutation({
@@ -54,38 +59,55 @@ export default function NoteDetailScreen() {
   }
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-xporadia-bg" behavior={Platform.OS === "ios" ? "padding" : "height"}>
-      <ScrollView contentContainerClassName="p-6 gap-4 pb-12">
-        <Input value={title} onChangeText={setTitle} placeholder="Titre de la note" />
-        <TextInput
-          value={content}
-          onChangeText={setContent}
-          onContentSizeChange={(e) => setContentHeight(Math.max(200, e.nativeEvent.contentSize.height))}
-          placeholder="Écrivez votre note ici..."
-          placeholderTextColor="#94A3B8"
-          multiline
-          style={{ height: contentHeight }}
-          className="text-sm text-xporadia-text-primary bg-white rounded-xl p-4 shadow-soft"
-          textAlignVertical="top"
+    <KeyboardAwareScrollView
+      className="flex-1 bg-xporadia-bg"
+      contentContainerClassName="p-6 gap-4 pb-12"
+      bottomOffset={32}
+    >
+      <Input
+        value={title}
+        onChangeText={setTitle}
+        placeholder="Titre de la note"
+      />
+      <TextInput
+        value={content}
+        onChangeText={setContent}
+        onContentSizeChange={(e) =>
+          setContentHeight(Math.max(200, e.nativeEvent.contentSize.height))
+        }
+        placeholder="Écrivez votre note ici..."
+        placeholderTextColor="#94A3B8"
+        multiline
+        style={{ height: contentHeight }}
+        className="text-sm text-xporadia-text-primary bg-white rounded-xl p-4 shadow-soft"
+        textAlignVertical="top"
+      />
+
+      {hasChanges ? (
+        <Button
+          label="Enregistrer"
+          pill
+          onPress={() => saveMutation.mutate()}
+          loading={saveMutation.isPending}
         />
+      ) : null}
 
-        {hasChanges ? (
-          <Button label="Enregistrer" pill onPress={() => saveMutation.mutate()} loading={saveMutation.isPending} />
-        ) : null}
-
-        <Text
-          className="text-xs text-xporadia-red text-center font-medium"
-          suppressHighlighting
-          onPress={() =>
-            Alert.alert("Supprimer la note", "Cette action est définitive.", [
-              { text: "Annuler", style: "cancel" },
-              { text: "Supprimer", style: "destructive", onPress: () => deleteMutation.mutate() },
-            ])
-          }
-        >
-          Supprimer cette note
-        </Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      <Text
+        className="text-xs text-xporadia-red text-center font-medium"
+        suppressHighlighting
+        onPress={() =>
+          Alert.alert("Supprimer la note", "Cette action est définitive.", [
+            { text: "Annuler", style: "cancel" },
+            {
+              text: "Supprimer",
+              style: "destructive",
+              onPress: () => deleteMutation.mutate(),
+            },
+          ])
+        }
+      >
+        Supprimer cette note
+      </Text>
+    </KeyboardAwareScrollView>
   );
 }

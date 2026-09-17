@@ -1,18 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "@/components/ui/KeyboardAwareScrollView";
 
 import { AvatarPicker } from "@/components/ui/AvatarPicker";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
-import { BriefcaseIcon, BuildingIcon, PencilIcon, PinIcon } from "@/components/ui/Icon";
+import {
+  BriefcaseIcon,
+  BuildingIcon,
+  PencilIcon,
+  PinIcon,
+} from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { StatBox } from "@/components/ui/StatBox";
 import { Colors } from "@/constants/theme";
@@ -20,8 +19,22 @@ import { openInMaps } from "@/lib/openInMaps";
 import * as companyApi from "@/services/companyProfile";
 import { useAuthStore } from "@/store/authStore";
 
-const PRIMARY_SWATCHES = ["#0F172A", "#1E3A5F", "#134E4A", "#4C1D95", "#7C2D12", "#111827"];
-const SECONDARY_SWATCHES = ["#FB5406", "#EA580C", "#D97706", "#DC2626", "#0EA5E9", "#059669"];
+const PRIMARY_SWATCHES = [
+  "#0F172A",
+  "#1E3A5F",
+  "#134E4A",
+  "#4C1D95",
+  "#7C2D12",
+  "#111827",
+];
+const SECONDARY_SWATCHES = [
+  "#FB5406",
+  "#EA580C",
+  "#D97706",
+  "#DC2626",
+  "#0EA5E9",
+  "#059669",
+];
 
 function ColorSwatchPicker({
   label,
@@ -36,7 +49,9 @@ function ColorSwatchPicker({
 }) {
   return (
     <View className="gap-2">
-      <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">{label}</Text>
+      <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+        {label}
+      </Text>
       <View className="flex-row items-center gap-2.5">
         {swatches.map((color) => (
           <Pressable
@@ -60,7 +75,6 @@ function ColorSwatchPicker({
     </View>
   );
 }
-
 
 export default function CompanyProfileScreen() {
   const queryClient = useQueryClient();
@@ -110,122 +124,146 @@ export default function CompanyProfileScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardShouldPersistTaps="handled"
+      contentContainerClassName="pb-12"
+      bottomOffset={32}
     >
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="pb-12">
-        <View className="items-center pt-10 pb-5">
-          <View className="absolute inset-0 overflow-hidden" pointerEvents="none">
-            <View className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]" />
-            <View className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]" />
-          </View>
-          <View>
-            <AvatarPicker firstName={user?.first_name} lastName={user?.last_name} imageUri={user?.avatar} />
-            {profile.is_partner && (
-              <View
-                className="absolute bottom-1 left-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white"
-              />
-            )}
-          </View>
-          <Text className="text-xl font-bold text-xporadia-navy mt-3">
-            {user?.first_name} {user?.last_name}
-          </Text>
-          <View className="mt-2 flex-row gap-2">
-            <Chip label="Entreprise" variant="navy-subtle" />
-            {profile.is_partner && <Chip label="Partenaire Premium" variant="orange" />}
-          </View>
+      <View className="items-center pt-10 pb-5">
+        <View className="absolute inset-0 overflow-hidden" pointerEvents="none">
+          <View className="absolute -top-6 -left-10 h-44 w-44 rounded-full bg-xporadia-navy/[0.05]" />
+          <View className="absolute -top-8 -right-12 h-32 w-32 rounded-full bg-xporadia-orange/[0.07]" />
         </View>
-
-        <View className="px-6">
-          {!editing ? (
-            <View className="gap-5">
-              <View className="bg-white rounded-3xl p-6 shadow-deep gap-5">
-                <View className="flex-row gap-3">
-                  <StatBox
-                    icon={<BuildingIcon color={Colors.navy} size={18} />}
-                    label="Raison sociale"
-                    value={profile.company_name || "Non renseigné"}
-                  />
-                  <StatBox
-                    icon={<BriefcaseIcon color={Colors.navy} size={18} />}
-                    label="Secteur"
-                    value={profile.sector || "Non renseigné"}
-                  />
-                  <StatBox
-                    icon={<PinIcon color={Colors.navy} size={18} />}
-                    label="Adresse"
-                    value={profile.address || "Non renseigné"}
-                    onPress={profile.address ? () => openInMaps(profile.address) : undefined}
-                  />
-                </View>
-
-                <View className="gap-2">
-                  <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
-                    Couleurs de vos conventions de stage
-                  </Text>
-                  <View className="flex-row gap-2">
-                    <View
-                      className="flex-1 h-11 rounded-xl"
-                      style={{ backgroundColor: profile.brand_primary_color }}
-                    />
-                    <View
-                      className="flex-1 h-11 rounded-xl"
-                      style={{ backgroundColor: profile.brand_secondary_color }}
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <Pressable
-                onPress={() => setEditing(true)}
-                className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-4 shadow-deep-orange"
-              >
-                <PencilIcon size={16} color="#FFFFFF" />
-                <Text className="text-white font-semibold">Modifier ma fiche entreprise</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <View className="bg-white rounded-3xl p-5 gap-5 shadow-soft">
-              <Input label="Raison sociale" value={companyName} onChangeText={setCompanyName} />
-              <Input
-                label="Secteur d'activité"
-                value={sector}
-                onChangeText={setSector}
-                placeholder="Technologies de l'éducation"
-              />
-              <Input label="Adresse" value={address} onChangeText={setAddress} placeholder="Plateau, Abidjan" />
-
-              <ColorSwatchPicker
-                label="Couleur principale (conventions PDF)"
-                value={primaryColor}
-                onChange={setPrimaryColor}
-                swatches={PRIMARY_SWATCHES}
-              />
-              <ColorSwatchPicker
-                label="Couleur secondaire (conventions PDF)"
-                value={secondaryColor}
-                onChange={setSecondaryColor}
-                swatches={SECONDARY_SWATCHES}
-              />
-
-              <View className="flex-row gap-3 mt-2">
-                <View className="flex-1">
-                  <Button label="Annuler" variant="secondary" pill onPress={() => setEditing(false)} />
-                </View>
-                <View className="flex-1">
-                  <Button
-                    label="Enregistrer"
-                    pill
-                    onPress={() => mutation.mutate()}
-                    loading={mutation.isPending}
-                  />
-                </View>
-              </View>
-            </View>
+        <View>
+          <AvatarPicker
+            firstName={user?.first_name}
+            lastName={user?.last_name}
+            imageUri={user?.avatar}
+          />
+          {profile.is_partner && (
+            <View className="absolute bottom-1 left-1 h-4 w-4 rounded-full bg-xporadia-orange border-2 border-white" />
           )}
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <Text className="text-xl font-bold text-xporadia-navy mt-3">
+          {user?.first_name} {user?.last_name}
+        </Text>
+        <View className="mt-2 flex-row gap-2">
+          <Chip label="Entreprise" variant="navy-subtle" />
+          {profile.is_partner && (
+            <Chip label="Partenaire Premium" variant="orange" />
+          )}
+        </View>
+      </View>
+
+      <View className="px-6">
+        {!editing ? (
+          <View className="gap-5">
+            <View className="bg-white rounded-3xl p-6 shadow-deep gap-5">
+              <View className="flex-row gap-3">
+                <StatBox
+                  icon={<BuildingIcon color={Colors.navy} size={18} />}
+                  label="Raison sociale"
+                  value={profile.company_name || "Non renseigné"}
+                />
+                <StatBox
+                  icon={<BriefcaseIcon color={Colors.navy} size={18} />}
+                  label="Secteur"
+                  value={profile.sector || "Non renseigné"}
+                />
+                <StatBox
+                  icon={<PinIcon color={Colors.navy} size={18} />}
+                  label="Adresse"
+                  value={profile.address || "Non renseigné"}
+                  onPress={
+                    profile.address
+                      ? () => openInMaps(profile.address)
+                      : undefined
+                  }
+                />
+              </View>
+
+              <View className="gap-2">
+                <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+                  Couleurs de vos conventions de stage
+                </Text>
+                <View className="flex-row gap-2">
+                  <View
+                    className="flex-1 h-11 rounded-xl"
+                    style={{ backgroundColor: profile.brand_primary_color }}
+                  />
+                  <View
+                    className="flex-1 h-11 rounded-xl"
+                    style={{ backgroundColor: profile.brand_secondary_color }}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <Pressable
+              onPress={() => setEditing(true)}
+              className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-4 shadow-deep-orange"
+            >
+              <PencilIcon size={16} color="#FFFFFF" />
+              <Text className="text-white font-semibold">
+                Modifier ma fiche entreprise
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View className="bg-white rounded-3xl p-5 gap-5 shadow-soft">
+            <Input
+              label="Raison sociale"
+              value={companyName}
+              onChangeText={setCompanyName}
+            />
+            <Input
+              label="Secteur d'activité"
+              value={sector}
+              onChangeText={setSector}
+              placeholder="Technologies de l'éducation"
+            />
+            <Input
+              label="Adresse"
+              value={address}
+              onChangeText={setAddress}
+              placeholder="Plateau, Abidjan"
+            />
+
+            <ColorSwatchPicker
+              label="Couleur principale (conventions PDF)"
+              value={primaryColor}
+              onChange={setPrimaryColor}
+              swatches={PRIMARY_SWATCHES}
+            />
+            <ColorSwatchPicker
+              label="Couleur secondaire (conventions PDF)"
+              value={secondaryColor}
+              onChange={setSecondaryColor}
+              swatches={SECONDARY_SWATCHES}
+            />
+
+            <View className="flex-row gap-3 mt-2">
+              <View className="flex-1">
+                <Button
+                  label="Annuler"
+                  variant="secondary"
+                  pill
+                  onPress={() => setEditing(false)}
+                />
+              </View>
+              <View className="flex-1">
+                <Button
+                  label="Enregistrer"
+                  pill
+                  onPress={() => mutation.mutate()}
+                  loading={mutation.isPending}
+                />
+              </View>
+            </View>
+          </View>
+        )}
+      </View>
+    </KeyboardAwareScrollView>
   );
 }

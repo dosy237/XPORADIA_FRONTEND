@@ -1,6 +1,7 @@
 import { forwardRef, useState } from "react";
 import { Text, TextInput, TextInputProps, View } from "react-native";
 
+import { useScrollToFocusedInput } from "@/components/ui/KeyboardAwareScrollView";
 import { Colors } from "@/constants/theme";
 
 interface InputProps extends TextInputProps {
@@ -21,33 +22,57 @@ const BORDER_COLOR = {
 };
 
 export const Input = forwardRef<TextInput, InputProps>(
-  ({ label, error, leftIcon, className, onFocus, onBlur, style, ...props }, ref) => {
+  (
+    { label, error, leftIcon, className, onFocus, onBlur, style, ...props },
+    ref,
+  ) => {
     const [focused, setFocused] = useState(false);
+    const scrollToFocusedInput = useScrollToFocusedInput();
 
-    const borderColor = error ? BORDER_COLOR.error : focused ? BORDER_COLOR.focused : BORDER_COLOR.idle;
+    const borderColor = error
+      ? BORDER_COLOR.error
+      : focused
+        ? BORDER_COLOR.focused
+        : BORDER_COLOR.idle;
 
     return (
       <View className="gap-1.5">
-        {label ? <Text className="text-sm font-medium text-xporadia-text-secondary">{label}</Text> : null}
+        {label ? (
+          <Text className="text-sm font-medium text-xporadia-text-secondary">
+            {label}
+          </Text>
+        ) : null}
         <View className="relative justify-center">
-          {leftIcon ? <View className="absolute left-4 z-10">{leftIcon}</View> : null}
+          {leftIcon ? (
+            <View className="absolute left-4 z-10">{leftIcon}</View>
+          ) : null}
           <TextInput
             ref={ref}
             placeholderTextColor="#94A3B8"
             onFocus={(e) => {
               setFocused(true);
               onFocus?.(e);
+              // Léger délai : le clavier n'a pas encore fini de reporter sa
+              // position/hauteur au moment même où le focus se déclenche.
+              const nodeHandle = e.target as unknown as number;
+              setTimeout(() => scrollToFocusedInput?.(nodeHandle), 80);
             }}
             onBlur={(e) => {
               setFocused(false);
               onBlur?.(e);
             }}
-            style={[{ borderColor }, leftIcon ? { paddingLeft: 44 } : null, style]}
+            style={[
+              { borderColor },
+              leftIcon ? { paddingLeft: 44 } : null,
+              style,
+            ]}
             className={`rounded-xl border-2 bg-xporadia-bg px-4 py-3.5 text-base text-xporadia-text-primary ${className ?? ""}`}
             {...props}
           />
         </View>
-        {error ? <Text className="text-xs text-xporadia-red">{error}</Text> : null}
+        {error ? (
+          <Text className="text-xs text-xporadia-red">{error}</Text>
+        ) : null}
       </View>
     );
   },
