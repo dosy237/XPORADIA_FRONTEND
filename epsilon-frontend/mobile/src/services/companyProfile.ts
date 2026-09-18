@@ -5,6 +5,8 @@ export interface CompanyProfile {
   sector: string;
   address: string;
   is_partner: boolean;
+  brand_primary_color: string;
+  brand_secondary_color: string;
 }
 
 export type CompanyProfileUpdate = Partial<Omit<CompanyProfile, "is_partner">>;

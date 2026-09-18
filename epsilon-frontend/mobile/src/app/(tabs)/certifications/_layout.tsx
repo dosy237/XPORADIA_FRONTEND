@@ -16,8 +16,9 @@ export default function CertificationsStackLayout() {
         headerRight: isAuthenticated ? () => <HeaderActions /> : undefined,
       }}
     >
-      <Stack.Screen name="index" options={{ title: "Certifications" }} />
+      <Stack.Screen name="index" options={{ title: "Certifications & Stages" }} />
       <Stack.Screen name="[moduleId]" options={{ title: "Module de formation" }} />
+      <Stack.Screen name="stage/[offerId]" options={{ title: "Offre de stage" }} />
     </Stack>
   );
 }

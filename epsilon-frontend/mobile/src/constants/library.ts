@@ -1,4 +1,4 @@
-import type { ResourceType, SchoolLevel } from "@/services/library";
+import type { ResourceCategory, ResourceType, SchoolLevel } from "@/services/library";
 
 export const RESOURCE_TYPE_LABELS: Record<ResourceType, string> = {
   course: "Cours",
@@ -27,3 +27,26 @@ export const SCHOOL_LEVEL_LABELS: Record<SchoolLevel, string> = {
 };
 
 export const SCHOOL_LEVEL_ORDER: SchoolLevel[] = ["6e", "5e", "4e", "3e", "2nde", "1ere", "tle"];
+
+export const RESOURCE_CATEGORY_LABELS: Record<ResourceCategory, string> = {
+  academic: "Scolaire",
+  literature: "Littérature",
+  society: "Société & anthropologie",
+  science: "Sciences & vulgarisation",
+  biography: "Biographies & entrepreneuriat",
+  arts: "Arts",
+  environment: "Environnement",
+};
+
+// Le rayon scolaire vient en premier (c'est le seul réellement peuplé
+// aujourd'hui) ; les suivants n'apparaissent dans l'écran que s'ils
+// contiennent au moins une ressource — pas de rayon vide affiché.
+export const RESOURCE_CATEGORY_ORDER: ResourceCategory[] = [
+  "academic",
+  "literature",
+  "society",
+  "science",
+  "biography",
+  "arts",
+  "environment",
+];

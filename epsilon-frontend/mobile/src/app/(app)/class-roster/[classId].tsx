@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
@@ -48,61 +48,126 @@ function RosterRow({
   enrollment,
   isDirector,
   otherClasses,
+  schoolYear,
   onTransition,
   onWithdraw,
+  onRemoveFromEstablishment,
 }: {
   enrollment: Enrollment;
   isDirector: boolean;
   otherClasses: SchoolClass[];
+  schoolYear?: string;
   onTransition: (enrollmentId: number, status: "promoted" | "repeating", targetClassId: number) => void;
   onWithdraw: (enrollmentId: number) => void;
+  onRemoveFromEstablishment: (childId: number, childName: string) => void;
 }) {
   const [picking, setPicking] = useState<"promoted" | "repeating" | null>(null);
 
   return (
-    <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+    <View className="bg-white rounded-2xl p-4 shadow-soft gap-2">
       <Text className="text-base font-semibold text-xporadia-text-primary">
         {enrollment.child.first_name}
       </Text>
       <Text className="text-xs text-xporadia-text-secondary">{enrollment.child.class_level}</Text>
 
-      {isDirector && (
-        <>
-          {picking ? (
-            <TargetClassPicker
-              classes={otherClasses}
-              onPick={(targetClassId) => {
-                onTransition(enrollment.id, picking, targetClassId);
-                setPicking(null);
-              }}
-              onCancel={() => setPicking(null)}
+      {picking ? (
+        <TargetClassPicker
+          classes={otherClasses}
+          onPick={(targetClassId) => {
+            onTransition(enrollment.id, picking, targetClassId);
+            setPicking(null);
+          }}
+          onCancel={() => setPicking(null)}
+        />
+      ) : (
+        <View className="flex-row flex-wrap gap-2 mt-1">
+          {isDirector && (
+            <Button
+              label="Frais de scolarité"
+              variant="secondary"
+              pill
+              onPress={() =>
+                router.push({
+                  pathname: "/(app)/director/tuition/child/[childId]",
+                  params: { childId: String(enrollment.child.id) },
+                })
+              }
             />
-          ) : (
-            <View className="flex-row flex-wrap gap-2 mt-1">
-              <Button label="Passe" pill onPress={() => setPicking("promoted")} />
-              <Button label="Redouble" variant="secondary" pill onPress={() => setPicking("repeating")} />
-              <Button
-                label="A quitté"
-                variant="secondary"
-                pill
-                onPress={() =>
-                  Alert.alert(
-                    "Confirmer le départ",
-                    `${enrollment.child.first_name} sera retiré(e) de cette classe.`,
-                    [
-                      { text: "Annuler", style: "cancel" },
-                      {
-                        text: "Confirmer",
-                        style: "destructive",
-                        onPress: () => onWithdraw(enrollment.id),
-                      },
-                    ]
-                  )
-                }
-              />
-            </View>
           )}
-        </>
+          {isDirector && (
+            <Button
+              label="Documents administratifs"
+              variant="secondary"
+              pill
+              onPress={() =>
+                router.push({
+                  pathname: "/(app)/director/documents/child/[childId]",
+                  params: {
+                    childId: String(enrollment.child.id),
+                    childName: enrollment.child.first_name,
+                    schoolYear: schoolYear ?? "",
+                  },
+                })
+              }
+            />
+          )}
+          {isDirector && (
+            <Button
+              label="Suivi disciplinaire"
+              variant="secondary"
+              pill
+              onPress={() =>
+                router.push({
+                  pathname: "/(app)/director/discipline/child/[childId]",
+                  params: {
+                    childId: String(enrollment.child.id),
+                    childName: enrollment.child.first_name,
+                  },
+                })
+              }
+            />
+          )}
+          {isDirector && <Button label="Passe" pill onPress={() => setPicking("promoted")} />}
+          {isDirector && (
+            <Button label="Redouble" variant="secondary" pill onPress={() => setPicking("repeating")} />
+          )}
+          <Button
+            label="Retirer de la classe"
+            variant="secondary"
+            pill
+            onPress={() =>
+              Alert.alert(
+                "Confirmer le retrait",
+                `${enrollment.child.first_name} sera retiré(e) de cette classe.`,
+                [
+                  { text: "Annuler", style: "cancel" },
+                  { text: "Confirmer", style: "destructive", onPress: () => onWithdraw(enrollment.id) },
+                ]
+              )
+            }
+          />
+          {isDirector && (
+            <Button
+              label="Retirer de l'établissement"
+              variant="secondary"
+              pill
+              onPress={() =>
+                Alert.alert(
+                  "Confirmer le retrait complet",
+                  `${enrollment.child.first_name} sera retiré(e) de tout l'établissement, pas seulement de cette classe.`,
+                  [
+                    { text: "Annuler", style: "cancel" },
+                    {
+                      text: "Confirmer",
+                      style: "destructive",
+                      onPress: () => onRemoveFromEstablishment(enrollment.child.id, enrollment.child.first_name),
+                    },
+                  ]
+                )
+              }
+            />
+          )}
+        </View>
       )}
     </View>
   );
@@ -180,11 +245,21 @@ export default function ClassRosterScreen() {
     onError: () => Alert.alert("Erreur", "Impossible de traiter ce départ."),
   });
 
+  const removeFromEstablishmentMutation = useMutation({
+    mutationFn: (childId: number) => academicsApi.removeFromEstablishment(childId),
+    onSuccess: (_data, childId) => {
+      queryClient.setQueryData<Enrollment[] | undefined>(rosterQueryKey, (prev) =>
+        prev ? prev.filter((e) => e.child.id !== childId) : prev
+      );
+    },
+    onError: () => Alert.alert("Erreur", "Impossible de retirer cet élève de l'établissement."),
+  });
+
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <Text className="text-xs text-xporadia-text-secondary leading-5">
         Effectifs de {className ?? "cette classe"}
-        {schoolYear ? ` — ${schoolYear}` : ""}.
+        {schoolYear ? ` (${schoolYear})` : ""}.
         {isDirector
           ? " Vous pouvez inscrire un élève, ou traiter le passage, le redoublement et les départs."
           : " Vous pouvez inscrire un nouvel élève en cours d'année."}
@@ -204,16 +279,18 @@ export default function ClassRosterScreen() {
               enrollment={enrollment}
               isDirector={isDirector}
               otherClasses={otherClasses}
+              schoolYear={schoolYear}
               onTransition={(enrollmentId, status, targetClassId) =>
                 transitionMutation.mutate({ enrollmentId, status, targetClassId })
               }
               onWithdraw={(enrollmentId) => withdrawMutation.mutate(enrollmentId)}
+              onRemoveFromEstablishment={(childId) => removeFromEstablishmentMutation.mutate(childId)}
             />
           ))}
         </View>
       )}
 
-      <View className="bg-white rounded-2xl p-4 border border-xporadia-orange/30 gap-3">
+      <View className="bg-white rounded-2xl p-4 shadow-soft gap-3">
         <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
           Inscrire un élève
         </Text>

@@ -30,7 +30,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files — .env est propre à chaque machine (URL de l'API locale) et
+# ne doit jamais être suivi ; voir .env.example pour le modèle à copier.
+.env
 .env*.local
 
 # typescript

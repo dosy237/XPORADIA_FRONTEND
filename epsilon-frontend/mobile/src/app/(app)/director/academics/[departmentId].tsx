@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
+import { DelegatesManager } from "@/components/academics/DelegatesManager";
 import { Button } from "@/components/ui/Button";
 import { PlusIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
@@ -15,11 +16,11 @@ function TrackCard({ track }: { track: Track }) {
       onPress={() => router.push(`/(app)/director/academics/track/${track.id}`)}
       accessibilityRole="button"
       accessibilityLabel={`Voir la filière ${track.name}`}
-      className="bg-white rounded-2xl p-4 border border-xporadia-border"
+      className="bg-white rounded-2xl p-4 shadow-soft"
     >
       <Text className="text-base font-semibold text-xporadia-text-primary">{track.name}</Text>
       {track.description ? (
-        <Text className="text-xs text-xporadia-text-secondary mt-0.5" numberOfLines={1}>
+        <Text className="text-xs text-xporadia-text-secondary mt-0.5" numberOfLines={2}>
           {track.description}
         </Text>
       ) : null}
@@ -33,6 +34,12 @@ export default function DepartmentTracksScreen() {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+
+  const { data: department } = useQuery({
+    queryKey: ["department", departmentId],
+    queryFn: () => academicsApi.fetchDepartment(Number(departmentId)),
+    enabled: !!departmentId,
+  });
 
   const { data: tracks, isLoading } = useQuery({
     queryKey: ["tracks", departmentId],
@@ -66,7 +73,7 @@ export default function DepartmentTracksScreen() {
       )}
 
       {adding ? (
-        <View className="bg-white rounded-2xl p-4 border border-xporadia-orange/30 gap-3">
+        <View className="bg-white rounded-2xl p-4 shadow-soft gap-3">
           <Input label="Nom de la filière" value={name} onChangeText={setName} placeholder="Scientifique" />
           <Input
             label="Description (optionnel)"
@@ -94,12 +101,23 @@ export default function DepartmentTracksScreen() {
           onPress={() => setAdding(true)}
           accessibilityRole="button"
           accessibilityLabel="Ajouter une filière"
-          className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-3.5"
+          className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-3.5 shadow-deep-orange"
         >
           <PlusIcon size={16} />
           <Text className="text-white font-semibold">Ajouter une filière</Text>
         </Pressable>
       )}
+
+      {department ? (
+        <DelegatesManager
+          title="Délégation de la création de filières"
+          helperText="Un enseignant délégué peut créer des filières dans ce département uniquement — jamais un autre département, jamais de nouveau département."
+          delegates={department.track_delegates}
+          queryKeyToInvalidate={["department", departmentId]}
+          onAdd={(email) => academicsApi.addDepartmentDelegate(Number(departmentId), email)}
+          onRemove={(email) => academicsApi.removeDepartmentDelegate(Number(departmentId), email)}
+        />
+      ) : null}
     </ScrollView>
   );
 }
