@@ -47,7 +47,7 @@ function ListingCard({
         className="gap-2"
       >
         <View className="flex-row items-center justify-between">
-          <Text className="text-base font-semibold text-xporadia-text-primary flex-1" numberOfLines={1}>
+          <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
             {listing.title}
           </Text>
           <Chip label={STATUS_LABELS[listing.status]} variant="navy-subtle" />

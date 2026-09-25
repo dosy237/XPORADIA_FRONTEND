@@ -42,7 +42,7 @@ export function AccreditationBanner() {
       {profile.preregistration_code_submitted ? (
         <Text className="text-xs text-xporadia-text-secondary leading-5">
           Votre code a bien été enregistré. Votre dossier est en attente de validation par
-          Xporadia — vous serez notifié dès qu&apos;il sera accrédité. En attendant, vous pouvez
+          Xporadia. Vous serez notifié dès qu&apos;il sera accrédité. En attendant, vous pouvez
           parcourir l&apos;application avec des droits réduits (vous n&apos;apparaissez pas encore
           dans l&apos;annuaire et ne pouvez pas activer les cours particuliers ou le marché de
           l&apos;emploi).

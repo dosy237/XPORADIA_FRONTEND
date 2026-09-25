@@ -5,13 +5,17 @@ import { LEVEL_COLORS, LEVEL_LABELS, LEVEL_ORDER } from "@/constants/certificati
 import { Colors } from "@/constants/theme";
 import type { CertificationLevel } from "@/services/certification";
 
+// Le fond "Zéro" est très clair — une icône blanche s'y perdrait, la navy
+// tient un meilleur contraste. Tous les autres paliers restent en blanc.
+const iconColorFor = (level: CertificationLevel) => (level === "zero" ? Colors.navy : "#FFFFFF");
+
 export function LevelBadge({ level, size = 40 }: { level: CertificationLevel; size?: number }) {
   return (
     <View
       className="items-center justify-center rounded-full border-2 border-white"
       style={{ width: size, height: size, backgroundColor: LEVEL_COLORS[level] }}
     >
-      <MedalIcon color="#FFFFFF" size={size * 0.5} />
+      <MedalIcon color={iconColorFor(level)} size={size * 0.5} />
     </View>
   );
 }
@@ -37,7 +41,7 @@ export function LevelPath({ current }: { current: CertificationLevel | null }) {
                   backgroundColor: achieved ? LEVEL_COLORS[level] : Colors.border,
                 }}
               >
-                <MedalIcon color={achieved ? "#FFFFFF" : Colors.textSecondary} size={16} />
+                <MedalIcon color={achieved ? iconColorFor(level) : Colors.textSecondary} size={16} />
               </View>
               {index < LEVEL_ORDER.length - 1 && (
                 <View

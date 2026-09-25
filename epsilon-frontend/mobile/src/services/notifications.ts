@@ -14,6 +14,7 @@ export type NotificationType =
   | "correction_ready"
   | "recruitment"
   | "stage_update"
+  | "report_card_published"
   | "system";
 
 export interface AppNotification {
@@ -41,3 +42,21 @@ export const registerDeviceToken = (token: string, platform: DevicePlatform) =>
 
 export const unregisterDeviceToken = (token: string) =>
   api.post("/notifications/devices/unregister/", { token }).then((r) => r.data);
+
+export type NotificationCategory = "school_life" | "employment" | "messaging" | "administrative";
+
+export interface NotificationPreferenceEntry {
+  category: NotificationCategory;
+  category_label: string;
+  enabled: boolean;
+}
+
+/** Une catégorie absente de la réponse serait un bug — le backend renvoie
+ * toujours les 4 grandes catégories, activées par défaut. */
+export const fetchNotificationPreferences = () =>
+  api.get<NotificationPreferenceEntry[]>("/notifications/preferences/").then((r) => r.data);
+
+export const setNotificationPreference = (category: NotificationCategory, enabled: boolean) =>
+  api
+    .post<NotificationPreferenceEntry[]>("/notifications/preferences/", { category, enabled })
+    .then((r) => r.data);

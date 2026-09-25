@@ -1,28 +1,29 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Share,
-  Switch,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Pressable, Share, Switch, Text, View } from "react-native";
+import { KeyboardAwareScrollView } from "@/components/ui/KeyboardAwareScrollView";
 
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Colors } from "@/constants/theme";
 import * as authApi from "@/services/auth";
+import * as notificationsApi from "@/services/notifications";
+import type { NotificationCategory } from "@/services/notifications";
 import { useAuthStore } from "@/store/authStore";
 
-function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
+function SettingsSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <View className="bg-white rounded-3xl p-5 border border-xporadia-border gap-4">
-      <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">{title}</Text>
+      <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+        {title}
+      </Text>
       {children}
     </View>
   );
@@ -42,9 +43,13 @@ function ToggleRow({
   return (
     <View className="flex-row items-center justify-between gap-3">
       <View className="flex-1">
-        <Text className="text-sm font-medium text-xporadia-text-primary">{label}</Text>
+        <Text className="text-sm font-medium text-xporadia-text-primary">
+          {label}
+        </Text>
         {description ? (
-          <Text className="text-xs text-xporadia-text-secondary mt-0.5">{description}</Text>
+          <Text className="text-xs text-xporadia-text-secondary mt-0.5">
+            {description}
+          </Text>
         ) : null}
       </View>
       <Switch
@@ -80,6 +85,23 @@ export default function AccountSettingsScreen() {
     onSuccess: (data) => updateUser(data),
   });
 
+  const { data: notifCategories } = useQuery({
+    queryKey: ["notification-preferences"],
+    queryFn: notificationsApi.fetchNotificationPreferences,
+  });
+
+  const categoryMutation = useMutation({
+    mutationFn: ({
+      category,
+      enabled,
+    }: {
+      category: NotificationCategory;
+      enabled: boolean;
+    }) => notificationsApi.setNotificationPreference(category, enabled),
+    onSuccess: (data) =>
+      queryClient.setQueryData(["notification-preferences"], data),
+  });
+
   const passwordMutation = useMutation({
     mutationFn: () => authApi.changePassword(oldPassword, newPassword),
     onSuccess: () => {
@@ -103,7 +125,7 @@ export default function AccountSettingsScreen() {
       } catch {
         Alert.alert(
           "Vos données",
-          content.length > 500 ? `${content.slice(0, 500)}...` : content
+          content.length > 500 ? `${content.slice(0, 500)}...` : content,
         );
       }
     },
@@ -122,158 +144,196 @@ export default function AccountSettingsScreen() {
   if (!user) return null;
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       className="flex-1 bg-xporadia-bg"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardShouldPersistTaps="handled"
+      contentContainerClassName="p-6 gap-5 pb-12"
+      bottomOffset={32}
     >
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerClassName="p-6 gap-5 pb-12">
-        <SettingsSection title="Informations personnelles">
-          <View className="gap-1">
-            <Text className="text-xs text-xporadia-text-secondary">Email</Text>
-            <Text className="text-sm text-xporadia-text-primary">{user.email}</Text>
-          </View>
-          <View className="gap-1">
-            <Text className="text-xs text-xporadia-text-secondary">Téléphone</Text>
-            <Text className="text-sm text-xporadia-text-primary">{user.phone || "Non renseigné"}</Text>
-          </View>
-        </SettingsSection>
-
-        <SettingsSection title="Sécurité">
-          <Input
-            label="Mot de passe actuel"
-            value={oldPassword}
-            onChangeText={setOldPassword}
-            secureTextEntry
-            accessibilityLabel="Mot de passe actuel"
-          />
-          <Input
-            label="Nouveau mot de passe"
-            value={newPassword}
-            onChangeText={setNewPassword}
-            secureTextEntry
-            accessibilityLabel="Nouveau mot de passe"
-          />
-          {passwordError ? (
-            <Text className="text-xs text-xporadia-red">{passwordError}</Text>
-          ) : null}
-          {passwordSuccess ? (
-            <Text className="text-xs text-xporadia-green">Mot de passe mis à jour.</Text>
-          ) : null}
-          <Button
-            label="Changer le mot de passe"
-            variant="navy"
-            pill
-            loading={passwordMutation.isPending}
-            disabled={!oldPassword || newPassword.length < 8}
-            onPress={() => passwordMutation.mutate()}
-          />
-
-          <View className="h-px bg-xporadia-border" />
-
-          <ToggleRow
-            label="Authentification à deux facteurs"
-            description="Protection supplémentaire à la connexion (bientôt appliquée)"
-            value={user.two_fa_enabled}
-            onValueChange={(v) => preferencesMutation.mutate({ two_fa_enabled: v })}
-          />
-        </SettingsSection>
-
-        <SettingsSection title="Notifications">
-          <ToggleRow
-            label="Email"
-            value={user.notify_email}
-            onValueChange={(v) => preferencesMutation.mutate({ notify_email: v })}
-          />
-          <ToggleRow
-            label="SMS"
-            value={user.notify_sms}
-            onValueChange={(v) => preferencesMutation.mutate({ notify_sms: v })}
-          />
-          <ToggleRow
-            label="Push"
-            value={user.notify_push}
-            onValueChange={(v) => preferencesMutation.mutate({ notify_push: v })}
-          />
-        </SettingsSection>
-
-        <SettingsSection title="Visibilité">
-          <ToggleRow
-            label="Profil public visible"
-            description="Masquez votre profil des recherches sans supprimer votre compte"
-            value={user.profile_visible}
-            onValueChange={(v) => preferencesMutation.mutate({ profile_visible: v })}
-          />
-        </SettingsSection>
-
-        <SettingsSection title="Confidentialité">
-          <Text className="text-xs text-xporadia-text-secondary leading-5">
-            Conformément au RGPD, vous pouvez à tout moment télécharger l&apos;ensemble de vos
-            données personnelles ou demander la suppression de votre compte.
+      <SettingsSection title="Informations personnelles">
+        <View className="gap-1">
+          <Text className="text-xs text-xporadia-text-secondary">Email</Text>
+          <Text className="text-sm text-xporadia-text-primary">
+            {user.email}
           </Text>
-          <Button
-            label="Télécharger mes données"
-            variant="secondary"
-            pill
-            loading={exportMutation.isPending}
-            onPress={() => exportMutation.mutate()}
-          />
+        </View>
+        <View className="gap-1">
+          <Text className="text-xs text-xporadia-text-secondary">
+            Téléphone
+          </Text>
+          <Text className="text-sm text-xporadia-text-primary">
+            {user.phone || "Non renseigné"}
+          </Text>
+        </View>
+      </SettingsSection>
 
-          {!showDeletion ? (
-            <Pressable
-              onPress={() => setShowDeletion(true)}
-              accessibilityRole="button"
-              accessibilityLabel="Demander la suppression de mon compte"
-              hitSlop={8}
-              className="py-2"
-            >
-              <Text className="text-xs text-xporadia-red font-semibold text-center">
-                Demander la suppression de mon compte
-              </Text>
-            </Pressable>
-          ) : (
-            <View className="gap-3 border-t border-xporadia-border pt-4">
-              <Text className="text-xs text-xporadia-text-primary leading-5">
-                Cette action anonymise vos données et désactive définitivement votre compte.
-                Confirmez avec votre mot de passe.
-              </Text>
-              <Input
-                label="Mot de passe"
-                value={deletionPassword}
-                onChangeText={setDeletionPassword}
-                secureTextEntry
-                accessibilityLabel="Mot de passe pour confirmer la suppression"
-              />
-              {deletionError ? (
-                <Text className="text-xs text-xporadia-red">{deletionError}</Text>
-              ) : null}
-              <View className="flex-row gap-3">
-                <View className="flex-1">
-                  <Button
-                    label="Annuler"
-                    variant="secondary"
-                    pill
-                    onPress={() => {
-                      setShowDeletion(false);
-                      setDeletionPassword("");
-                      setDeletionError("");
-                    }}
-                  />
-                </View>
-                <View className="flex-1">
-                  <Button
-                    label="Confirmer la suppression"
-                    variant="danger"
-                    pill
-                    loading={deletionMutation.isPending}
-                    disabled={!deletionPassword}
-                    onPress={() => deletionMutation.mutate()}
-                  />
-                </View>
+      <SettingsSection title="Sécurité">
+        <Input
+          label="Mot de passe actuel"
+          value={oldPassword}
+          onChangeText={setOldPassword}
+          secureTextEntry
+          accessibilityLabel="Mot de passe actuel"
+        />
+        <Input
+          label="Nouveau mot de passe"
+          value={newPassword}
+          onChangeText={setNewPassword}
+          secureTextEntry
+          accessibilityLabel="Nouveau mot de passe"
+        />
+        {passwordError ? (
+          <Text className="text-xs text-xporadia-red">{passwordError}</Text>
+        ) : null}
+        {passwordSuccess ? (
+          <Text className="text-xs text-xporadia-green">
+            Mot de passe mis à jour.
+          </Text>
+        ) : null}
+        <Button
+          label="Changer le mot de passe"
+          variant="navy"
+          pill
+          loading={passwordMutation.isPending}
+          disabled={!oldPassword || newPassword.length < 8}
+          onPress={() => passwordMutation.mutate()}
+        />
+
+        <View className="h-px bg-xporadia-border" />
+
+        <ToggleRow
+          label="Authentification à deux facteurs"
+          description="Protection supplémentaire à la connexion (bientôt appliquée)"
+          value={user.two_fa_enabled}
+          onValueChange={(v) =>
+            preferencesMutation.mutate({ two_fa_enabled: v })
+          }
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Notifications">
+        <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase -mb-1">
+          Canaux
+        </Text>
+        <ToggleRow
+          label="Email"
+          value={user.notify_email}
+          onValueChange={(v) => preferencesMutation.mutate({ notify_email: v })}
+        />
+        <ToggleRow
+          label="SMS"
+          value={user.notify_sms}
+          onValueChange={(v) => preferencesMutation.mutate({ notify_sms: v })}
+        />
+        <ToggleRow
+          label="Push"
+          value={user.notify_push}
+          onValueChange={(v) => preferencesMutation.mutate({ notify_push: v })}
+        />
+
+        <View className="h-px bg-xporadia-border" />
+
+        <View className="gap-1">
+          <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
+            Ce que vous recevez
+          </Text>
+          <Text className="text-xs text-xporadia-text-secondary">
+            Désactivez une catégorie pour ne plus recevoir aucune notification
+            qui en fait partie.
+          </Text>
+        </View>
+        {(notifCategories ?? []).map((entry) => (
+          <ToggleRow
+            key={entry.category}
+            label={entry.category_label}
+            value={entry.enabled}
+            onValueChange={(v) =>
+              categoryMutation.mutate({ category: entry.category, enabled: v })
+            }
+          />
+        ))}
+      </SettingsSection>
+
+      <SettingsSection title="Visibilité">
+        <ToggleRow
+          label="Profil public visible"
+          description="Masquez votre profil des recherches sans supprimer votre compte"
+          value={user.profile_visible}
+          onValueChange={(v) =>
+            preferencesMutation.mutate({ profile_visible: v })
+          }
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Confidentialité">
+        <Text className="text-xs text-xporadia-text-secondary leading-5">
+          Conformément au RGPD, vous pouvez à tout moment télécharger
+          l&apos;ensemble de vos données personnelles ou demander la suppression
+          de votre compte.
+        </Text>
+        <Button
+          label="Télécharger mes données"
+          variant="secondary"
+          pill
+          loading={exportMutation.isPending}
+          onPress={() => exportMutation.mutate()}
+        />
+
+        {!showDeletion ? (
+          <Pressable
+            onPress={() => setShowDeletion(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Demander la suppression de mon compte"
+            hitSlop={8}
+            className="py-2"
+          >
+            <Text className="text-xs text-xporadia-red font-semibold text-center">
+              Demander la suppression de mon compte
+            </Text>
+          </Pressable>
+        ) : (
+          <View className="gap-3 border-t border-xporadia-border pt-4">
+            <Text className="text-xs text-xporadia-text-primary leading-5">
+              Cette action anonymise vos données et désactive définitivement
+              votre compte. Confirmez avec votre mot de passe.
+            </Text>
+            <Input
+              label="Mot de passe"
+              value={deletionPassword}
+              onChangeText={setDeletionPassword}
+              secureTextEntry
+              accessibilityLabel="Mot de passe pour confirmer la suppression"
+            />
+            {deletionError ? (
+              <Text className="text-xs text-xporadia-red">{deletionError}</Text>
+            ) : null}
+            <View className="flex-row gap-3">
+              <View className="flex-1">
+                <Button
+                  label="Annuler"
+                  variant="secondary"
+                  pill
+                  onPress={() => {
+                    setShowDeletion(false);
+                    setDeletionPassword("");
+                    setDeletionError("");
+                  }}
+                />
+              </View>
+              <View className="flex-1">
+                <Button
+                  label="Confirmer la suppression"
+                  variant="danger"
+                  pill
+                  loading={deletionMutation.isPending}
+                  disabled={!deletionPassword}
+                  onPress={() => deletionMutation.mutate()}
+                />
               </View>
             </View>
-          )}
-        </SettingsSection>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          </View>
+        )}
+      </SettingsSection>
+    </KeyboardAwareScrollView>
   );
 }

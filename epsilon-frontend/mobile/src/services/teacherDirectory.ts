@@ -12,14 +12,31 @@ export interface TeacherDirectoryCard {
   available_for_tutoring: boolean;
   available_for_employment: boolean;
   current_level: CertificationLevel | null;
+  total_points: number;
+  followers_count: number;
+  following_count: number;
+  is_following: boolean;
+  posts_count: number;
   // Uniquement révélé quand l'appelant est un parent — voir
   // TeacherTutoringCardSerializer côté backend.
   hourly_rate?: string;
 }
 
+export interface EmploymentHistoryEntry {
+  id: string;
+  school_name: string;
+  contract_type: "cdi" | "cdd" | "vacation" | "interim";
+  confirmed_at: string;
+}
+
 export interface TeacherDirectoryDetail extends TeacherDirectoryCard {
   bio: string;
   certifications: Certification[];
+  // Absent (pas seulement vide) quand l'appelant est un parent — voir
+  // TeacherTutoringDetailSerializer côté backend, qui ne déclare pas ce
+  // champ du tout.
+  employment_history?: EmploymentHistoryEntry[];
+  profile_visible?: boolean | null;
 }
 
 export interface Paginated<T> {

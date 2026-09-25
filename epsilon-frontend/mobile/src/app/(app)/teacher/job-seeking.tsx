@@ -5,6 +5,7 @@ import { Alert, ScrollView, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { LevelBadge } from "@/components/certification/LevelBadge";
+import { LEVEL_ORDER } from "@/constants/certificationLevels";
 import * as certificationApi from "@/services/certification";
 import * as employmentApi from "@/services/employment";
 
@@ -23,7 +24,11 @@ export default function JobSeekingScreen() {
     queryFn: employmentApi.fetchMyJobSeekingRequest,
   });
 
-  const isGold = status?.current_level === "gold";
+  // "Au moins Or" (Or, Platine ou Diamant) — pas "exactement Or", pour ne
+  // pas retirer le privilège aux enseignants qui ont dépassé ce palier.
+  const isGold = status?.current_level
+    ? LEVEL_ORDER.indexOf(status.current_level) >= LEVEL_ORDER.indexOf("gold")
+    : false;
 
   const postMutation = useMutation({
     mutationFn: () => employmentApi.postJobSeekingRequest({ message, city: city || undefined }),

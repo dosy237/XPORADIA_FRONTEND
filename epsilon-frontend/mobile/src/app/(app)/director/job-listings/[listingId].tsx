@@ -18,20 +18,33 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   withdrawn: "Retirée",
 };
 
+interface AcceptPayload {
+  salaryAgreed?: number;
+  hourlyRateTeacher?: number;
+  hourlyRateBilled?: number;
+}
+
 function ApplicationCard({
   application,
   onSetStatus,
+  onAccept,
   isMutating,
 }: {
   application: JobApplication;
-  onSetStatus: (status: ApplicationStatus, salaryAgreed?: number) => void;
+  onSetStatus: (status: ApplicationStatus) => void;
+  onAccept: (payload: AcceptPayload) => void;
   isMutating: boolean;
 }) {
+  const isCdi = application.listing.contract_type === "cdi";
   const [salary, setSalary] = useState("");
+  const [hourlyTeacher, setHourlyTeacher] = useState("");
+  const [hourlyBilled, setHourlyBilled] = useState("");
   const [accepting, setAccepting] = useState(false);
 
+  const canConfirm = isCdi ? !!salary : !!hourlyTeacher && !!hourlyBilled;
+
   return (
-    <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
+    <View className="bg-white rounded-2xl p-4 shadow-soft gap-2">
       <View className="flex-row items-center justify-between">
         <Text className="text-base font-semibold text-xporadia-text-primary">
           {application.teacher.first_name} {application.teacher.last_name}
@@ -47,24 +60,57 @@ function ApplicationCard({
       {application.status !== "accepted" && application.status !== "rejected" && (
         <View className="gap-2 mt-1">
           {accepting ? (
-            <View className="flex-row items-center gap-2">
-              <View className="flex-1">
+            <View className="gap-2">
+              {isCdi ? (
                 <Input
-                  placeholder="Salaire convenu (FCFA)"
+                  label="Salaire mensuel convenu (FCFA)"
                   value={salary}
                   onChangeText={setSalary}
                   keyboardType="numeric"
+                  placeholder="Ex. 150000"
                 />
+              ) : (
+                <>
+                  <Text className="text-xs text-xporadia-text-secondary">
+                    Contrat {application.listing.contract_type.toUpperCase()} — l&apos;enseignant sera payé
+                    sur ses heures déclarées et validées.
+                  </Text>
+                  <Input
+                    label="Tarif versé à l'enseignant (FCFA/heure)"
+                    value={hourlyTeacher}
+                    onChangeText={setHourlyTeacher}
+                    keyboardType="numeric"
+                    placeholder="Ex. 2000"
+                  />
+                  <Input
+                    label="Tarif facturé à l'établissement (FCFA/heure)"
+                    value={hourlyBilled}
+                    onChangeText={setHourlyBilled}
+                    keyboardType="numeric"
+                    placeholder="Ex. 3000"
+                  />
+                </>
+              )}
+              <View className="flex-row gap-2">
+                <View className="flex-1">
+                  <Button label="Annuler" variant="secondary" pill onPress={() => setAccepting(false)} />
+                </View>
+                <View className="flex-1">
+                  <Button
+                    label="Confirmer"
+                    pill
+                    disabled={!canConfirm || isMutating}
+                    onPress={() => {
+                      onAccept(
+                        isCdi
+                          ? { salaryAgreed: Number(salary) }
+                          : { hourlyRateTeacher: Number(hourlyTeacher), hourlyRateBilled: Number(hourlyBilled) }
+                      );
+                      setAccepting(false);
+                    }}
+                  />
+                </View>
               </View>
-              <Button
-                label="Confirmer"
-                pill
-                disabled={!salary || isMutating}
-                onPress={() => {
-                  onSetStatus("accepted", Number(salary));
-                  setAccepting(false);
-                }}
-              />
             </View>
           ) : (
             <View className="flex-row flex-wrap gap-2">
@@ -113,11 +159,21 @@ export default function ListingApplicationsScreen() {
       applicationId,
       status,
       salaryAgreed,
+      hourlyRateTeacher,
+      hourlyRateBilled,
     }: {
       applicationId: string;
       status: ApplicationStatus;
       salaryAgreed?: number;
-    }) => employmentApi.updateApplicationStatus(applicationId, { status, salary_agreed: salaryAgreed }),
+      hourlyRateTeacher?: number;
+      hourlyRateBilled?: number;
+    }) =>
+      employmentApi.updateApplicationStatus(applicationId, {
+        status,
+        salary_agreed: salaryAgreed,
+        hourly_rate_teacher: hourlyRateTeacher,
+        hourly_rate_billed: hourlyRateBilled,
+      }),
     onSuccess: (application) => {
       queryClient.setQueryData<JobApplication[] | undefined>(queryKey, (prev) =>
         prev ? prev.map((a) => (a.id === application.id ? application : a)) : prev
@@ -144,8 +200,15 @@ export default function ListingApplicationsScreen() {
             key={application.id}
             application={application}
             isMutating={statusMutation.isPending}
-            onSetStatus={(status, salaryAgreed) =>
-              statusMutation.mutate({ applicationId: application.id, status, salaryAgreed })
+            onSetStatus={(status) => statusMutation.mutate({ applicationId: application.id, status })}
+            onAccept={(payload) =>
+              statusMutation.mutate({
+                applicationId: application.id,
+                status: "accepted",
+                salaryAgreed: payload.salaryAgreed,
+                hourlyRateTeacher: payload.hourlyRateTeacher,
+                hourlyRateBilled: payload.hourlyRateBilled,
+              })
             }
           />
         ))
