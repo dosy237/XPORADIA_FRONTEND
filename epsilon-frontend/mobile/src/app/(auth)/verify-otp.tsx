@@ -133,13 +133,14 @@ export default function VerifyOtpScreen() {
           </Text>
         ) : null}
 
-        <Text
-          className="text-xporadia-text-secondary text-center text-sm mt-3 underline"
-          onPress={cancelAndRestart}
-          suppressHighlighting
-        >
-          Annuler et recommencer avec une autre adresse
-        </Text>
+        <View className="mt-4">
+          <Button
+            label="Annuler et recommencer avec une autre adresse"
+            variant="secondary"
+            pill
+            onPress={cancelAndRestart}
+          />
+        </View>
       </View>
     </ScrollView>
   );
