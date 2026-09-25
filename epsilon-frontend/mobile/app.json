@@ -19,11 +19,19 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "permissions": ["android.permission.RECORD_AUDIO"],
+      "package": "com.dosyca.mobile"
     },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7c4d7bdb-f302-4e07-aa33-8f6ec572ad19"
+      }
     },
     "plugins": [
       "expo-router",
