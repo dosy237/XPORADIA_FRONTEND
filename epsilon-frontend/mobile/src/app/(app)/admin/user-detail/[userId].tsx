@@ -9,6 +9,7 @@ import * as adminUsersApi from "@/services/adminUsers";
 import * as certificationApi from "@/services/certification";
 import { LEVEL_LABELS } from "@/constants/certificationLevels";
 import type { CertificationLevel } from "@/services/certification";
+import { useAuthStore } from "@/store/authStore";
 
 const ROLE_LABELS: Record<string, string> = {
   student: "Élève", teacher: "Enseignant", director: "Directeur d'établissement", company: "Entreprise",
@@ -106,6 +107,8 @@ export default function AdminUserDetailScreen() {
   const { userId } = useLocalSearchParams<{ userId: string }>();
   const id = Number(userId);
   const queryClient = useQueryClient();
+  const me = useAuthStore((s) => s.user);
+  const canPromoteAdmin = me?.admin_scope === "full";
 
   const { data: user, isLoading } = useQuery({
     queryKey: ["admin-user-detail", id],
@@ -127,6 +130,17 @@ export default function AdminUserDetailScreen() {
       queryClient.invalidateQueries({ queryKey: ["admin-user-detail", id] });
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     },
+  });
+
+  const promoteMutation = useMutation({
+    mutationFn: () => adminUsersApi.promoteToAdmin(id, "full"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-user-detail", id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-list"] });
+      Alert.alert("Compte promu", "Ce compte a maintenant un accès administrateur complet.");
+    },
+    onError: () => Alert.alert("Erreur", "Impossible de promouvoir ce compte."),
   });
 
   if (isLoading || !user) {
@@ -192,6 +206,25 @@ export default function AdminUserDetailScreen() {
           variant="secondary"
           pill
           onPress={() => router.push(`/(app)/admin/edit-establishment/${id}`)}
+        />
+      )}
+
+      {canPromoteAdmin && (
+        <Button
+          label="Promouvoir administrateur"
+          variant="secondary"
+          pill
+          loading={promoteMutation.isPending}
+          onPress={() =>
+            Alert.alert(
+              "Donner l'accès administrateur ?",
+              `${user.first_name} ${user.last_name} garde son rôle actuel et obtient en plus un accès administrateur complet.`,
+              [
+                { text: "Annuler", style: "cancel" },
+                { text: "Confirmer", onPress: () => promoteMutation.mutate() },
+              ]
+            )
+          }
         />
       )}
 

@@ -1,4 +1,5 @@
 import api from "@/services/api";
+import type { AdminScope } from "@/types/user";
 
 export type ManagedRole = "student" | "teacher" | "director" | "company";
 
@@ -37,6 +38,14 @@ export const suspendUser = (userId: number) =>
 
 export const reactivateUser = (userId: number) =>
   api.post<{ id: number; is_active: boolean }>(`/admin-panel/users/${userId}/reactivate/`).then((r) => r.data);
+
+export const promoteToAdmin = (userId: number, adminScope: AdminScope) =>
+  api
+    .post<{ id: number; primary_role: string; admin_scope: AdminScope }>(
+      `/admin-panel/users/${userId}/promote-admin/`,
+      { admin_scope: adminScope }
+    )
+    .then((r) => r.data);
 
 export interface AdminEstablishment {
   school_name: string;
