@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import { Alert, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
+import { Input } from "@/components/ui/Input";
+import { Popup } from "@/components/ui/Popup";
 import * as adminUsersApi from "@/services/adminUsers";
 import * as certificationApi from "@/services/certification";
 import { LEVEL_LABELS } from "@/constants/certificationLevels";
@@ -110,6 +113,12 @@ export default function AdminUserDetailScreen() {
   const me = useAuthStore((s) => s.user);
   const canPromoteAdmin = me?.admin_scope === "full";
 
+  const [editing, setEditing] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+
   const { data: user, isLoading } = useQuery({
     queryKey: ["admin-user-detail", id],
     queryFn: () => adminUsersApi.fetchAdminUserDetail(id),
@@ -142,6 +151,40 @@ export default function AdminUserDetailScreen() {
     },
     onError: () => Alert.alert("Erreur", "Impossible de promouvoir ce compte."),
   });
+
+  const updateMutation = useMutation({
+    mutationFn: () =>
+      adminUsersApi.updateUser(id, {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        phone: phone.trim(),
+        email: email.trim().toLowerCase(),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-user-detail", id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      setEditing(false);
+    },
+    onError: () => Alert.alert("Erreur", "Impossible d'enregistrer ces informations (email déjà utilisé ?)."),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => adminUsersApi.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      router.back();
+    },
+    onError: () => Alert.alert("Erreur", "Impossible de supprimer ce compte."),
+  });
+
+  const openEdit = () => {
+    if (!user) return;
+    setFirstName(user.first_name);
+    setLastName(user.last_name);
+    setPhone(user.phone);
+    setEmail(user.email);
+    setEditing(true);
+  };
 
   if (isLoading || !user) {
     return (
@@ -200,6 +243,8 @@ export default function AdminUserDetailScreen() {
         </View>
       )}
 
+      <Button label="Modifier ce compte" variant="secondary" pill onPress={openEdit} />
+
       {user.primary_role === "director" && (
         <Button
           label="Modifier l'établissement"
@@ -250,6 +295,40 @@ export default function AdminUserDetailScreen() {
           )
         }
       />
+
+      <Button
+        label="Supprimer ce compte"
+        variant="secondary"
+        pill
+        loading={deleteMutation.isPending}
+        onPress={() =>
+          Alert.alert(
+            "Supprimer ce compte ?",
+            `${user.first_name} ${user.last_name} perdra définitivement accès à l'application. Action irréversible.`,
+            [
+              { text: "Annuler", style: "cancel" },
+              { text: "Supprimer", style: "destructive", onPress: () => deleteMutation.mutate() },
+            ]
+          )
+        }
+      />
+
+      <Popup visible={editing} onClose={() => setEditing(false)}>
+        <View className="gap-4">
+          <Text className="text-xl font-bold text-xporadia-navy">Modifier ce compte</Text>
+          <Input label="Prénom" value={firstName} onChangeText={setFirstName} />
+          <Input label="Nom" value={lastName} onChangeText={setLastName} />
+          <Input label="Téléphone" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <Input label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+          <Button
+            label="Enregistrer"
+            pill
+            disabled={!firstName.trim() || !lastName.trim() || !email.trim()}
+            loading={updateMutation.isPending}
+            onPress={() => updateMutation.mutate()}
+          />
+        </View>
+      </Popup>
     </ScrollView>
   );
 }

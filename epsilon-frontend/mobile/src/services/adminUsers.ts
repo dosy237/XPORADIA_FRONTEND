@@ -6,6 +6,7 @@ export type ManagedRole = "student" | "teacher" | "director" | "company";
 export interface AdminUserListItem {
   id: number;
   email: string;
+  phone: string;
   first_name: string;
   last_name: string;
   avatar: string | null;
@@ -38,6 +39,19 @@ export const suspendUser = (userId: number) =>
 
 export const reactivateUser = (userId: number) =>
   api.post<{ id: number; is_active: boolean }>(`/admin-panel/users/${userId}/reactivate/`).then((r) => r.data);
+
+export interface AdminUserUpdate {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  email?: string;
+}
+
+export const updateUser = (userId: number, payload: AdminUserUpdate) =>
+  api.patch<AdminUserListItem>(`/admin-panel/users/${userId}/update/`, payload).then((r) => r.data);
+
+export const deleteUser = (userId: number) =>
+  api.post<{ id: number; detail: string }>(`/admin-panel/users/${userId}/delete/`).then((r) => r.data);
 
 export const promoteToAdmin = (userId: number, adminScope: AdminScope) =>
   api
