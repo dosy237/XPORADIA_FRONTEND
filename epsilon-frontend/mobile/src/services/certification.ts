@@ -44,6 +44,9 @@ export const createAdminModule = (payload: Partial<AdminTrainingModulePayload>) 
 export const updateAdminModule = (moduleId: string, payload: Partial<AdminTrainingModulePayload>) =>
   api.patch<AdminTrainingModule>(`/certification/admin/modules/${moduleId}/`, payload).then((r) => r.data);
 
+export const deleteAdminModule = (moduleId: string) =>
+  api.delete<void>(`/certification/admin/modules/${moduleId}/`).then((r) => r.data);
+
 export const uploadAdminModuleCoverImage = (
   moduleId: string,
   asset: { uri: string; name: string; mimeType?: string | null },

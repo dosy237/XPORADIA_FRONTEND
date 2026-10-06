@@ -67,6 +67,25 @@ export const publishJobListing = (listingId: string) =>
 export const closeJobListing = (listingId: string) =>
   api.post<JobListing>(`/employment/listings/${listingId}/close/`).then((r) => r.data);
 
+export const updateJobListing = (
+  listingId: string,
+  payload: Partial<{
+    title: string;
+    subject: string;
+    contract_type: ContractType;
+    description: string;
+    city: string;
+    commune: string;
+    levels: string[];
+    salary_min: number | null;
+    salary_max: number | null;
+    cert_level_required: "zero" | "bronze" | "silver" | "gold" | "platinum" | "diamond";
+  }>
+) => api.patch<JobListing>(`/employment/listings/${listingId}/`, payload).then((r) => r.data);
+
+export const deleteJobListing = (listingId: string) =>
+  api.delete<void>(`/employment/listings/${listingId}/`).then((r) => r.data);
+
 export interface JobApplication {
   id: string;
   teacher: TeacherBasic;
