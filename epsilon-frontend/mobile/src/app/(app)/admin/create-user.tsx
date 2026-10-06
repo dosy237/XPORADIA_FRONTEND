@@ -86,7 +86,7 @@ export default function AdminCreateUserScreen() {
         <Text className="text-2xl font-bold text-xporadia-navy">Créer un compte</Text>
         <Text className="text-sm text-xporadia-text-secondary leading-5">
           Filet de secours pour quelqu&apos;un qui ne peut pas s&apos;inscrire lui-même. Les identifiants
-          temporaires sont envoyés par email — l&apos;inscription normale reste ouverte à tous par ailleurs.
+          temporaires sont envoyés par email, et l&apos;inscription normale reste ouverte à tous par ailleurs.
         </Text>
       </View>
 

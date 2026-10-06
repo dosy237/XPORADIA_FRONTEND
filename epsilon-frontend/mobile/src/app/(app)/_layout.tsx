@@ -118,7 +118,10 @@ export default function AppLayout() {
       <Stack.Screen name="admin/library-moderation" options={{ title: "Modération bibliothèque" }} />
       <Stack.Screen name="admin/disputes" options={{ title: "Litiges" }} />
       <Stack.Screen name="admin/administrators" options={{ title: "Administrateurs" }} />
-      <Stack.Screen name="admin/create-user" options={{ title: "Créer un compte" }} />
+      <Stack.Screen
+        name="admin/create-user"
+        options={{ title: "Créer un compte", presentation: "modal" }}
+      />
       <Stack.Screen name="admin/certification-modules" options={{ title: "Modules de formation" }} />
       <Stack.Screen name="admin/job-listings" options={{ title: "Offres d'emploi" }} />
       <Stack.Screen name="admin/internship-offers" options={{ title: "Offres de stage" }} />
