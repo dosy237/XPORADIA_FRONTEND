@@ -119,14 +119,6 @@ export default function AppLayout() {
       <Stack.Screen name="admin/disputes" options={{ title: "Litiges" }} />
       <Stack.Screen name="admin/administrators" options={{ title: "Administrateurs" }} />
       <Stack.Screen
-        name="admin/create-administrator"
-        options={{ title: "Ajouter un administrateur", presentation: "modal" }}
-      />
-      <Stack.Screen
-        name="admin/edit-admin-scope/[userId]"
-        options={{ title: "Modifier le périmètre", presentation: "modal" }}
-      />
-      <Stack.Screen
         name="admin/create-user"
         options={{ title: "Créer un compte", presentation: "modal" }}
       />

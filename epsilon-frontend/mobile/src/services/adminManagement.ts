@@ -7,9 +7,19 @@ export interface AdminUser {
   first_name: string;
   last_name: string;
   admin_scope: AdminScope;
+  is_active: boolean;
 }
 
 export const fetchAdminList = () => api.get<AdminUser[]>("/auth/admin/list/").then((r) => r.data);
+
+export const suspendAdmin = (userId: number) =>
+  api.post<{ id: number; is_active: boolean }>(`/auth/admin/${userId}/suspend/`).then((r) => r.data);
+
+export const reactivateAdmin = (userId: number) =>
+  api.post<{ id: number; is_active: boolean }>(`/auth/admin/${userId}/reactivate/`).then((r) => r.data);
+
+export const deleteAdmin = (userId: number) =>
+  api.post<{ id: number; detail: string }>(`/auth/admin/${userId}/delete/`).then((r) => r.data);
 
 export const createAdmin = (payload: {
   email: string;
