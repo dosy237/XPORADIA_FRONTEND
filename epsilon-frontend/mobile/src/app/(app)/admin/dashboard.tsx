@@ -18,6 +18,18 @@ import { Colors } from "@/constants/theme";
 import * as adminApi from "@/services/adminPanel";
 import { useAuthStore } from "@/store/authStore";
 
+function SectionTitle({ title }: { title: string }) {
+  return <Text className="text-base font-bold text-xporadia-navy">{title}</Text>;
+}
+
+const GESTION_TILES = [
+  { icon: UsersIcon, label: "Comptes utilisateurs", href: "/(app)/admin/users" },
+  { icon: UserPlusIcon, label: "Administrateurs", href: "/(app)/admin/administrators" },
+  { icon: MedalIcon, label: "Modules de formation", href: "/(app)/admin/certification-modules" },
+  { icon: BriefcaseIcon, label: "Offres d'emploi", href: "/(app)/admin/job-listings" },
+  { icon: BriefcaseIcon, label: "Offres de stage", href: "/(app)/admin/internship-offers" },
+] as const;
+
 export default function AdminDashboard() {
   const user = useAuthStore((s) => s.user);
   const { data: stats } = useQuery({
@@ -41,6 +53,8 @@ export default function AdminDashboard() {
         </View>
 
         <View className="gap-3">
+          <SectionTitle title="À traiter" />
+
           <Card onPress={() => router.push("/(app)/admin/accreditation")} className="flex-row items-center gap-3">
             <View className="h-11 w-11 rounded-full bg-xporadia-orange/10 items-center justify-center">
               <CheckCircleIcon size={20} color={Colors.orange} />
@@ -77,64 +91,24 @@ export default function AdminDashboard() {
             </View>
             {!!stats?.open_disputes && <Chip label={String(stats.open_disputes)} variant="orange" />}
           </Card>
+        </View>
 
-          <Card onPress={() => router.push("/(app)/admin/users")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-              <UsersIcon size={20} color={Colors.navy} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Comptes utilisateurs</Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                Élèves, enseignants, établissements, entreprises.
-              </Text>
-            </View>
-          </Card>
-
-          <Card onPress={() => router.push("/(app)/admin/administrators")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-              <UserPlusIcon size={20} color={Colors.navy} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Administrateurs</Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                Qui a accès, en ajouter un nouveau.
-              </Text>
-            </View>
-          </Card>
-
-          <Card onPress={() => router.push("/(app)/admin/certification-modules")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-              <MedalIcon size={20} color={Colors.navy} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Modules de formation</Text>
-              <Text className="text-xs text-xporadia-text-secondary">Publier et gérer le catalogue.</Text>
-            </View>
-          </Card>
-
-          <Card onPress={() => router.push("/(app)/admin/job-listings")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-              <BriefcaseIcon size={20} color={Colors.navy} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Offres d&apos;emploi</Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                Toutes les offres, tous établissements confondus.
-              </Text>
-            </View>
-          </Card>
-
-          <Card onPress={() => router.push("/(app)/admin/internship-offers")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-              <BriefcaseIcon size={20} color={Colors.navy} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Offres de stage</Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                Toutes les offres, toutes entreprises confondues.
-              </Text>
-            </View>
-          </Card>
+        <View className="gap-3">
+          <SectionTitle title="Gestion de la plateforme" />
+          <View className="flex-row flex-wrap gap-3">
+            {GESTION_TILES.map((item) => (
+              <Card
+                key={item.label}
+                onPress={() => router.push(item.href as never)}
+                className="items-center gap-2 flex-1 min-w-[45%] py-5"
+              >
+                <View className="h-11 w-11 rounded-full bg-xporadia-bg items-center justify-center">
+                  <item.icon size={20} color={Colors.navy} />
+                </View>
+                <Text className="text-xs font-semibold text-xporadia-text-primary text-center">{item.label}</Text>
+              </Card>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </View>

@@ -276,6 +276,8 @@ export default function PostDetailScreen() {
 
   const currentUser = useAuthStore((s) => s.user);
   const isAuthor = post?.author.id === currentUser?.id;
+  const isAdmin = currentUser?.primary_role === "admin";
+  const canManage = isAuthor || isAdmin;
 
   if (!post) {
     return (
@@ -297,13 +299,15 @@ export default function PostDetailScreen() {
           disableNavigation
         />
 
-        {isAuthor ? (
+        {canManage ? (
           <Text
             className="text-xs text-xporadia-red font-semibold text-center"
             onPress={() =>
               Alert.alert(
                 "Supprimer la publication",
-                "Cette action est définitive.",
+                isAuthor
+                  ? "Cette action est définitive."
+                  : "Cette action est définitive. Vous supprimez la publication de quelqu'un d'autre en tant qu'administrateur.",
                 [
                   { text: "Annuler", style: "cancel" },
                   {
@@ -316,7 +320,7 @@ export default function PostDetailScreen() {
             }
             suppressHighlighting
           >
-            Supprimer ma publication
+            {isAuthor ? "Supprimer ma publication" : "Supprimer cette publication (admin)"}
           </Text>
         ) : null}
 
