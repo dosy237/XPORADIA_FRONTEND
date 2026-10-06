@@ -145,3 +145,17 @@ export const submitPreRegistrationCode = (code: string) =>
   api
     .post<{ detail: string }>("/auth/me/submit-preregistration-code/", { code })
     .then((r) => r.data);
+
+export const requestPasswordReset = (email: string) =>
+  api
+    .post<{ detail: string }>("/auth/password-reset/request/", { email })
+    .then((r) => r.data);
+
+export const confirmPasswordReset = (email: string, code: string, newPassword: string) =>
+  api
+    .post<{ detail: string }>("/auth/password-reset/confirm/", {
+      email,
+      code,
+      new_password: newPassword,
+    })
+    .then((r) => r.data);

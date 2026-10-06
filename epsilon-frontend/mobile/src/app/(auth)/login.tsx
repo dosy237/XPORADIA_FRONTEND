@@ -86,12 +86,7 @@ export default function LoginScreen() {
           </View>
 
           <Pressable
-            onPress={() =>
-              Alert.alert(
-                "Bientôt disponible",
-                "La réinitialisation du mot de passe arrive prochainement.",
-              )
-            }
+            onPress={() => router.push("/(auth)/forgot-password")}
             hitSlop={8}
             className="self-end -mt-2"
           >
