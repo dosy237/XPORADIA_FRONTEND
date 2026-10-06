@@ -87,7 +87,7 @@ export default function YearEndPromotionScreen() {
         <Text className="text-lg font-bold text-xporadia-navy text-center">Passage traité</Text>
         <Text className="text-sm text-xporadia-text-secondary text-center">
           {result.processed} élève(s) traité(s)
-          {result.failed > 0 ? `, ${result.failed} échec(s) — vérifiez le détail.` : "."}
+          {result.failed > 0 ? `, ${result.failed} échec(s), vérifiez le détail.` : "."}
         </Text>
       </View>
     );
@@ -98,7 +98,7 @@ export default function YearEndPromotionScreen() {
       <View className="gap-1">
         <Text className="text-2xl font-bold text-xporadia-navy">Fin d&apos;année</Text>
         <Text className="text-sm text-xporadia-text-secondary">
-          {className ?? "Cette classe"} — décidez pour chaque élève, en un seul envoi.
+          {className ?? "Cette classe"}, décidez pour chaque élève, en un seul envoi.
         </Text>
       </View>
 

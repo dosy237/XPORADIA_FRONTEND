@@ -337,7 +337,7 @@ function GradeCell({
             {cellData.score}
           </Text>
         ) : (
-          <Text className="text-xs text-xporadia-border">—</Text>
+          <Text className="text-xs text-xporadia-border">-</Text>
         )}
         {justSaved ? (
           <View className="absolute top-1 right-1">
@@ -532,7 +532,7 @@ function GradeGridTable({
                     </Text>
                   </View>
                 ) : (
-                  <Text className="text-xs text-xporadia-border">—</Text>
+                  <Text className="text-xs text-xporadia-border">-</Text>
                 )}
               </View>
             );

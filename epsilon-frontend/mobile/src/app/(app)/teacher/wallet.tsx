@@ -52,7 +52,7 @@ export default function WalletScreen() {
           ))
         ) : (
           <Text className="text-xs text-xporadia-text-secondary text-center py-10">
-            Aucune paie perçue pour l'instant — vos heures validées seront comptabilisées à la
+            Aucune paie perçue pour l'instant, vos heures validées seront comptabilisées à la
             prochaine clôture mensuelle.
           </Text>
         )}

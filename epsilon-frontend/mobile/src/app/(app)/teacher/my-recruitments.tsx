@@ -116,7 +116,7 @@ export default function MyRecruitmentsScreen() {
                 </View>
                 {r.requires_declared_hours ? (
                   <Text className="text-sm text-xporadia-text-primary">
-                    {r.hourly_rate_teacher?.toLocaleString("fr-FR")} FCFA/heure — touchez l'écran pour
+                    {r.hourly_rate_teacher?.toLocaleString("fr-FR")} FCFA/heure, touchez l'écran pour
                     déclarer vos heures
                   </Text>
                 ) : (

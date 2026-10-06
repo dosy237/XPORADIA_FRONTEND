@@ -17,7 +17,7 @@ export default function TimetableDelegationClassesScreen() {
       <View className="gap-1">
         <Text className="text-2xl font-bold text-xporadia-navy">Emplois du temps</Text>
         <Text className="text-sm text-xporadia-text-secondary">
-          Toutes les classes de l&apos;établissement — choisissez celle à modifier.
+          Toutes les classes de l&apos;établissement, choisissez celle à modifier.
         </Text>
       </View>
 

@@ -105,7 +105,7 @@ export default function TimetableEditorScreen() {
       <View className="px-6 pt-6 pb-2 gap-1">
         <Text className="text-2xl font-bold text-xporadia-navy">Emploi du temps</Text>
         <Text className="text-sm text-xporadia-text-secondary">
-          {className ? `${className} — ` : ""}visible par les élèves et leurs parents dès l&apos;ajout.
+          {className ? `${className}, ` : ""}visible par les élèves et leurs parents dès l&apos;ajout.
         </Text>
       </View>
 
@@ -142,7 +142,7 @@ export default function TimetableEditorScreen() {
         {adding ? (
           <View className="bg-white rounded-2xl p-4 shadow-soft gap-3">
             <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">
-              Nouveau créneau — {WEEKDAYS[selectedDay]}
+              Nouveau créneau, {WEEKDAYS[selectedDay]}
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {(subjects ?? []).map((subject) => (

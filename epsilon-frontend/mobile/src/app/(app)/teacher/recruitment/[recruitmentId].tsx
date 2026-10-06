@@ -95,7 +95,7 @@ export default function RecruitmentDetailScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-sm font-medium text-xporadia-text-primary">
-                  {`${new Date(entry.date).toLocaleDateString("fr-FR")} — ${entry.hours}h`}
+                  {`${new Date(entry.date).toLocaleDateString("fr-FR")}, ${entry.hours}h`}
                 </Text>
                 {entry.note ? <Text className="text-xs text-xporadia-text-secondary">{entry.note}</Text> : null}
                 {entry.status === "rejected" && entry.rejection_reason ? (
