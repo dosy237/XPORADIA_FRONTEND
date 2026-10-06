@@ -1,14 +1,39 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
-import { DashboardPlaceholder } from "@/components/DashboardPlaceholder";
+import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
+import {
+  BookIcon,
+  BriefcaseIcon,
+  BuildingIcon,
+  CardIcon,
+  CheckCircleIcon,
+  ChildIcon,
+  ClockIcon,
+  FileTextIcon,
+  GraduationCapIcon,
+  LayersIcon,
+  ReceiptIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+  UploadIcon,
+  UserPlusIcon,
+  UsersIcon,
+  WarningIcon,
+} from "@/components/ui/Icon";
+import { Colors } from "@/constants/theme";
 import * as directorProfileApi from "@/services/directorProfile";
 import * as employmentApi from "@/services/employment";
 import * as gradingApi from "@/services/grading";
+import { useAuthStore } from "@/store/authStore";
+
+function SectionTitle({ title }: { title: string }) {
+  return <Text className="text-base font-bold text-xporadia-navy">{title}</Text>;
+}
 
 function SchoolGroupInvitationBanner() {
   const queryClient = useQueryClient();
@@ -60,7 +85,55 @@ function SchoolGroupInvitationBanner() {
   );
 }
 
+const ESTABLISHMENT_TILES = [
+  { icon: BuildingIcon, label: "Mon établissement", href: "/(app)/director/profile" },
+  { icon: LayersIcon, label: "Groupe scolaire", href: "/(app)/director/school-group" },
+  { icon: GraduationCapIcon, label: "Structure académique", href: "/(app)/director/academics" },
+  { icon: ChildIcon, label: "Élèves", href: "/(app)/director/students" },
+  { icon: UsersIcon, label: "Équipe enseignante", href: "/(app)/director/teaching-staff" },
+] as const;
+
+const SCOLARITE_TILES = [
+  { icon: CheckCircleIcon, label: "Fin d'année", href: "/(app)/director/year-end-readiness" },
+  { icon: WarningIcon, label: "Vérification de rentrée", href: "/(app)/start-of-year-check" },
+  { icon: CardIcon, label: "Frais de scolarité", href: "/(app)/director/tuition" },
+  { icon: ShieldCheckIcon, label: "Suivi disciplinaire", href: "/(app)/director/discipline" },
+] as const;
+
+const RECRUTEMENT_TILES = [
+  { icon: SearchIcon, label: "Enseignants certifiés", href: "/(app)/director/teacher-search" },
+  { icon: BriefcaseIcon, label: "Offres d'emploi", href: "/(app)/director/job-listings" },
+  { icon: ClockIcon, label: "Heures à valider", href: "/(app)/director/worked-hours" },
+] as const;
+
+const STAGES_TILES = [
+  { icon: BriefcaseIcon, label: "Offres de stage", href: "/(app)/director/internship-offers" },
+  { icon: FileTextIcon, label: "Mes candidatures", href: "/(app)/director/my-internship-applications" },
+  { icon: ReceiptIcon, label: "Conventions de stage", href: "/(app)/internship-convention" },
+] as const;
+
+function TileGrid({ tiles }: { tiles: readonly { icon: typeof BuildingIcon; label: string; href: string }[] }) {
+  return (
+    <View className="flex-row flex-wrap gap-3">
+      {tiles.map((item) => (
+        <Card
+          key={item.label}
+          onPress={() => router.push(item.href as never)}
+          className="items-center gap-2 flex-1 min-w-[45%] py-5"
+        >
+          <View className="h-11 w-11 rounded-full bg-xporadia-bg items-center justify-center">
+            <item.icon size={20} color={Colors.navy} />
+          </View>
+          <Text className="text-xs font-semibold text-xporadia-text-primary text-center">{item.label}</Text>
+        </Card>
+      ))}
+    </View>
+  );
+}
+
 export default function DirectorDashboard() {
+  const user = useAuthStore((s) => s.user);
+
   const { data: joinRequests } = useQuery({
     queryKey: ["director-join-requests"],
     queryFn: gradingApi.fetchDirectorJoinRequests,
@@ -74,161 +147,90 @@ export default function DirectorDashboard() {
   const unpaidInvoicesCount = (invoices ?? []).filter((i) => i.status === "unpaid").length;
 
   return (
-    <DashboardPlaceholder title="Gérez vos recrutements et vos stages.">
-      <SchoolGroupInvitationBanner />
+    <View className="flex-1 bg-xporadia-bg">
+      <DashboardHeader
+        title="Espace établissement"
+        subtitle={user ? `${user.first_name} ${user.last_name}` : undefined}
+      />
+      <ScrollView contentContainerClassName="p-6 gap-5 pb-12">
+        <SchoolGroupInvitationBanner />
 
-      <Card onPress={() => router.push("/(app)/director/join-requests")} className="gap-1">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-base font-semibold text-xporadia-text-primary">
-            Demandes de rattachement
-          </Text>
-          {pendingCount > 0 ? <Chip label={String(pendingCount)} variant="orange" /> : null}
+        {pendingCount > 0 ? (
+          <Card onPress={() => router.push("/(app)/director/join-requests")} className="flex-row items-center gap-3">
+            <View className="h-11 w-11 rounded-full bg-xporadia-orange/10 items-center justify-center">
+              <UserPlusIcon size={20} color={Colors.orange} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm font-semibold text-xporadia-text-primary">
+                Demandes de rattachement
+              </Text>
+              <Text className="text-xs text-xporadia-text-secondary">
+                Des élèves demandent à rejoindre votre établissement.
+              </Text>
+            </View>
+            <Chip label={String(pendingCount)} variant="orange" />
+          </Card>
+        ) : null}
+
+        {unpaidInvoicesCount > 0 ? (
+          <Card onPress={() => router.push("/(app)/director/invoices")} className="flex-row items-center gap-3">
+            <View className="h-11 w-11 rounded-full bg-xporadia-orange/10 items-center justify-center">
+              <ReceiptIcon size={20} color={Colors.orange} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm font-semibold text-xporadia-text-primary">Factures</Text>
+              <Text className="text-xs text-xporadia-text-secondary">
+                Montant dû, calculé sur les heures de vos enseignants.
+              </Text>
+            </View>
+            <Chip label={String(unpaidInvoicesCount)} variant="orange" />
+          </Card>
+        ) : null}
+
+        <Card onPress={() => router.push("/(app)/director/admission-report")} className="flex-row items-center gap-3">
+          <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
+            <UploadIcon size={20} color={Colors.navy} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-xporadia-text-primary">Rapport d&apos;admission</Text>
+            <Text className="text-xs text-xporadia-text-secondary">
+              Déposez les résultats d&apos;un concours, rapprochement automatique proposé.
+            </Text>
+          </View>
+        </Card>
+
+        <View className="gap-3">
+          <SectionTitle title="Mon établissement" />
+          <TileGrid tiles={ESTABLISHMENT_TILES} />
         </View>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Des élèves demandent à rejoindre votre établissement.
-        </Text>
-      </Card>
 
-      <Card onPress={() => router.push("/(app)/director/admission-report")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          Rapport d&apos;admission
-        </Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Déposez les résultats d&apos;un concours (CSV/PDF), rapprochement automatique proposé.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/teacher-search")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          Recherche d&apos;enseignants certifiés
-        </Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Parcourez les profils avant de cibler un enseignant dans une offre d&apos;emploi.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/profile")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Mon établissement</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Nom, adresse, niveaux enseignés, effectif : visible par Xporadia et les partenaires.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/school-group")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Groupe scolaire</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Regroupez plusieurs établissements et consultez leurs chiffres consolidés.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/tuition")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Frais de scolarité</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Échéancier, paiements des familles et relances.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/discipline")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Suivi disciplinaire</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Incidents consignés, sanctions et relances aux familles.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/teaching-staff")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Équipe enseignante</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Enseignants de l&apos;établissement, leurs classes et matières.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/students")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Élèves</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Recherche et fiche d&apos;ensemble de tout élève de l&apos;établissement.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/academics")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          Structure académique
-        </Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Départements, filières, classes et enseignants titulaires.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/year-end-readiness")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          Suivi de fin d&apos;année
-        </Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Qui a validé le passage de sa classe, qui reste en attente.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/start-of-year-check")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          Vérification de rentrée
-        </Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Contrôlez la cohérence entre niveau déclaré et classe réelle.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/library")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          Bibliothèque numérique
-        </Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Cours, fiches, exercices et annales accessibles à tout le personnel.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/job-listings")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Offres d&apos;emploi</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Publiez des offres, ciblez des profils "open to work" et gérez les candidatures.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/worked-hours")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Heures à valider</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Vos enseignants en CDD, Vacation ou Intérim déclarent leurs heures ici.
-        </Text>
-      </Card>
-
-      <Card onPress={() => router.push("/(app)/director/invoices")} className="gap-1">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-base font-semibold text-xporadia-text-primary">Factures</Text>
-          {unpaidInvoicesCount > 0 ? <Chip label={String(unpaidInvoicesCount)} variant="orange" /> : null}
+        <View className="gap-3">
+          <SectionTitle title="Scolarité" />
+          <TileGrid tiles={SCOLARITE_TILES} />
         </View>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Montant dû, calculé sur les heures de vos enseignants.
-        </Text>
-      </Card>
 
-      <Card onPress={() => router.push("/(app)/director/internship-offers")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Offres de stage</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Parcourez les offres des entreprises et candidatez au nom de vos élèves.
-        </Text>
-      </Card>
+        <View className="gap-3">
+          <SectionTitle title="Recrutement" />
+          <TileGrid tiles={RECRUTEMENT_TILES} />
+        </View>
 
-      <Card onPress={() => router.push("/(app)/director/my-internship-applications")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">
-          Mes candidatures de stage
-        </Text>
-        <Text className="text-sm text-xporadia-text-secondary">Suivez l&apos;état de vos candidatures.</Text>
-      </Card>
+        <View className="gap-3">
+          <SectionTitle title="Stages" />
+          <TileGrid tiles={STAGES_TILES} />
+        </View>
 
-      <Card onPress={() => router.push("/(app)/internship-convention")} className="gap-1">
-        <Text className="text-base font-semibold text-xporadia-text-primary">Conventions de stage</Text>
-        <Text className="text-sm text-xporadia-text-secondary">
-          Signature, journal de stage et évaluations des stages en cours.
-        </Text>
-      </Card>
-    </DashboardPlaceholder>
+        <Card onPress={() => router.push("/(app)/library")} className="flex-row items-center gap-3">
+          <View className="h-11 w-11 rounded-full bg-xporadia-orange/10 items-center justify-center">
+            <BookIcon size={20} color={Colors.orange} />
+          </View>
+          <View className="flex-1">
+            <Text className="text-sm font-semibold text-xporadia-text-primary">Bibliothèque numérique</Text>
+            <Text className="text-xs text-xporadia-text-secondary">
+              Cours, fiches, exercices et annales accessibles à tout le personnel.
+            </Text>
+          </View>
+        </Card>
+      </ScrollView>
+    </View>
   );
 }

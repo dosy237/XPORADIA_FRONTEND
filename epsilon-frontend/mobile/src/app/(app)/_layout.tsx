@@ -48,7 +48,7 @@ export default function AppLayout() {
       <Stack.Screen name="teacher/recruitment/[recruitmentId]" options={{ title: "Heures travaillées" }} />
       <Stack.Screen name="teacher/wallet" options={{ title: "Portefeuille" }} />
       <Stack.Screen name="teacher/job-seeking" options={{ title: "Demande d'emploi" }} />
-      <Stack.Screen name="director/dashboard" options={{ title: "Espace établissement" }} />
+      <Stack.Screen name="director/dashboard" options={{ headerShown: false }} />
       <Stack.Screen name="director/profile" options={{ title: "Mon établissement" }} />
       <Stack.Screen name="director/school-group/index" options={{ title: "Groupe scolaire" }} />
       <Stack.Screen
