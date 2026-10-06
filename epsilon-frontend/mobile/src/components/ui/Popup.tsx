@@ -1,4 +1,6 @@
-import { Modal, Pressable, ScrollView, View } from "react-native";
+import { Modal, Pressable, View } from "react-native";
+
+import { KeyboardAwareScrollView } from "@/components/ui/KeyboardAwareScrollView";
 
 interface PopupProps {
   visible: boolean;
@@ -11,7 +13,13 @@ interface PopupProps {
  * d'Expo Router, qui navigue vers un nouvel écran plein-page sur web au
  * lieu de superposer un calque). À utiliser pour les formulaires rapides
  * (créer/modifier) déclenchés depuis un bouton, sans quitter l'écran
- * d'origine. */
+ * d'origine.
+ *
+ * Le contenu défile via `KeyboardAwareScrollView` (et non un `ScrollView`
+ * nu) pour que chaque `Input` remonte au-dessus du clavier à la saisie —
+ * sans ça, un champ en bas de la pop-up (ex. après l'email dans un
+ * formulaire de compte) reste masqué par le clavier et la saisie se fait
+ * à l'aveugle. */
 export function Popup({ visible, onClose, children }: PopupProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -22,9 +30,9 @@ export function Popup({ visible, onClose, children }: PopupProps) {
       >
         <Pressable onPress={() => {}} className="w-full" style={{ maxWidth: 420, maxHeight: "85%" }}>
           <View className="bg-white rounded-2xl overflow-hidden" style={{ maxHeight: "100%" }}>
-            <ScrollView contentContainerClassName="p-6" keyboardShouldPersistTaps="handled">
+            <KeyboardAwareScrollView contentContainerClassName="p-6">
               {children}
-            </ScrollView>
+            </KeyboardAwareScrollView>
           </View>
         </Pressable>
       </Pressable>
