@@ -113,6 +113,22 @@ export const archiveLibraryResource = (resourceId: string) =>
     .patch<LibraryResource>(`/library/resources/${resourceId}/`, { is_archived: true })
     .then((r) => r.data);
 
+export type UpdateLibraryResourcePayload = Partial<CreateLibraryResourcePayload>;
+
+export const updateLibraryResource = async (resourceId: string, payload: UpdateLibraryResourcePayload) => {
+  const hasFiles = !!payload.pdfFile || !!payload.coverImage;
+  if (!hasFiles) {
+    const { pdfFile: _pdfFile, coverImage: _coverImage, ...rest } = payload;
+    return api.patch<LibraryResource>(`/library/resources/${resourceId}/`, rest).then((r) => r.data);
+  }
+  const formData = await buildResourceFormData(payload as CreateLibraryResourcePayload);
+  return api
+    .patch<LibraryResource>(`/library/resources/${resourceId}/`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((r) => r.data);
+};
+
 export const trackLibraryResourceDownload = (resourceId: string) =>
   api.post<{ download_count: number }>(`/library/resources/${resourceId}/download/`).then((r) => r.data);
 

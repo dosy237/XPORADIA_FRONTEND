@@ -1,4 +1,5 @@
 import api from "@/services/api";
+import type { LibraryResource } from "@/services/library";
 
 export interface DashboardStats {
   pending_accreditation: number;
@@ -42,3 +43,19 @@ export const fetchPendingLibrary = () =>
 
 export const moderateLibraryResource = (resourceId: string, approve: boolean) =>
   api.post(`/admin-panel/library/${resourceId}/moderate/`, { approve });
+
+export interface AdminLibraryResource extends LibraryResource {
+  establishment_name: string;
+  establishment_id: number;
+}
+
+export const fetchAdminLibrary = () =>
+  api.get<AdminLibraryResource[]>("/admin-panel/library/").then((r) => r.data);
+
+export interface AdminLibraryEstablishment {
+  id: number;
+  school_name: string;
+}
+
+export const fetchAdminLibraryEstablishments = () =>
+  api.get<AdminLibraryEstablishment[]>("/admin-panel/library-establishments/").then((r) => r.data);
