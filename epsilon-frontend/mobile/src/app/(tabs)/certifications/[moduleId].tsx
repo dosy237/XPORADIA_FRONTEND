@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -13,6 +13,7 @@ import { CATEGORY_LABELS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
 import * as certificationApi from "@/services/certification";
 import type { MobileOperator, TrainingSession } from "@/services/certification";
+import { useImageViewerStore } from "@/store/imageViewerStore";
 import { useAuthStore } from "@/store/authStore";
 
 const NEXT_SESSIONS_COUNT = 3;
@@ -25,6 +26,7 @@ const OPERATORS: { value: MobileOperator; label: string }[] = [
 export default function PublicModuleDetailScreen() {
   const { moduleId, from } = useLocalSearchParams<{ moduleId: string; from?: string }>();
   const queryClient = useQueryClient();
+  const openImage = useImageViewerStore((s) => s.open);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isTeacher = useAuthStore((s) => s.currentRole === "teacher");
   const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
@@ -85,7 +87,9 @@ export default function PublicModuleDetailScreen() {
       ) : null}
 
       {module.cover_image ? (
-        <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 180, borderRadius: 16 }} contentFit="cover" />
+        <Pressable onPress={() => openImage(module.cover_image!)} accessibilityRole="imagebutton" accessibilityLabel="Agrandir l'image">
+          <Image source={{ uri: module.cover_image }} style={{ width: "100%", height: 180, borderRadius: 16 }} contentFit="cover" />
+        </Pressable>
       ) : null}
 
       <View className="bg-white rounded-3xl p-6 shadow-soft gap-4">

@@ -1,5 +1,7 @@
 import { Image } from "expo-image";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+
+import { useImageViewerStore } from "@/store/imageViewerStore";
 
 interface AvatarProps {
   firstName?: string;
@@ -10,6 +12,7 @@ interface AvatarProps {
 }
 
 export function Avatar({ firstName, lastName, size = 88, imageUri }: AvatarProps) {
+  const openImage = useImageViewerStore((s) => s.open);
   const initials = `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase() || "?";
 
   const containerStyle = {
@@ -25,9 +28,15 @@ export function Avatar({ firstName, lastName, size = 88, imageUri }: AvatarProps
 
   if (imageUri) {
     return (
-      <View className="border-4 border-white overflow-hidden bg-xporadia-navy" style={containerStyle}>
+      <Pressable
+        onPress={() => openImage(imageUri)}
+        accessibilityRole="imagebutton"
+        accessibilityLabel="Voir la photo de profil"
+        className="border-4 border-white overflow-hidden bg-xporadia-navy"
+        style={containerStyle}
+      >
         <Image source={{ uri: imageUri }} style={{ width: "100%", height: "100%" }} contentFit="cover" />
-      </View>
+      </Pressable>
     );
   }
 

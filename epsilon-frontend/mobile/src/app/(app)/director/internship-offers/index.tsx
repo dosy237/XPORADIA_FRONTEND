@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
-import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
+import { InternshipOfferCard } from "@/components/internships/InternshipOfferCard";
 import * as internshipsApi from "@/services/internships";
 import type { InternshipOffer } from "@/services/internships";
 
@@ -57,26 +57,15 @@ function DistributedOffersSection() {
 
 function OfferCard({ offer }: { offer: InternshipOffer }) {
   return (
-    <Pressable
+    <InternshipOfferCard
+      offer={offer}
       onPress={() =>
         router.push({
           pathname: "/(app)/director/internship-offers/[offerId]",
           params: { offerId: offer.id },
         })
       }
-      accessibilityRole="button"
-      accessibilityLabel={`Voir l'offre de stage ${offer.title}`}
-      className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2"
-    >
-      <Text className="text-base font-semibold text-xporadia-text-primary">{offer.title}</Text>
-      <Text className="text-xs text-xporadia-text-secondary">
-        {offer.company.company_name} · {offer.city}
-      </Text>
-      <View className="flex-row flex-wrap gap-1.5">
-        <Chip label={offer.domain} variant="navy-subtle" />
-        <Chip label={`${offer.duration_weeks} sem.`} variant="neutral" />
-      </View>
-    </Pressable>
+    />
   );
 }
 

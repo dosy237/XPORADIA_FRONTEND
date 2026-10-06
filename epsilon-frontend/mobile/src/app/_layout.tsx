@@ -5,6 +5,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef } from "react";
 
+import { ImageViewerOverlay } from "@/components/ui/ImageViewerOverlay";
 import { usePushRegistration } from "@/hooks/usePushRegistration";
 import { useAuthStore } from "@/store/authStore";
 
@@ -61,6 +62,7 @@ export default function RootLayout() {
       <PushRegistration />
       <VerificationGate />
       <Stack screenOptions={{ headerShown: false }} />
+      <ImageViewerOverlay />
     </QueryClientProvider>
   );
 }

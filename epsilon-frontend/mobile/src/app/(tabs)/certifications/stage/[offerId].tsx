@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Chip } from "@/components/ui/Chip";
@@ -11,6 +11,7 @@ import { Colors } from "@/constants/theme";
 import { useRelativeTime } from "@/hooks/useRelativeTime";
 import { openInMaps } from "@/lib/openInMaps";
 import * as internshipsApi from "@/services/internships";
+import { useImageViewerStore } from "@/store/imageViewerStore";
 
 const LEVEL_LABELS: Record<string, string> = {
   "3e": "Troisième",
@@ -21,6 +22,7 @@ const LEVEL_LABELS: Record<string, string> = {
 
 export default function InternshipOfferDetailScreen() {
   const { offerId } = useLocalSearchParams<{ offerId: string }>();
+  const openImage = useImageViewerStore((s) => s.open);
 
   const { data: offer, isLoading } = useQuery({
     queryKey: ["internship-offer", offerId],
@@ -40,7 +42,9 @@ export default function InternshipOfferDetailScreen() {
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-5 pb-12">
       {offer.cover_image ? (
-        <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 180, borderRadius: 16 }} contentFit="cover" />
+        <Pressable onPress={() => openImage(offer.cover_image!)} accessibilityRole="imagebutton" accessibilityLabel="Agrandir l'image">
+          <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 180, borderRadius: 16 }} contentFit="cover" />
+        </Pressable>
       ) : null}
 
       <View className="gap-2">

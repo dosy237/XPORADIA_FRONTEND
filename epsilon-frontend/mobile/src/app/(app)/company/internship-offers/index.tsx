@@ -9,9 +9,12 @@ import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { PlusIcon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
+import { InternshipOfferCard } from "@/components/internships/InternshipOfferCard";
+import { Popup } from "@/components/ui/Popup";
 import { Colors } from "@/constants/theme";
 import * as internshipsApi from "@/services/internships";
 import type { InternshipLevel, InternshipOffer } from "@/services/internships";
+import { useAuthStore } from "@/store/authStore";
 
 const LEVEL_OPTIONS: { value: InternshipLevel; label: string }[] = [
   { value: "3e", label: "3ème" },
@@ -28,44 +31,30 @@ function OfferCard({
   onToggleActive: (offer: InternshipOffer) => void;
 }) {
   return (
-    <View className="bg-white rounded-2xl p-4 border border-xporadia-border gap-2">
-      {offer.cover_image ? (
-        <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 120, borderRadius: 12 }} contentFit="cover" />
-      ) : null}
-      <Pressable
-        onPress={() =>
-          router.push({
-            pathname: "/(app)/company/internship-offers/[offerId]",
-            params: { offerId: offer.id, title: offer.title },
-          })
-        }
-        accessibilityRole="button"
-        accessibilityLabel={`Voir les candidatures pour ${offer.title}`}
-        className="gap-2"
-      >
-        <View className="flex-row items-center justify-between">
-          <Text className="text-base font-semibold text-xporadia-text-primary flex-1">
-            {offer.title}
-          </Text>
-          <Chip label={offer.is_active ? "Active" : "Inactive"} variant="navy-subtle" />
-        </View>
-        <Text className="text-xs text-xporadia-text-secondary">
-          {offer.domain} · {offer.city} · {offer.application_count} candidature
-          {offer.application_count !== 1 ? "s" : ""}
-        </Text>
-      </Pressable>
-      <Button
-        label={offer.is_active ? "Désactiver" : "Réactiver"}
-        variant="secondary"
-        pill
-        onPress={() => onToggleActive(offer)}
-      />
-    </View>
+    <InternshipOfferCard
+      offer={offer}
+      onPress={() =>
+        router.push({
+          pathname: "/(app)/company/internship-offers/[offerId]",
+          params: { offerId: offer.id, title: offer.title },
+        })
+      }
+      topRightBadge={<Chip label={offer.is_active ? "Active" : "Inactive"} variant="navy-subtle" />}
+      footer={
+        <Button
+          label={offer.is_active ? "Désactiver" : "Réactiver"}
+          variant="secondary"
+          pill
+          onPress={() => onToggleActive(offer)}
+        />
+      }
+    />
   );
 }
 
 export default function CompanyInternshipOffersScreen() {
   const queryClient = useQueryClient();
+  const me = useAuthStore((s) => s.user);
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [domain, setDomain] = useState("");
@@ -137,6 +126,29 @@ export default function CompanyInternshipOffersScreen() {
     },
   });
 
+  const previewOffer: InternshipOffer = {
+    id: "preview",
+    company: {
+      company_name: me ? `${me.first_name} ${me.last_name}` : "Votre entreprise",
+      avatar: me?.avatar ?? null,
+    } as InternshipOffer["company"],
+    title: title || "Titre du stage",
+    domain: domain || "Domaine",
+    missions: missions,
+    level,
+    duration_weeks: Number(durationWeeks) || 0,
+    period_start: periodStart,
+    period_end: periodEnd,
+    places: 1,
+    city: city || "Ville",
+    skills_wanted: [],
+    cover_image: coverImage?.uri ?? null,
+    is_premium: false,
+    is_active: true,
+    application_count: 0,
+    created_at: new Date().toISOString(),
+  };
+
   return (
     <ScrollView className="flex-1 bg-xporadia-bg" contentContainerClassName="p-6 gap-4 pb-12">
       <Text className="text-xs text-xporadia-text-secondary leading-5">Vos offres de stage.</Text>
@@ -153,8 +165,25 @@ export default function CompanyInternshipOffersScreen() {
         ))
       )}
 
-      {adding ? (
-        <View className="bg-white rounded-2xl p-4 border border-xporadia-orange/30 gap-3">
+      <Pressable
+        onPress={() => setAdding(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Publier une offre de stage"
+        className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-3.5"
+      >
+        <PlusIcon size={16} />
+        <Text className="text-white font-semibold">Publier une offre de stage</Text>
+      </Pressable>
+
+      <Popup visible={adding} onClose={() => setAdding(false)}>
+        <View className="gap-4">
+          <Text className="text-xl font-bold text-xporadia-navy">Publier une offre de stage</Text>
+
+          <View className="gap-2">
+            <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Aperçu</Text>
+            <InternshipOfferCard offer={previewOffer} />
+          </View>
+
           <Input label="Titre" value={title} onChangeText={setTitle} placeholder="Stage développeur web" />
           <Input label="Domaine" value={domain} onChangeText={setDomain} placeholder="Informatique" />
           <Input
@@ -220,17 +249,7 @@ export default function CompanyInternshipOffersScreen() {
             </View>
           </View>
         </View>
-      ) : (
-        <Pressable
-          onPress={() => setAdding(true)}
-          accessibilityRole="button"
-          accessibilityLabel="Publier une offre de stage"
-          className="flex-row items-center justify-center gap-2 bg-xporadia-orange rounded-full py-3.5"
-        >
-          <PlusIcon size={16} />
-          <Text className="text-white font-semibold">Publier une offre de stage</Text>
-        </Pressable>
-      )}
+      </Popup>
     </ScrollView>
   );
 }

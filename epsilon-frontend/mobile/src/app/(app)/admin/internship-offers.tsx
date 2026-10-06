@@ -5,6 +5,7 @@ import { Alert, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
 import { BriefcaseIcon, CloseIcon } from "@/components/ui/Icon";
+import { InternshipOfferCard } from "@/components/internships/InternshipOfferCard";
 import { Colors } from "@/constants/theme";
 import * as establishmentApi from "@/services/establishmentDirectory";
 import * as internshipsApi from "@/services/internships";
@@ -136,51 +137,48 @@ export default function AdminInternshipOffersScreen() {
       ) : (
         <View className="gap-3">
           {offers.map((offer) => (
-            <View key={offer.id} className="bg-white rounded-2xl p-4 shadow-soft gap-2">
-              <View className="flex-row items-center justify-between gap-2">
-                <Text className="text-sm font-semibold text-xporadia-text-primary flex-1">
-                  {offer.title}
-                </Text>
+            <InternshipOfferCard
+              key={offer.id}
+              offer={offer}
+              topRightBadge={
                 <View className="flex-row gap-1.5">
                   {offer.is_premium && <Chip label="Mise en avant" variant="orange" />}
                   <Chip label={offer.is_active ? "Active" : "Inactive"} variant={offer.is_active ? "navy-subtle" : "neutral"} />
                 </View>
-              </View>
-              <Text className="text-xs text-xporadia-text-secondary">
-                {offer.company.company_name} · {offer.city} · {offer.application_count} candidature(s)
-              </Text>
-
-              <View className="flex-row flex-wrap gap-2 mt-1">
-                <Button
-                  label={offer.is_active ? "Désactiver" : "Réactiver"}
-                  variant="secondary"
-                  pill
-                  loading={toggleActiveMutation.isPending}
-                  onPress={() =>
-                    Alert.alert(offer.is_active ? "Désactiver cette offre ?" : "Réactiver cette offre ?", offer.title, [
-                      { text: "Annuler", style: "cancel" },
-                      {
-                        text: "Confirmer",
-                        onPress: () => toggleActiveMutation.mutate({ id: offer.id, isActive: !offer.is_active }),
-                      },
-                    ])
-                  }
-                />
-                <Button
-                  label={offer.is_premium ? "Retirer la mise en avant" : "Mettre en avant"}
-                  variant="secondary"
-                  pill
-                  loading={togglePremiumMutation.isPending}
-                  onPress={() => togglePremiumMutation.mutate({ id: offer.id, isPremium: !offer.is_premium })}
-                />
-                <Button
-                  label="Envoyer aux établissements"
-                  variant="secondary"
-                  pill
-                  onPress={() => setDistributingOffer(offer)}
-                />
-              </View>
-            </View>
+              }
+              footer={
+                <View className="flex-row flex-wrap gap-2 mt-1">
+                  <Button
+                    label={offer.is_active ? "Désactiver" : "Réactiver"}
+                    variant="secondary"
+                    pill
+                    loading={toggleActiveMutation.isPending}
+                    onPress={() =>
+                      Alert.alert(offer.is_active ? "Désactiver cette offre ?" : "Réactiver cette offre ?", offer.title, [
+                        { text: "Annuler", style: "cancel" },
+                        {
+                          text: "Confirmer",
+                          onPress: () => toggleActiveMutation.mutate({ id: offer.id, isActive: !offer.is_active }),
+                        },
+                      ])
+                    }
+                  />
+                  <Button
+                    label={offer.is_premium ? "Retirer la mise en avant" : "Mettre en avant"}
+                    variant="secondary"
+                    pill
+                    loading={togglePremiumMutation.isPending}
+                    onPress={() => togglePremiumMutation.mutate({ id: offer.id, isPremium: !offer.is_premium })}
+                  />
+                  <Button
+                    label="Envoyer aux établissements"
+                    variant="secondary"
+                    pill
+                    onPress={() => setDistributingOffer(offer)}
+                  />
+                </View>
+              }
+            />
           ))}
         </View>
       )}

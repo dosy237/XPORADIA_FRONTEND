@@ -5,14 +5,12 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
-import { Avatar } from "@/components/ui/Avatar";
 import { Card } from "@/components/ui/Card";
 import { Chip } from "@/components/ui/Chip";
-import { BriefcaseIcon, ClockIcon, MedalIcon, PinIcon } from "@/components/ui/Icon";
+import { BriefcaseIcon, ClockIcon, MedalIcon } from "@/components/ui/Icon";
+import { InternshipOfferCard } from "@/components/internships/InternshipOfferCard";
 import { CATEGORY_LABELS, LEVEL_LABELS } from "@/constants/certificationLevels";
 import { Colors } from "@/constants/theme";
-import { useRelativeTime } from "@/hooks/useRelativeTime";
-import { serverNow } from "@/lib/serverClock";
 import * as certificationApi from "@/services/certification";
 import type { CertificationLevel, TrainingModule } from "@/services/certification";
 import * as internshipsApi from "@/services/internships";
@@ -87,54 +85,9 @@ function ModuleCard({ module }: { module: TrainingModule }) {
   );
 }
 
-// Offres de stage — inspiré des grandes plateformes d'emploi (HelloWork
-// et consorts) : logo de l'entreprise identifiable au premier coup
-// d'œil, titre du poste en avant, fraîcheur de l'offre affichée, badges
-// clés (lieu, durée, places) juste en dessous.
-function InternshipOfferCard({ offer }: { offer: InternshipOffer }) {
-  const postedAgo = useRelativeTime(offer.created_at);
-  const isNew = serverNow() - new Date(offer.created_at).getTime() < 48 * 60 * 60 * 1000;
-
+function InternshipOfferListItem({ offer }: { offer: InternshipOffer }) {
   return (
-    <Card
-      onPress={() => router.push(`/(tabs)/certifications/stage/${offer.id}`)}
-      accessibilityLabel={`Voir l'offre de stage ${offer.title}`}
-      className="gap-0 p-0"
-    >
-      {offer.cover_image ? (
-        <View className="overflow-hidden rounded-t-xl">
-          <Image source={{ uri: offer.cover_image }} style={{ width: "100%", height: 120 }} contentFit="cover" />
-        </View>
-      ) : null}
-      <View className="p-4 gap-3">
-        <View className="flex-row items-start gap-3">
-          <Avatar
-            firstName={offer.company.company_name}
-            lastName=""
-            imageUri={offer.company.avatar}
-            size={44}
-          />
-          <View className="flex-1 gap-0.5">
-            <Text className="text-base font-bold text-xporadia-text-primary" numberOfLines={2}>
-              {offer.title}
-            </Text>
-            <Text className="text-xs text-xporadia-text-secondary">{offer.company.company_name}</Text>
-          </View>
-          {offer.is_premium ? <Chip label="Premium" variant="orange" /> : null}
-        </View>
-
-        <View className="flex-row items-center flex-wrap gap-2">
-          <Chip label={offer.city} icon={<PinIcon size={11} color={Colors.navy} />} variant="navy-subtle" />
-          <Chip label={`${offer.duration_weeks} sem.`} icon={<ClockIcon size={11} color={Colors.navy} />} variant="navy-subtle" />
-          <Chip label={`${offer.places} place(s)`} variant="neutral" />
-          {isNew ? <Chip label="Nouveau" variant="orange" /> : null}
-        </View>
-
-        <View className="flex-row items-center justify-between pt-1 border-t border-xporadia-border">
-          <Text className="text-xs text-xporadia-text-secondary pt-2">{`Publié ${postedAgo}`}</Text>
-        </View>
-      </View>
-    </Card>
+    <InternshipOfferCard offer={offer} onPress={() => router.push(`/(tabs)/certifications/stage/${offer.id}`)} />
   );
 }
 
@@ -224,7 +177,7 @@ export default function CatalogScreen() {
       ) : offers && offers.length > 0 ? (
         <View className="gap-3">
           {offers.map((offer) => (
-            <InternshipOfferCard key={offer.id} offer={offer} />
+            <InternshipOfferListItem key={offer.id} offer={offer} />
           ))}
         </View>
       ) : (
