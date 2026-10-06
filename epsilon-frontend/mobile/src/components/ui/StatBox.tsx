@@ -15,7 +15,7 @@ export function StatBox({ icon, label, value, onPress }: StatBoxProps) {
   const content = (
     <>
       <View className="h-9 w-9 rounded-full bg-white items-center justify-center shadow-card">{icon}</View>
-      <Text className="text-sm font-bold text-xporadia-navy text-center" numberOfLines={2}>
+      <Text className="text-sm font-bold text-xporadia-navy text-center" numberOfLines={3}>
         {value}
       </Text>
       <Text className="text-[11px] text-xporadia-text-secondary">{label}</Text>
