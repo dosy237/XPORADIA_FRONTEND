@@ -30,7 +30,18 @@ export default function AdministratorsScreen() {
         ) : (
           <View className="gap-3">
             {(admins ?? []).map((a) => (
-              <View key={a.id} className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center gap-3">
+              <Pressable
+                key={a.id}
+                onPress={() =>
+                  router.push({
+                    pathname: "/(app)/admin/edit-admin-scope/[userId]",
+                    params: { userId: String(a.id), name: `${a.first_name} ${a.last_name}`, currentScope: a.admin_scope },
+                  })
+                }
+                accessibilityRole="button"
+                accessibilityLabel={`Modifier le périmètre de ${a.first_name} ${a.last_name}`}
+                className="bg-white rounded-2xl p-4 shadow-soft flex-row items-center gap-3"
+              >
                 <Avatar firstName={a.first_name} lastName={a.last_name} size={40} />
                 <View className="flex-1">
                   <Text className="text-sm font-semibold text-xporadia-text-primary">
@@ -42,7 +53,7 @@ export default function AdministratorsScreen() {
                   label={ADMIN_SCOPE_LABELS[a.admin_scope]}
                   variant={a.admin_scope === "full" ? "orange" : "navy-subtle"}
                 />
-              </View>
+              </Pressable>
             ))}
           </View>
         )}
