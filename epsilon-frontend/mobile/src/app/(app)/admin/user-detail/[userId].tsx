@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Alert, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
@@ -12,6 +12,29 @@ import type { CertificationLevel } from "@/services/certification";
 
 const ROLE_LABELS: Record<string, string> = {
   student: "Élève", teacher: "Enseignant", director: "Directeur d'établissement", company: "Entreprise",
+};
+
+const DETAIL_FIELD_LABELS: Record<string, string> = {
+  school_name: "Établissement",
+  is_partner: "Partenaire",
+  address: "Adresse",
+  phone: "Téléphone",
+  contact_email: "Email de contact",
+  establishment_code: "Code établissement",
+  is_public: "Profil public",
+  departments_count: "Départements",
+  tracks_count: "Filières",
+  classes_count: "Classes",
+  active_students_count: "Élèves inscrits",
+  teachers_count: "Enseignants titulaires",
+  company_name: "Entreprise",
+  declared_level: "Niveau déclaré",
+  has_parent: "Parent rattaché",
+  school_class: "Classe",
+  establishment: "Établissement",
+  subjects: "Matières",
+  is_documents_validated: "Documents validés",
+  profile_visible: "Profil visible",
 };
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -137,8 +160,16 @@ export default function AdminUserDetailScreen() {
           {Object.entries(detail).map(([key, value]) => (
             <DetailRow
               key={key}
-              label={key}
-              value={value === null ? "—" : typeof value === "boolean" ? (value ? "Oui" : "Non") : String(value)}
+              label={DETAIL_FIELD_LABELS[key] ?? key}
+              value={
+                value === null || value === ""
+                  ? "Non renseigné"
+                  : Array.isArray(value)
+                    ? value.length ? value.join(", ") : "Non renseigné"
+                    : typeof value === "boolean"
+                      ? value ? "Oui" : "Non"
+                      : String(value)
+              }
             />
           ))}
         </View>
@@ -153,6 +184,15 @@ export default function AdminUserDetailScreen() {
             <CertificationRow key={cert.id} certification={cert} />
           ))}
         </View>
+      )}
+
+      {user.primary_role === "director" && (
+        <Button
+          label="Modifier l'établissement"
+          variant="secondary"
+          pill
+          onPress={() => router.push(`/(app)/admin/edit-establishment/${id}`)}
+        />
       )}
 
       <Button

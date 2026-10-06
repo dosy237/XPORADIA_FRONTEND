@@ -37,3 +37,24 @@ export const suspendUser = (userId: number) =>
 
 export const reactivateUser = (userId: number) =>
   api.post<{ id: number; is_active: boolean }>(`/admin-panel/users/${userId}/reactivate/`).then((r) => r.data);
+
+export interface AdminEstablishment {
+  school_name: string;
+  address: string;
+  levels_taught: string[];
+  student_count: number | null;
+  is_partner: boolean;
+  phone: string;
+  contact_email: string;
+  establishment_code: string;
+  is_public: boolean;
+  logo: string | null;
+}
+
+export type AdminEstablishmentUpdate = Partial<Omit<AdminEstablishment, "is_partner" | "logo">>;
+
+export const fetchAdminEstablishment = (directorUserId: number) =>
+  api.get<AdminEstablishment>(`/admin-panel/establishments/${directorUserId}/`).then((r) => r.data);
+
+export const updateAdminEstablishment = (directorUserId: number, payload: AdminEstablishmentUpdate) =>
+  api.patch<AdminEstablishment>(`/admin-panel/establishments/${directorUserId}/`, payload).then((r) => r.data);

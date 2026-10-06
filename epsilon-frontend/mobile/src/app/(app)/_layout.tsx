@@ -127,6 +127,10 @@ export default function AppLayout() {
       <Stack.Screen name="admin/internship-offers" options={{ title: "Offres de stage" }} />
       <Stack.Screen name="admin/users/index" options={{ title: "Comptes utilisateurs" }} />
       <Stack.Screen name="admin/user-detail/[userId]" options={{ title: "Fiche compte" }} />
+      <Stack.Screen
+        name="admin/edit-establishment/[userId]"
+        options={{ title: "Modifier l'établissement", presentation: "modal" }}
+      />
       <Stack.Screen name="company/profile" options={{ title: "Mon entreprise" }} />
       <Stack.Screen name="company/teacher-search/index" options={{ title: "Recherche d'enseignants" }} />
       <Stack.Screen name="company/teacher-search/[userId]" options={{ title: "Profil enseignant" }} />
