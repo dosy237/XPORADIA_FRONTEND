@@ -1,16 +1,26 @@
 import api from "@/services/api";
+import type { AdminScope } from "@/types/user";
 
 export interface AdminUser {
   id: number;
   email: string;
   first_name: string;
   last_name: string;
+  admin_scope: AdminScope;
 }
 
 export const fetchAdminList = () => api.get<AdminUser[]>("/auth/admin/list/").then((r) => r.data);
 
-export const createAdmin = (payload: { email: string; first_name: string; last_name: string }) =>
-  api.post<{ id: number; email: string; detail: string }>("/auth/admin/create/", payload).then((r) => r.data);
+export const createAdmin = (payload: {
+  email: string;
+  first_name: string;
+  last_name: string;
+  admin_scope: AdminScope;
+}) =>
+  api.post<{ id: number; email: string; admin_scope: AdminScope; detail: string }>(
+    "/auth/admin/create/",
+    payload
+  ).then((r) => r.data);
 
 export type CreatableRole = "teacher" | "director" | "parent" | "company" | "student";
 

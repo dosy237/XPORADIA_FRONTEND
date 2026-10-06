@@ -22,7 +22,7 @@ export default function AdminUsersScreen() {
   const [role, setRole] = useState<ManagedRole>("student");
   const [search, setSearch] = useState("");
 
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, isError } = useQuery({
     queryKey: ["admin-users", role, search],
     queryFn: () => adminUsersApi.fetchAdminUsers(role, search || undefined),
   });
@@ -53,6 +53,13 @@ export default function AdminUsersScreen() {
 
       {isLoading ? (
         <Text className="text-sm text-xporadia-text-secondary text-center py-8">Chargement...</Text>
+      ) : isError ? (
+        <View className="items-center gap-2 py-10">
+          <UsersIcon size={22} color={Colors.textSecondary} />
+          <Text className="text-xs text-xporadia-text-secondary text-center">
+            Votre compte administrateur n&apos;a pas accès à cette section.
+          </Text>
+        </View>
       ) : !users || users.length === 0 ? (
         <View className="items-center gap-2 py-10">
           <UsersIcon size={22} color={Colors.textSecondary} />

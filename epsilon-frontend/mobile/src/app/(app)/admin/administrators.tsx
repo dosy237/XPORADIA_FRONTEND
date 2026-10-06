@@ -4,10 +4,37 @@ import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Chip } from "@/components/ui/Chip";
 import { Input } from "@/components/ui/Input";
 import { UserPlusIcon } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
+import { ADMIN_SCOPE_LABELS } from "@/lib/adminScope";
 import * as adminManagementApi from "@/services/adminManagement";
+import type { AdminScope } from "@/types/user";
+
+const SCOPE_CARDS: { value: AdminScope; title: string; description: string }[] = [
+  {
+    value: "full",
+    title: "Administrateur complet",
+    description: "Tous les droits, y compris créer et gérer d'autres administrateurs.",
+  },
+  {
+    value: "moderation",
+    title: "Modérateur",
+    description: "Accréditations, bibliothèque, litiges.",
+  },
+  {
+    value: "accounts",
+    title: "Gestionnaire de comptes",
+    description: "Comptes utilisateurs, création de comptes.",
+  },
+  {
+    value: "catalog",
+    title: "Gestionnaire de contenu",
+    description: "Modules de formation, offres d'emploi et de stage.",
+  },
+];
 
 export default function AdministratorsScreen() {
   const queryClient = useQueryClient();
@@ -15,6 +42,7 @@ export default function AdministratorsScreen() {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [scope, setScope] = useState<AdminScope>("moderation");
 
   const { data: admins, isLoading } = useQuery({
     queryKey: ["admin-list"],
@@ -22,12 +50,19 @@ export default function AdministratorsScreen() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () => adminManagementApi.createAdmin({ email: email.trim().toLowerCase(), first_name: firstName.trim(), last_name: lastName.trim() }),
+    mutationFn: () =>
+      adminManagementApi.createAdmin({
+        email: email.trim().toLowerCase(),
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        admin_scope: scope,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-list"] });
       setEmail("");
       setFirstName("");
       setLastName("");
+      setScope("moderation");
       setCreating(false);
       Alert.alert("Compte créé", "Les identifiants ont été envoyés par email.");
     },
@@ -57,6 +92,10 @@ export default function AdministratorsScreen() {
                 </Text>
                 <Text className="text-xs text-xporadia-text-secondary">{a.email}</Text>
               </View>
+              <Chip
+                label={ADMIN_SCOPE_LABELS[a.admin_scope]}
+                variant={a.admin_scope === "full" ? "orange" : "navy-subtle"}
+              />
             </View>
           ))}
         </View>
@@ -73,6 +112,22 @@ export default function AdministratorsScreen() {
             autoCapitalize="none"
             keyboardType="email-address"
           />
+
+          <View className="gap-2">
+            <Text className="text-xs font-semibold text-xporadia-text-secondary uppercase">Périmètre</Text>
+            {SCOPE_CARDS.map((s) => (
+              <Card
+                key={s.value}
+                onPress={() => setScope(s.value)}
+                selected={scope === s.value}
+                className="gap-1"
+              >
+                <Text className="text-sm font-semibold text-xporadia-text-primary">{s.title}</Text>
+                <Text className="text-xs text-xporadia-text-secondary">{s.description}</Text>
+              </Card>
+            ))}
+          </View>
+
           <View className="flex-row gap-2">
             <View className="flex-1">
               <Button label="Annuler" variant="secondary" pill onPress={() => setCreating(false)} />

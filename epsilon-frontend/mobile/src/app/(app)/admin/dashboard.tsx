@@ -15,21 +15,28 @@ import {
   WarningIcon,
 } from "@/components/ui/Icon";
 import { Colors } from "@/constants/theme";
+import { adminHasScope } from "@/lib/adminScope";
 import * as adminApi from "@/services/adminPanel";
 import { useAuthStore } from "@/store/authStore";
+import type { AdminScope } from "@/types/user";
 
 function SectionTitle({ title }: { title: string }) {
   return <Text className="text-base font-bold text-xporadia-navy">{title}</Text>;
 }
 
-const GESTION_TILES = [
-  { icon: UsersIcon, label: "Comptes utilisateurs", href: "/(app)/admin/users" },
-  { icon: UserPlusIcon, label: "Créer un compte", href: "/(app)/admin/create-user" },
-  { icon: UserPlusIcon, label: "Administrateurs", href: "/(app)/admin/administrators" },
-  { icon: MedalIcon, label: "Modules de formation", href: "/(app)/admin/certification-modules" },
-  { icon: BriefcaseIcon, label: "Offres d'emploi", href: "/(app)/admin/job-listings" },
-  { icon: BriefcaseIcon, label: "Offres de stage", href: "/(app)/admin/internship-offers" },
-] as const;
+const GESTION_TILES: {
+  icon: React.ComponentType<{ size?: number; color?: string }>;
+  label: string;
+  href: string;
+  scope: AdminScope;
+}[] = [
+  { icon: UsersIcon, label: "Comptes utilisateurs", href: "/(app)/admin/users", scope: "accounts" },
+  { icon: UserPlusIcon, label: "Créer un compte", href: "/(app)/admin/create-user", scope: "accounts" },
+  { icon: UserPlusIcon, label: "Administrateurs", href: "/(app)/admin/administrators", scope: "full" },
+  { icon: MedalIcon, label: "Modules de formation", href: "/(app)/admin/certification-modules", scope: "catalog" },
+  { icon: BriefcaseIcon, label: "Offres d'emploi", href: "/(app)/admin/job-listings", scope: "catalog" },
+  { icon: BriefcaseIcon, label: "Offres de stage", href: "/(app)/admin/internship-offers", scope: "catalog" },
+];
 
 export default function AdminDashboard() {
   const user = useAuthStore((s) => s.user);
@@ -37,6 +44,9 @@ export default function AdminDashboard() {
     queryKey: ["admin-dashboard-stats"],
     queryFn: adminApi.fetchDashboardStats,
   });
+
+  const canModerate = adminHasScope(user?.admin_scope, "moderation");
+  const gestionTiles = GESTION_TILES.filter((item) => adminHasScope(user?.admin_scope, item.scope));
 
   return (
     <View className="flex-1 bg-xporadia-bg">
@@ -53,51 +63,54 @@ export default function AdminDashboard() {
           </View>
         </View>
 
-        <View className="gap-3">
-          <SectionTitle title="À traiter" />
+        {canModerate && (
+          <View className="gap-3">
+            <SectionTitle title="À traiter" />
 
-          <Card onPress={() => router.push("/(app)/admin/accreditation")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-orange/10 items-center justify-center">
-              <CheckCircleIcon size={20} color={Colors.orange} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Accréditations</Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                Comptes en attente de validation présentielle.
-              </Text>
-            </View>
-            {!!stats?.pending_accreditation && <Chip label={String(stats.pending_accreditation)} variant="orange" />}
-          </Card>
+            <Card onPress={() => router.push("/(app)/admin/accreditation")} className="flex-row items-center gap-3">
+              <View className="h-11 w-11 rounded-full bg-xporadia-orange/10 items-center justify-center">
+                <CheckCircleIcon size={20} color={Colors.orange} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-xporadia-text-primary">Accréditations</Text>
+                <Text className="text-xs text-xporadia-text-secondary">
+                  Comptes en attente de validation présentielle.
+                </Text>
+              </View>
+              {!!stats?.pending_accreditation && <Chip label={String(stats.pending_accreditation)} variant="orange" />}
+            </Card>
 
-          <Card onPress={() => router.push("/(app)/admin/library-moderation")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
-              <BookIcon size={20} color={Colors.navy} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Bibliothèque</Text>
-              <Text className="text-xs text-xporadia-text-secondary">
-                Contributions en attente de modération.
-              </Text>
-            </View>
-            {!!stats?.pending_library && <Chip label={String(stats.pending_library)} variant="orange" />}
-          </Card>
+            <Card onPress={() => router.push("/(app)/admin/library-moderation")} className="flex-row items-center gap-3">
+              <View className="h-11 w-11 rounded-full bg-xporadia-navy/[0.06] items-center justify-center">
+                <BookIcon size={20} color={Colors.navy} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-xporadia-text-primary">Bibliothèque</Text>
+                <Text className="text-xs text-xporadia-text-secondary">
+                  Contributions en attente de modération.
+                </Text>
+              </View>
+              {!!stats?.pending_library && <Chip label={String(stats.pending_library)} variant="orange" />}
+            </Card>
 
-          <Card onPress={() => router.push("/(app)/admin/disputes")} className="flex-row items-center gap-3">
-            <View className="h-11 w-11 rounded-full bg-xporadia-red/10 items-center justify-center">
-              <WarningIcon size={20} color={Colors.red} />
-            </View>
-            <View className="flex-1">
-              <Text className="text-sm font-semibold text-xporadia-text-primary">Litiges</Text>
-              <Text className="text-xs text-xporadia-text-secondary">Paiements contestés à traiter.</Text>
-            </View>
-            {!!stats?.open_disputes && <Chip label={String(stats.open_disputes)} variant="orange" />}
-          </Card>
-        </View>
+            <Card onPress={() => router.push("/(app)/admin/disputes")} className="flex-row items-center gap-3">
+              <View className="h-11 w-11 rounded-full bg-xporadia-red/10 items-center justify-center">
+                <WarningIcon size={20} color={Colors.red} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold text-xporadia-text-primary">Litiges</Text>
+                <Text className="text-xs text-xporadia-text-secondary">Paiements contestés à traiter.</Text>
+              </View>
+              {!!stats?.open_disputes && <Chip label={String(stats.open_disputes)} variant="orange" />}
+            </Card>
+          </View>
+        )}
 
+        {gestionTiles.length > 0 && (
         <View className="gap-3">
           <SectionTitle title="Gestion de la plateforme" />
           <View className="flex-row flex-wrap gap-3">
-            {GESTION_TILES.map((item) => (
+            {gestionTiles.map((item) => (
               <Card
                 key={item.label}
                 onPress={() => router.push(item.href as never)}
@@ -111,6 +124,7 @@ export default function AdminDashboard() {
             ))}
           </View>
         </View>
+        )}
       </ScrollView>
     </View>
   );
