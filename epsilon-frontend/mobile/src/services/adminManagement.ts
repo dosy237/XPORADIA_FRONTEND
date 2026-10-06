@@ -12,6 +12,28 @@ export const fetchAdminList = () => api.get<AdminUser[]>("/auth/admin/list/").th
 export const createAdmin = (payload: { email: string; first_name: string; last_name: string }) =>
   api.post<{ id: number; email: string; detail: string }>("/auth/admin/create/", payload).then((r) => r.data);
 
+export type CreatableRole = "teacher" | "director" | "parent" | "company" | "student";
+
+export interface AdminCreateUserPayload {
+  role: CreatableRole;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone?: string;
+  // Directeur
+  school_name?: string;
+  address?: string;
+  // Entreprise
+  company_name?: string;
+  // Élève
+  declared_level?: string;
+}
+
+export const adminCreateUser = (payload: AdminCreateUserPayload) =>
+  api
+    .post<{ id: number; email: string; detail: string }>("/auth/admin/create-user/", payload)
+    .then((r) => r.data);
+
 export const togglePartnerStatus = (userId: number) =>
   api.post<{ id: number; is_partner: boolean }>(`/admin-panel/directory/${userId}/toggle-partner/`).then((r) => r.data);
 

@@ -24,6 +24,7 @@ function SectionTitle({ title }: { title: string }) {
 
 const GESTION_TILES = [
   { icon: UsersIcon, label: "Comptes utilisateurs", href: "/(app)/admin/users" },
+  { icon: UserPlusIcon, label: "Créer un compte", href: "/(app)/admin/create-user" },
   { icon: UserPlusIcon, label: "Administrateurs", href: "/(app)/admin/administrators" },
   { icon: MedalIcon, label: "Modules de formation", href: "/(app)/admin/certification-modules" },
   { icon: BriefcaseIcon, label: "Offres d'emploi", href: "/(app)/admin/job-listings" },
